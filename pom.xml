@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.google.sps</groupId>
-  <artifactId>portfolio</artifactId>
+  <artifactId>capstone</artifactId>
   <version>1</version>
   <packaging>war</packaging>
 
@@ -48,7 +48,7 @@
         <version>2.2.0</version>
         <configuration>
           <!-- TODO: set project ID. -->
-          <deploy.projectId></deploy.projectId>
+          <deploy.projectId>groot-280719</deploy.projectId>
           <deploy.version>1</deploy.version>
         </configuration>
       </plugin>
