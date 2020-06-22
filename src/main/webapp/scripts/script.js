@@ -1,29 +1,51 @@
 var CLIENT_ID = '597140288373-39l6n11c305hjurg77f99ue04gnp4evh.apps.googleusercontent.com';
-var REDIRECT_URI = 'https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev';
+var REDIRECT_URI = 'https://8080-fc5ed130-8ae1-4bf8-b8f3-d2aab8ea572b.us-west1.cloudshell.dev';
 var fragmentString = location.hash.substring(1);
 
+var isLoggedIn = false;
+
 // Parse query string to see if page request is coming from OAuth 2.0 server.
-var params = {};
+var params = {}
 var regex = /([^&=]+)=([^&]*)/g, m;
 while (m = regex.exec(fragmentString)) {
-params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+    params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
 }
 if (Object.keys(params).length > 0) {
-localStorage.setItem('oauth2-test-params', JSON.stringify(params) );
-if (params['state'] && params['state'] == 'try_sample_request') {
-    trySampleRequest();
-}
+    localStorage.setItem('oauth2-test-params', JSON.stringify(params) );
+    if (params['state'] && params['state'] == 'try_sample_request') {
+        loginStatus();
+    }
 }
 
 // If there's an access token, try an API request.
 // Otherwise, start OAuth 2.0 flow.
-function trySampleRequest() {
-var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
-if (params && params['access_token']) {
-    getAllUsers(params['access_token']);
-} else {
-    oauth2SignIn();
+function loginStatus() {
+    var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
+    if (params && params['access_token']) {
+        // user is logged in
+        isLoggedIn = true;
+        getAllOUs(params['access_token']);
+        // getAllGroups(params['access_token']);
+        getAllUsers(params['access_token']);
+    } else {
+        // user is not logged in
+        isLoggedIn = false;
+    }
+    updateIndexPage();
 }
+
+// If loginStatus is true, then show the 3 main pages and the navbar
+// Otherwise, show the login form page
+function updateIndexPage() {
+    var headerNavbar = document.getElementById("header-navbar");
+    var loginFormContainer = document.getElementById("login-form-container");
+    if (isLoggedIn) {
+        headerNavbar.classList.remove("hidden")
+        loginFormContainer.classList.add("hidden")
+    } else {
+        headerNavbar.classList.add("hidden")
+        loginFormContainer.classList.remove("hidden")
+    }
 }
 
 function getAllOUs(token){
@@ -59,7 +81,6 @@ function getAllUsers(token){
 }
 
 function oauth2SignIn() {
-    console.log(params);
     // Google's OAuth 2.0 endpoint for requesting an access token
     var oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
 
@@ -89,4 +110,9 @@ function oauth2SignIn() {
     document.body.appendChild(form);
     form.submit();
     console.log(params);
+}
+
+function logout() {
+    localStorage.clear();
+    loginStatus();
 }
