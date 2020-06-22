@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html>
-  <head>
+ <head>
     <meta charset="UTF-8">
-    <title>GRoot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Capstone!</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="../styles/users.css">
-    <meta charset="utf-8">
+    <link rel="stylesheet" href="../styles/style.css">
+    <meta name="google-signin-client_id" content="597140288373-39l6n11c305hjurg77f99ue04gnp4evh.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="../scripts/user-script.js"></script>
   </head>
-  <body onload="startUsers()">
-    <script src="user-script.js"></script>
+  <body onload=>
+    <!-- <div class="g-signin2" data-onsuccess="onSignIn"></div> -->
+    <button onclick="oauth2SignIn()">Sign in</button>
+    <button onclick="trySampleRequest()">Log in</button>
+    <button onclick="signOut()">Sign out</button>
+    <script src="../scripts/user-script.js"></script>
   </body>
 </html>
