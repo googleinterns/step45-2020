@@ -1,34 +1,30 @@
-// function onSignIn(googleUser) {
-//       // get user profile information
-//       console.log(googleUser.getBasicProfile())
-// }
-  var CLIENT_ID = '597140288373-39l6n11c305hjurg77f99ue04gnp4evh.apps.googleusercontent.com';
-  var REDIRECT_URI = 'https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev';
-  var fragmentString = location.hash.substring(1);
+var CLIENT_ID = '597140288373-39l6n11c305hjurg77f99ue04gnp4evh.apps.googleusercontent.com';
+var REDIRECT_URI = 'https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev';
+var fragmentString = location.hash.substring(1);
 
-  // Parse query string to see if page request is coming from OAuth 2.0 server.
-  var params = {};
-  var regex = /([^&=]+)=([^&]*)/g, m;
-  while (m = regex.exec(fragmentString)) {
-    params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-  }
-  if (Object.keys(params).length > 0) {
-    localStorage.setItem('oauth2-test-params', JSON.stringify(params) );
-    if (params['state'] && params['state'] == 'try_sample_request') {
-      trySampleRequest();
-    }
-  }
+// Parse query string to see if page request is coming from OAuth 2.0 server.
+var params = {};
+var regex = /([^&=]+)=([^&]*)/g, m;
+while (m = regex.exec(fragmentString)) {
+params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+}
+if (Object.keys(params).length > 0) {
+localStorage.setItem('oauth2-test-params', JSON.stringify(params) );
+if (params['state'] && params['state'] == 'try_sample_request') {
+    trySampleRequest();
+}
+}
 
-  // If there's an access token, try an API request.
-  // Otherwise, start OAuth 2.0 flow.
-  function trySampleRequest() {
-    var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
-    if (params && params['access_token']) {
-      getAllUsers(params['access_token']);
-    } else {
-      oauth2SignIn();
-    }
-  }
+// If there's an access token, try an API request.
+// Otherwise, start OAuth 2.0 flow.
+function trySampleRequest() {
+var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
+if (params && params['access_token']) {
+    getAllUsers(params['access_token']);
+} else {
+    oauth2SignIn();
+}
+}
 
 function getAllOUs(token){
     console.log(token);
