@@ -1,5 +1,8 @@
 var CLIENT_ID = '597140288373-39l6n11c305hjurg77f99ue04gnp4evh.apps.googleusercontent.com';
-var REDIRECT_URI = 'https://8080-fc5ed130-8ae1-4bf8-b8f3-d2aab8ea572b.us-west1.cloudshell.dev';
+var str = window.location.href;
+var REDIRECT_URI = str.substring(
+    0, str.lastIndexOf("/")
+);
 var fragmentString = location.hash.substring(1);
 
 var isLoggedIn = false;
@@ -24,9 +27,6 @@ function loginStatus() {
     if (params && params['access_token']) {
         // user is logged in
         isLoggedIn = true;
-        getAllOUs(params['access_token']);
-        // getAllGroups(params['access_token']);
-        getAllUsers(params['access_token']);
     } else {
         // user is not logged in
         isLoggedIn = false;
@@ -48,37 +48,6 @@ function updateIndexPage() {
     }
 }
 
-function getAllOUs(token){
-    console.log(token);
-    fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?orgUnitPath=/&type=all', {
-    headers: {
-        'authorization': `Bearer ` + token,
-    }
-    }).
-    then(response => response.json())
-    .then((ous) => {
-        console.log(ous);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
-}
-
-function getAllUsers(token){
-    console.log(token);
-    fetch('https://www.googleapis.com/admin/directory/v1/users?domain=groot-test.1bot2.info', {
-    headers: {
-        'authorization': `Bearer ` + token,
-    }
-    }).
-    then(response => response.json())
-    .then((ous) => {
-        console.log(ous);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
-}
 
 function oauth2SignIn() {
     // Google's OAuth 2.0 endpoint for requesting an access token
