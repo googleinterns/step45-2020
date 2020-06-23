@@ -1,4 +1,7 @@
-function getAllOUs(token){
+var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
+var token = params['access_token'];
+
+function getAllOUs(){
     console.log(token);
     fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?orgUnitPath=/&type=all', {
     headers: {
@@ -14,7 +17,7 @@ function getAllOUs(token){
     });
 }
 
-function getAllUsers(token){
+function getAllUsers(){
     console.log(token);
     fetch('https://www.googleapis.com/admin/directory/v1/users?domain=groot-test.1bot2.info', {
     headers: {

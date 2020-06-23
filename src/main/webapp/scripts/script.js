@@ -1,6 +1,6 @@
 var CLIENT_ID = '597140288373-39l6n11c305hjurg77f99ue04gnp4evh.apps.googleusercontent.com';
-var str = window.location.href;
-var REDIRECT_URI = str.substring(
+const str = window.location.href;
+const REDIRECT_URI = str.substring(
     0, str.lastIndexOf("/")
 );
 var fragmentString = location.hash.substring(1);
@@ -25,10 +25,23 @@ function loginStatus() {
         // user is logged in
         isLoggedIn = true;
     } else {
-        // user is not logged in
+        // user is not logged 
         isLoggedIn = false;
     }
     updateIndexPage();
+}
+
+function pagesLoginStatus(){
+    var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
+    if (params && params['access_token']) {
+        // user is logged in
+        isLoggedIn = true;
+    } else {
+        // user is not logged 
+        isLoggedIn = false;
+        window.location.href = "../index.html";
+        updateIndexPage();
+    }
 }
 
 // If loginStatus is true, then show the 3 main pages and the navbar
@@ -80,5 +93,7 @@ function oauth2SignIn() {
 
 function logout() {
     localStorage.clear();
-    loginStatus();
+    isLoggedIn = false;
+    window.location.href='/index.html';
+    updateIndexPage();
 }
