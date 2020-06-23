@@ -15,9 +15,6 @@ while (m = regex.exec(fragmentString)) {
 }
 if (Object.keys(params).length > 0) {
     localStorage.setItem('oauth2-test-params', JSON.stringify(params) );
-    if (params['state'] && params['state'] == 'try_sample_request') {
-        loginStatus();
-    }
 }
 
 // If there's an access token, try an API request.
