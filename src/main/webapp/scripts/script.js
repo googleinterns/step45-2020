@@ -49,11 +49,14 @@ function pagesLoginStatus(){
 function updateIndexPage() {
     var headerNavbar = document.getElementById("header-navbar");
     var loginFormContainer = document.getElementById("login-form-container");
+    var homeContainer = document.getElementById("home-container");
     if (isLoggedIn) {
         headerNavbar.classList.remove("hidden")
+        homeContainer.classList.remove("hidden")
         loginFormContainer.classList.add("hidden")
     } else {
         headerNavbar.classList.add("hidden")
+        homeContainer.classList.add("hidden")
         loginFormContainer.classList.remove("hidden")
     }
 }
