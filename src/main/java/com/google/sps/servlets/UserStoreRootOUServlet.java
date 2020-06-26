@@ -22,6 +22,7 @@ import com.google.appengine.api.datastore.Query.SortDirection;
 
 import com.google.sps.data.UserOU;
 
+/** The servlet stores the root OU into datastore. */
 @WebServlet("/user-storerootou")
 public class UserStoreRootOUServlet extends HttpServlet {
   @Override

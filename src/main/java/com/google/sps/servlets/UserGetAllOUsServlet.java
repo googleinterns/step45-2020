@@ -29,6 +29,7 @@ import org.json.simple.JSONObject;
 import com.google.sps.data.UserOU;
 import com.google.sps.data.UserOUNode;
 
+/** The servlet returns all OUs in a nested tree structure in JSON. */
 @WebServlet("/get-ous")
 public class UserGetAllOUsServlet extends HttpServlet {  
   @Override
@@ -49,7 +50,7 @@ public class UserGetAllOUsServlet extends HttpServlet {
     Query rootQuery = new Query("root");
     Entity rootEntity = datastore.prepare(rootQuery).asList(FetchOptions.Builder.withDefaults()).get(0);
     UserOU rootOU = toUserOU(rootEntity);
-    UserOUNode root = new UserOUNode(rootOU);
+    UserOUNode root = new UserOUNode(rootOU, "");
 
     // build the tree from root
     for(UserOU ou: ous){
@@ -73,7 +74,7 @@ public class UserGetAllOUsServlet extends HttpServlet {
       long depthLong = (long) entity.getProperty("depth");
       int depth = (int) depthLong;
 
-      UserOU userOU = new UserOU(name, path, parentPath, depth);
+      UserOU userOU = UserOU.create(name, path, parentPath, depth);
       return userOU;
   }
 }

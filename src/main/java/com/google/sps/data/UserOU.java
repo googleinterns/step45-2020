@@ -1,36 +1,20 @@
 package com.google.sps.data;
+import com.google.auto.value.AutoValue;
 
 /**
  The class represents an OU, with field name, path, parentPath, and depth. 
  depth is the layer from root OU + 1.
 */
-public class UserOU{
-    String name;
-    String path;
-    String parentPath;
-    int depth;
-
-    public UserOU(String name, String path, String parentPath, int depth){
-        this.name = name;
-        this.path = path;
-        this.parentPath = parentPath;
-        this.depth = depth;
+@AutoValue
+public abstract class UserOU {
+    public static UserOU create(String name, String path, String parentPath, int depth) {
+        return new AutoValue_UserOU(name, path, parentPath, depth);
     }
 
-    public String getName(){
-        return this.name;
-    }
-
-    public String getPath(){
-        return this.path;
-    }
-
-    public String getParentPath(){
-        return this.parentPath;
-    }
-
-    public int getDepth(){
-        return depth;
-    }
+    public abstract String getName();
+    public abstract String getPath();
+    public abstract String getParentPath();
+    public abstract int getDepth();
 }
+
 

@@ -26,6 +26,7 @@ import com.google.appengine.api.datastore.FetchOptions;
 
 import com.google.sps.data.UserOU;
 
+/** The servlet stores all child OUs except the root OU into datastore. */
 @WebServlet("/user-storechildou")
 public class UserStoreChildOUServlet extends HttpServlet {
   @Override
@@ -44,7 +45,6 @@ public class UserStoreChildOUServlet extends HttpServlet {
     ou.setProperty("parentpath", ouObject.getParentPath());
     ou.setProperty("depth", ouObject.getDepth());
     datastore.put(ou);
-
 
     response.setContentType("application/json;");
     response.getWriter().println(gson.toJson("{Success Child OU}"));

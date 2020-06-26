@@ -1,4 +1,5 @@
 package com.google.sps.data;
+import com.google.auto.value.AutoValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +8,32 @@ import org.json.simple.JSONObject;
 /**
  The class represent a node OU in a tree. Each node OU contains an OU, a parent OU node, and a list of children. 
 */
+@AutoValue
+public abstract class UserOUNode {
+    public static UserOUNode create(String current, String parent, List<UserOUNode> children) {
+        return new AutoValue_UserOUNode(current, parent, []);
+    }
+
+    abstract String getCurrent();
+    abstract String getParent();
+    abstract String getChildren();
+
+    public static Builder builder() {
+        return new AutoValue_UserOUNode();
+    }
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+        public abstract Builder setCurrent
+    }
+    
+
+    public abstract String getName();
+    public abstract String getPath();
+    public abstract String getParentPath();
+    public abstract int getDepth();
+}
+
 
 public class UserOUNode {
     private UserOU current = null;
