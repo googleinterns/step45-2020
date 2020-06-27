@@ -50,7 +50,7 @@ public class UserGetAllOUsServlet extends HttpServlet {
     Query rootQuery = new Query("root");
     Entity rootEntity = datastore.prepare(rootQuery).asList(FetchOptions.Builder.withDefaults()).get(0);
     UserOU rootOU = toUserOU(rootEntity);
-    UserOUNode root = new UserOUNode(rootOU, "");
+    UserOUNode root = new UserOUNode(rootOU);
 
     // build the tree from root
     for(UserOU ou: ous){
