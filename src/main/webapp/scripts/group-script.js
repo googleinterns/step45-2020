@@ -43,7 +43,7 @@ function visualize() {
 
     var format = d3.format(",d")
 
-    var width = 932
+    var width = window.innerWidth * 3/4 - 80;
     var height = width
 
     var pack = data => d3.pack()
@@ -147,12 +147,12 @@ async function loadGroups(groups) {
 
         if (response.status == 200) {
             var members = json.members;
-            var allMembers = true;
+            var containsSubGroups = false;
             for (var j = 0; j < members.length; j++) {
                 var type = members[j].type;
                 if (type == "GROUP") {
                     // there is a nested group inside the current group
-                    allMembers = false;
+                    containsSubGroups = true;
                     var group = groups[groups.findIndex(elem => elem.id == members[j].id)];
                     newCircle.children.push({
                         name: group.name,
@@ -160,7 +160,7 @@ async function loadGroups(groups) {
                     })
                 }
             }
-            if (allMembers) {
+            if (!containsSubGroups) {
                 newCircle.value = parseInt(groups[i].directMembersCount);
                 delete newCircle.children
             }
