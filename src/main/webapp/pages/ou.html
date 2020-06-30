@@ -9,28 +9,36 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     
+    <link rel="stylesheet" href="../styles/style.css">
     <link rel="stylesheet" href="../styles/ou-style.css">
     <script src="../scripts/ou-script.js"></script>
     <script src="../scripts/script.js"></script>
+
+
+    <!-- load the d3.js library -->	
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+        
   </head>
 
-  <body onload="pagesLoginStatus()">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light hidden" id="header-navbar">
-            <a class="navbar-brand" href="/">Navbar</a>
+  <body onload="pagesLoginStatus(); getAllOUs()">
+        <nav class="navbar navbar-expand-lg" id="header-navbar">
+            <a class="navbar-brand" href="/">gRoot</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav left">
                     <li class="nav-item">
-                        <a class="nav-link" href="./ou.html">Organizational Units</a>
+                        <a class="nav-link" href="ou.html">Organizational Units</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="./group.html">Groups</a>
+                        <a class="nav-link" href="group.html">Groups</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="./user.html">Users</a>
+                        <a class="nav-link" href="user.html">Users</a>
                     </li>
+                </ul>
+                <ul class="navbar-nav right">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Profile
@@ -39,15 +47,14 @@
                         <a class="dropdown-item" href="#">Action</a>
                         <a class="dropdown-item" href="#">Another action</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item"><button onclick="logout()">Logout</button></a>
+                        <a class="dropdown-item"><button class="btn btn-error" onclick="logout()">Logout</button></a>
                         </div>
                     </li>
                 </ul>
             </div>
         </nav>
-        <h1>Organizational Units (OUs)</h1>
-        <div>
-            <button onclick="getAllOUs()">Retrieve the OUs!</button>
-        </div>
+
+        <h2>Organizational Units</h2>
+        <div id="tree-chart"></div>
     </body>
 </html>
