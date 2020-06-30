@@ -2,23 +2,55 @@ var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
 var token = params['access_token'];
 var domain = "groot-test.1bot2.info"
 
+/* d3 input data */
 var data = {
     name: domain,
     children: [],
 };
 
+/* JSON list of groups */
 var groups;
 
+/* Tooltip hover card */
 var tooltip;
 var groupName;
 var description;
 var email;
 var directMembers;
 
-function getAllGroups(){
+/* Search and filters */
+var searchName;
+var searchEmail;
+var searchMemberKey;
+var viewTotal;
+
+function onloadGroupsPage() {
+    var searchButton = document.getElementById("search-enter-btn");
+    searchButton.addEventListener("click", function(event) {
+        searchName = searchBar.value;
+        getAllGroups();
+    })
+
+    var searchBar = document.getElementById("search");
+    // Execute a function when the user presses enter or erases the input
+    searchBar.addEventListener("search", function(event) {
+        searchButton.click();
+    });
+
+    getAllGroups();
+}
+
+function getAllGroups() {
     // access token expires in 3600 sec after login; fix later
     console.log(token);
-    fetch('https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer', {
+    var url = 'https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer'
+    if (searchName) {
+        url += "&query=" + encodeURIComponent("name:" + searchName + "*");
+    }
+    if (viewTotal) {
+        url += '&maxResults=' + viewTotal
+    }
+    fetch(url, {
     headers: {
         'authorization': `Bearer ` + token,
     }
@@ -26,7 +58,11 @@ function getAllGroups(){
     then(response => response.json())
     .then((res) => {
         console.log(res);
-        groups = res.groups;
+        if (res.groups) {
+            groups = res.groups;
+        } else {
+            groups = [];
+        }
         loadSidebar();
         loadGroups();
     })
@@ -45,6 +81,8 @@ function loadSidebar() {
 }
 
 function visualize() {
+    d3.selectAll("svg > *").remove();
+
     var color = d3.scaleLinear()
     .domain([0, 5])
     .range(["hsl(152,80%,80%)", "hsl(228,30%,40%)"])
@@ -166,15 +204,21 @@ function visualize() {
         };
     }
 
-    var chartElement = document.getElementById("chart")
-    chartElement.appendChild(svg.node())
+    var chartElement = document.getElementById("chart");
+    if (chartElement.lastChild) chartElement.removeChild(chartElement.lastChild);
+    chartElement.appendChild(svg.node());
 
     return svg.node();
 }
 
 /* Create each of the group <div> elements and display them */
 async function loadGroups() {
-    var groupsContainer = document.getElementById("groups");
+    data = {
+        name: domain,
+        children: [],
+    };
+
+    // var groupsContainer = document.getElementById("groups");
     // retrieve members from each group
     for (var i = 0; i < groups.length; i++) {
         // groupsContainer.appendChild(createGroupElement(groups[i]));
@@ -185,7 +229,9 @@ async function loadGroups() {
             id: groups[i].id
         }
 
-        const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' + groups[i].id + '/members', {
+        const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'
+        + groups[i].id 
+        + '/members', {
         headers: {
             'authorization': `Bearer ` + token,
         }
@@ -221,7 +267,7 @@ async function loadGroups() {
         }
     }
     console.log(data)
-    visualize();
+    if (groups.length != 0) visualize();
 }
 
 /** Creates the components of the hovering <div> element for each group */

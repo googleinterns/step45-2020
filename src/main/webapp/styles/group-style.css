@@ -30,3 +30,8 @@
     width: 932px;
     height: 932px;
 }
+
+#search {
+    display: inline-block;
+    width: 75%;
+}

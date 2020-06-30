@@ -18,7 +18,7 @@
 
     </head>
 
-    <body onload="pagesLoginStatus(); getAllGroups();">
+    <body onload="pagesLoginStatus(); onloadGroupsPage();">
         <nav class="navbar navbar-expand-lg" id="header-navbar">
             <a class="navbar-brand" href="/">gRoot</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,14 +62,19 @@
                     <div class="sidenav-section blue">
                         <div class="section-title">Number of groups</div>
                         <p id="num-groups"></p>
-                        <div class="section-title">Number of total members</div>
+                        <div class="section-title">Number of unique users</div>
                         <p id="num-total-members"></p>
                     </div>
                     <div class="sidenav-section">
                         <div class="section-title">Search</div>
-                        <input type="search" class="form-control" id="search" placeholder="Enter search...">
+                        <div>
+                            <input type="search" class="form-control" id="search" placeholder="Search by group name...">
+                            <button class="btn btn-primary" id="search-enter-btn">Search</button>
+                        </div>
                         <div class="section-title">Filters</div>
                         <p>+ Add a filter</p>
+                        <p>Email: </p>
+                        <p>Member:</p>
                         <div class="section-title">View</div>
                         <p>Nodes per row: </p>
                         <p>Users per group: </p>
