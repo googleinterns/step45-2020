@@ -130,9 +130,6 @@ function getAllUsers(){
                 DFSTree(data, orgUnitPath, userJSON);
             }
             addValue(data);
-            console.log(data);
-            const dataElement = document.getElementById('data-container');
-            dataElement.innerText = JSON.stringify(data);
             visualize();
         })
         .catch((error) => {
