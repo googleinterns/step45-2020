@@ -1,27 +1,19 @@
-.main#users {
-    display: flex;
+
+.node circle {
+    fill: #fff;
+    stroke: steelblue;
+    stroke-width: 3px;
 }
 
-.user {
-    max-width: 300px;
-    margin: 0 50px 50px 0;
-    padding: 50px;
+.node text { font: 12px sans-serif; }
+
+.link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 2px;
 }
 
-.user .name {
-    font-weight: 400;
-}
-
-.user .description {
-    color: #888;
-    font-weight: 300;
-}
-
-.user .email {
-    font-weight: 300;
-}
-
-.user .direct-members {
-    color: #4a86e8;
-    font-weight: 300;
+.user-title{
+    text-weight: 500px,
+    font-family: "Lucida Console", Courier, monospace;
 }

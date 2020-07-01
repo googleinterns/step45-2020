@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Capstone!</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    <link rel="stylesheet" href="../styles/style.css">
+    <link rel="stylesheet" href="../styles/user-style.css">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="../scripts/script.js"></script>
+    <script src="../scripts/user-script.js"></script>
+  </head>
+  <body onload="userdetailOnload()">
+    <nav class="navbar navbar-expand-lg" id="header-navbar">
+        <a class="navbar-brand" href="/">gRoot</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav left">
+                <li class="nav-item">
+                    <a class="nav-link" href="ou.html">Organizational Units</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="group.html">Groups</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="user.html">Users</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav right">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Profile
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item" href="#">Action</a>
+                    <a class="dropdown-item" href="#">Another action</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item"><button class="btn btn-error" onclick="logout()">Logout</button></a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container flex">
+        <!-- Page sidebar -->
+        <div class="container sidenav-container">
+            <div class="sidenav card">
+                <div class="sidenav-section">
+                    <div class="section-title">User</div>
+                    <p id="user-name"></p>
+                </div>
+                <div class="sidenav-section blue">
+                    <div class="section-title">Email</div>
+                    <p id="user-email"></p>
+                    <div class="section-title">Orginization Unit</div>
+                    <p id="user-orgUnit"></p>
+                </div>
+               
+            </div>
+        </div>
+        <!-- Page sidebar end -->
+        <div class="container main-container">
+            <div class="main" id="users">
+                <!-- Your main page content goes here -->
+                <div class="user-title">Groups for <span id="username"></span></div>
+                <div id="user-groups"></div>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>

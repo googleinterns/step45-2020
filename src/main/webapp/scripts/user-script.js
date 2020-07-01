@@ -227,33 +227,46 @@ function visualize() {
             .attr("font-weight", (d, i, nodes) => i === nodes.length - 1 ? "normal" : null)
             .text(d => d);
 
-    var nodeSelect = node.append("foreignObject")
-        .attr("width", function(d){return ( x(d.x1) - x(d.x0) - 15)})
-        .attr("height", (d => (d === root ? 60 : y(d.y1) - y(d.y0) - 50)))
-        .attr("x", 10)
-        .attr("y", 30)
-        .append("xhtml:body")
-        .append("div")
-        .append("ul")
-        .attr("style", (d => (d === root ? "max-height: 60px; overflow: auto" : "max-height: " + (y(d.y1) - y(d.y0) - 50)) + "; overflow: auto"))
-       
-    // add users with links to each node
-    nodeSelect.selectAll("li")
-    	.data(function(d){
-            var users = d.data.users;
-            var userlist = []
-            for(var i = 0; i < users.length; i++){
-                userlist.push(users[i].name);
-            }
-            console.log(userlist);
-            return userlist
-    	})
-    	.enter()
-        .append("a")
-        .attr("href", "www.google.com")
-        .append("a")
-    	.append("li")
-    	.text(function(d){ return d })
+        var nodeSelect = node.append("foreignObject")
+            .attr("width", function(d){return ( x(d.x1) - x(d.x0) - 15)})
+            .attr("height", (d => (d === root ? 60 : y(d.y1) - y(d.y0) - 50)))
+            .attr("x", 10)
+            .attr("y", 30)
+            .append("xhtml:body")
+            .append("div")
+            .append("ul")
+            .attr("style", (d => (d === root ? "max-height: 60px; overflow: auto" : "max-height: " + (y(d.y1) - y(d.y0) - 50)) + "; overflow: auto"))
+        
+        // add users with links to each node
+        nodeSelect.selectAll("li")
+            .data(function(d){
+                var users = d.data.users;
+                var userlist = []
+                for(var i = 0; i < users.length; i++){
+                    userlist.push(users[i].name);
+                }
+                console.log(userlist);
+                return userlist
+            })
+            .enter()
+            .append("li")
+            .append("a")
+            .attr("href", "#")
+            .attr("class", "userdetail")
+            .text(function(d){ return d })
+
+        // Change links to include user id 
+        nodeSelect.selectAll("a.userdetail")
+            .data(function(d){
+                var users = d.data.users;
+                var userlist = []
+                for(var i = 0; i < users.length; i++){
+                    userlist.push(users[i].id);
+                }
+                console.log(userlist);
+                return userlist
+            })
+            .attr("href", (d => "userdetails.html?user=" + d))
 
         group.call(position, root);
     }
@@ -316,4 +329,135 @@ function tile(node, x0, y0, x1, y1) {
   }
 }
 
+// user detail onload
+function userdetailOnload(){
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    var userid = urlParams.get('user');
+    console.log(userid);
+    fetch("https://www.googleapis.com/admin/directory/v1/users/" + userid, {
+    headers: {
+        'authorization': `Bearer ` + token,
+    }
+    }).
+    then(response => response.json())
+    .then((user) => {
+        var userNameElement = document.getElementById("user-name");
+        userNameElement.innerText = user.name.fullName;
+        var userEmailElement = document.getElementById("user-email");
+        userEmailElement.innerText = user.primaryEmail;
+        var userOrgUnitElement = document.getElementById("user-orgUnit");
+        userOrgUnitElement.innerText = user.orgUnitPath;
+        var userName2tElement = document.getElementById("username");
+        userName2tElement.innerText = user.name.fullName;
+        getGroups(user.id, user.name.fullName);
+    })
+    .catch((error) => {
+        console.error(error);
+    });
 
+}
+
+function getGroups(userid, username){
+    fetch("https://www.googleapis.com/admin/directory/v1/groups?userKey=" + userid,{
+    headers: {
+        'authorization': `Bearer ` + token,
+    }
+    }).
+    then(response => response.json())
+    .then((groupsJson) => {
+        console.log(groupsJson);
+        var userGroups = [{"id": userid, "name": username, "parent": null}]
+        if(groupsJson.hasOwnProperty('groups')){
+            groups = groupsJson.groups;
+            for(var i = 0; i < groups.length; i++){
+                var group = groups[i];
+                groupElement = {"id": group.id, "name": group.name, "parent": username}
+                userGroups.push(groupElement);
+            }
+        }
+        
+        var userGroupsElement = document.getElementById("user-groups");
+        console.log(userGroups);
+        visualizeUserGroups(userGroups);
+    })
+    .catch((error) => {
+        console.error(error);
+    });
+}
+
+// ************** Generate the tree diagram	 *****************
+function visualizeUserGroups(userGroups){
+    // convert the flat data into a hierarchy 
+    var treeData = d3.stratify()
+    .id(function(d) { return d.name; })
+    .parentId(function(d) { return d.parent; })
+    (userGroups);
+
+    // assign the name to each node
+    treeData.each(function(d) {
+        d.name = d.id;
+    });
+
+    // set the dimensions and margins of the diagram
+    var margin = {top: 20, right: 160, bottom: 30, left: 160},
+        width = 850 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
+    // declares a tree layout and assigns the size
+    var treemap = d3.tree()
+        .size([height, width]);
+
+    //  assigns the data to a hierarchy using parent-child relationships
+    var nodes = d3.hierarchy(treeData, function(d) {
+        return d.children;
+    });
+
+    // maps the node data to the tree layout
+    nodes = treemap(nodes);
+
+    // append the svg object to the body of the page
+    // appends a 'group' element to 'svg'
+    // moves the 'group' element to the top left margin
+    var svg = d3.select("#user-groups").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom),
+        g = svg.append("g")
+        .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+    // adds the links between the nodes
+    var link = g.selectAll(".link")
+        .data( nodes.descendants().slice(1))
+    .enter().append("path")
+        .attr("class", "link")
+        .attr("d", function(d) {
+        return "M" + d.y + "," + d.x
+            + "C" + (d.y + d.parent.y) / 2.2 + "," + d.x
+            + " " + (d.y + d.parent.y) / 2.2 + "," + d.parent.x
+            + " " + d.parent.y + "," + d.parent.x;
+        });
+
+    // adds each node as a group
+    var node = g.selectAll(".node")
+        .data(nodes.descendants())
+    .enter().append("g")
+        .attr("class", function(d) { 
+        return "node" + 
+            (d.children ? " node--internal" : " node--leaf"); })
+        .attr("transform", function(d) { 
+        return "translate(" + d.y + "," + d.x + ")"; });
+
+    // adds the circle to the node
+    node.append("circle")
+    .attr("r", 10);
+
+    // adds the text to the node
+    node.append("text")
+    .attr("dy", ".35em")
+    .attr("x", function(d) { return d.children ? -20 : 20; })
+    .style("text-anchor", function(d) { 
+        return d.children ? "end" : "start"; })
+    .text(function(d) { return d.data.name; });
+        
+}
