@@ -311,6 +311,7 @@ function userdetailOnload(){
 
 }
 
+// visualize the path of OUs for a single user
 function getSingleBranchOfOU(user){
     var singleBranchOUs = [];
     var theUser = {"name": user.name.fullName, "parent": user.orgUnitPath};
@@ -343,7 +344,7 @@ function getSingleBranchOfOU(user){
                         flatdata.push(rootElement);
                         addOU2SingleBranch(user.orgUnitPath);
                         console.log(singleBranchOUs);
-                        visualizeUserGroups(singleBranchOUs, "single-user-OU-branch");
+                        visualizeUser(singleBranchOUs, "single-user-OU-branch");
                         getGroups(user.id, user.name.fullName);
                     })
                 .catch((error) => {
@@ -371,6 +372,7 @@ function getSingleBranchOfOU(user){
     }
 }
        
+// visualize the direct groups a user is in
 function getGroups(userid, username){
     fetch("https://www.googleapis.com/admin/directory/v1/groups?userKey=" + userid,{
     headers: {
@@ -391,20 +393,20 @@ function getGroups(userid, username){
         }
         
         console.log(userGroups);
-        visualizeUserGroups(userGroups, "user-groups");
+        visualizeUser(userGroups, "user-groups");
     })
     .catch((error) => {
         console.error(error);
     });
 }
 
-// ************** Generate the tree diagram	 *****************
-function visualizeUserGroups(userGroups, htmlid){
+// Generate the tree diagram for a single user, either the OrgUnit branch or all direct groups, passed by params
+function visualizeUser(userData, htmlid){
     // convert the flat data into a hierarchy 
     var treeData = d3.stratify()
     .id(function(d) { return d.name; })
     .parentId(function(d) { return d.parent; })
-    (userGroups);
+    (userData);
 
     // assign the name to each node
     treeData.each(function(d) {
