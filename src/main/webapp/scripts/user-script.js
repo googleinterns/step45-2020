@@ -127,9 +127,9 @@ function getAllUsers(){
                 var id = user['id'];
                 var orgUnitPath = user['orgUnitPath'];
                 var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
-                DFSTree(data, orgUnitPath, userJSON);
+                addUsertoOUByPath(data, orgUnitPath, userJSON);
             }
-            addValue(data);
+            incrementUserCount(data);
             visualize();
         })
         .catch((error) => {
@@ -138,7 +138,7 @@ function getAllUsers(){
 }
 
 // add user to the OU it's in by DFS 
-function DFSTree(node, path, user){
+function addUsertoOUByPath(node, path, user){
     if(node['path'] === path){
         node['users'].push(user);
         return;
@@ -148,20 +148,20 @@ function DFSTree(node, path, user){
         for(var i = 0; i < children.length; i++){
             ou = children[i];
             if(path.includes(ou['path'])){
-                DFSTree(ou, path, user);
+                addUsertoOUByPath(ou, path, user);
             }
         }
     }
 }
 
 // change value of each OU to the number of users in the OU
-function addValue(node){
+function incrementUserCount (node){
     var value = node['users'].length;
     node['value'] = value;
     var children = node['children'];
     if(children !== undefined){
         for(var i = 0; i < children.length; i++){
-            addValue(children[i]);
+            incrementUserCount(children[i]);
         }
     }
 }
