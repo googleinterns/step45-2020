@@ -40,6 +40,7 @@ function addOrgUnits2Data(ous){
                 .then((root) => {
                     var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
                     flatdata.push(rootElement);
+                    console.log(flatdata);
                     // convert flat data to nested json with hierachy
                     data = d3.stratify()
                                 .id(function(d) {return d.path})
@@ -294,9 +295,15 @@ function userdetailOnload(){
         userEmailElement.innerText = user.primaryEmail;
         var userOrgUnitElement = document.getElementById("user-orgUnit");
         userOrgUnitElement.innerText = user.orgUnitPath;
-        var userName2tElement = document.getElementById("username");
-        userName2tElement.innerText = user.name.fullName;
-        getGroups(user.id, user.name.fullName);
+        var userName2Element = document.getElementsByClassName("username");
+        console.log(userName2Element);
+        for (var i = 0; i < userName2Element.length; i++){
+            each = userName2Element[i];
+            console.log(each);
+            each.innerText = user.name.fullName;
+        }
+      
+        getSingleBranchOfOU(user);
     })
     .catch((error) => {
         console.error(error);
@@ -304,6 +311,66 @@ function userdetailOnload(){
 
 }
 
+function getSingleBranchOfOU(user){
+    var singleBranchOUs = [];
+    var theUser = {"name": user.name.fullName, "parent": user.orgUnitPath};
+    singleBranchOUs.push(theUser);
+    fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
+    headers: {
+        'authorization': `Bearer ` + token,
+    }
+    }).
+    then(response => response.json())
+    .then((ousjson) => {
+        var ous = ousjson['organizationUnits'];
+        for(var i = 0; i < ous.length; i++){
+            var eachOU = ous[i];
+            var childElement = {"name": eachOU["name"], "path": eachOU["orgUnitPath"], "parentPath": eachOU["parentOrgUnitPath"], "users": []};
+            flatdata.push(childElement);
+        }
+        // add root OrgUnit to data
+        for(var i = 0; i < ous.length; i++){
+            if(ous[i]['parentOrgUnitPath'] === "/"){
+                var rootID = ous[i]['parentOrgUnitId'];
+                fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
+                headers: {
+                    'authorization': `Bearer ` + token,
+                }
+                }).
+                then(response => response.json())
+                    .then((root) => {
+                        var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
+                        flatdata.push(rootElement);
+                        addOU2SingleBranch(user.orgUnitPath);
+                        console.log(singleBranchOUs);
+                        visualizeUserGroups(singleBranchOUs, "single-user-OU-branch");
+                        getGroups(user.id, user.name.fullName);
+                    })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+                break;
+            }
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+
+    function addOU2SingleBranch(path){
+        if(path === null){
+            return;
+        }
+        for(var i = 0; i < flatdata.length; i++){
+            if(flatdata[i].path === path){
+                var branchOU = {"name": path, "parent": flatdata[i].parentPath};
+                singleBranchOUs.push(branchOU);
+                addOU2SingleBranch(flatdata[i].parentPath);
+            }
+        }
+    }
+}
+       
 function getGroups(userid, username){
     fetch("https://www.googleapis.com/admin/directory/v1/groups?userKey=" + userid,{
     headers: {
@@ -323,9 +390,8 @@ function getGroups(userid, username){
             }
         }
         
-        var userGroupsElement = document.getElementById("user-groups");
         console.log(userGroups);
-        visualizeUserGroups(userGroups);
+        visualizeUserGroups(userGroups, "user-groups");
     })
     .catch((error) => {
         console.error(error);
@@ -333,7 +399,7 @@ function getGroups(userid, username){
 }
 
 // ************** Generate the tree diagram	 *****************
-function visualizeUserGroups(userGroups){
+function visualizeUserGroups(userGroups, htmlid){
     // convert the flat data into a hierarchy 
     var treeData = d3.stratify()
     .id(function(d) { return d.name; })
@@ -365,7 +431,8 @@ function visualizeUserGroups(userGroups){
     // append the svg object to the body of the page
     // appends a 'group' element to 'svg'
     // moves the 'group' element to the top left margin
-    var svg = d3.select("#user-groups").append("svg")
+    var str = "#" + htmlid;
+    var svg = d3.select(str).append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom),
         g = svg.append("g")
