@@ -1,8 +1,10 @@
 var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
 var token = params['access_token'];
+var flatdata = []
 var data = {}
 
-function postAllOUs(){
+// retrieve all OrgUnits from the API (the API returns all OrgUnits except the root OrgUnit)
+function fetchOUs(){
     fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
     headers: {
         'authorization': `Bearer ` + token,
@@ -11,60 +13,24 @@ function postAllOUs(){
     then(response => response.json())
     .then((ousjson) => {
         var ous = ousjson['organizationUnits'];
-        postRootOU(ous);
-        postChildOUs(ous);
-        var parentPaths = new Set();
-        for(var i = 0; i < ous.length; i++){
-            parentPaths.add(ous[i]['parentOrgUnitPath']);
-        }
-        console.log(parentPaths);
+        addOrgUnits2Data(ous);
     })
     .catch((error) => {
         console.error('Error:', error);
     });
 }
 
-function postChildOUs(ous){
-    var oulist = [];
+// Add all OrgUnits (including the root OrgUnit) to data
+function addOrgUnits2Data(ous){
     for(var i = 0; i < ous.length; i++){
-        console.log(i);
-        var ou = ous[i];
-        var len = ou["orgUnitPath"].split("/").length;
-        ou["depth"] = len;
-        oulist.push(ou);
+        var eachOU = ous[i];
+        var childElement = {"name": eachOU["name"], "path": eachOU["orgUnitPath"], "parentPath": eachOU["parentOrgUnitPath"], "users": []};
+        flatdata.push(childElement);
     }
-    for(var i = 0; i < oulist.length; i++){
-        postEachOU(oulist[i]);
-    }
-}
-
-function postEachOU(ou){
-    fetch("/user-storechildou", {
-            method: 'POST',
-                    body: JSON.stringify({
-                        name: ou["name"],
-                        path: ou["orgUnitPath"],
-                        parentPath: ou["parentOrgUnitPath"],
-                        depth: ou["depth"]
-                    }),
-                    headers: {
-                        'Content-type': 'application/json; charset-UTF-8'
-                    }
-        }).
-        then(response => response.json())
-        .then((res) => {
-            console.log(res);
-        })  
-        .catch((error) => {
-            console.error('post ou Error:', error);
-        });
-}
-
-function postRootOU(ous) {
+    // add root OrgUnit to data
     for(var i = 0; i < ous.length; i++){
         if(ous[i]['parentOrgUnitPath'] === "/"){
             var rootID = ous[i]['parentOrgUnitId'];
-            console.log(rootID);
             fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
             headers: {
                 'authorization': `Bearer ` + token,
@@ -72,47 +38,26 @@ function postRootOU(ous) {
             }).
             then(response => response.json())
                 .then((root) => {
-                    console.log(root);
-                    fetch("/user-storerootou", {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            name: root["name"],
-                            path: root["orgUnitPath"],
-                            parentPath: "root"
-                        }),
-                        headers: {
-                            'Content-type': 'application/json; charset-UTF-8'
-                        }
-                    }).
-                    then(response => response.json())
-                        .then((res) => {
-                            console.log(res);    
-                        })  
-                })
+                    var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
+                    flatdata.push(rootElement);
+                    // convert flat data to nested json with hierachy
+                    data = d3.stratify()
+                                .id(function(d) {return d.path})
+                                .parentId(function(d) {return d.parentPath})
+                                (flatdata)
+                    addUser2Data();
+            })
             .catch((error) => {
-                console.error('Root Error:', error);
-            });
-            break;
+                console.error(error);
+            })
         }
+        break;
     }
+    
 }
 
-async function getOUs(){
-    fetch("/get-ous").then(response => response.json())
-    .then((ous) => {
-        data = ous;
-        console.log(data);
-        // fetch users
-        getAllUsers();
-        //visualize();
-    })
-    .catch((error) => {
-        console.error(error);
-    })
-}
-
-function getAllUsers(){
-    console.log(token);
+// add users into the OUs they are in
+function addUser2Data(){
     fetch('https://www.googleapis.com/admin/directory/v1/users?domain=groot-test.1bot2.info', {
         headers: {
             'authorization': `Bearer ` + token,
@@ -130,6 +75,7 @@ function getAllUsers(){
                 addUsertoOUByPath(data, orgUnitPath, userJSON);
             }
             incrementUserCount(data);
+            console.log(data);
             visualize();
         })
         .catch((error) => {
@@ -139,15 +85,15 @@ function getAllUsers(){
 
 // add user to the OU it's in by DFS 
 function addUsertoOUByPath(node, path, user){
-    if(node['path'] === path){
-        node['users'].push(user);
+    if(node.data['path'] === path){
+        node.data['users'].push(user);
         return;
     }
     else{
         var children = node['children'];
         for(var i = 0; i < children.length; i++){
             ou = children[i];
-            if(path.includes(ou['path'])){
+            if(path.includes(ou.data['path'])){
                 addUsertoOUByPath(ou, path, user);
             }
         }
@@ -156,8 +102,8 @@ function addUsertoOUByPath(node, path, user){
 
 // change value of each OU to the number of users in the OU
 function incrementUserCount (node){
-    var value = node['users'].length;
-    node['value'] = value;
+    var value = node.data['users'].length;
+    node.data['value'] = value;
     var children = node['children'];
     if(children !== undefined){
         for(var i = 0; i < children.length; i++){
@@ -178,7 +124,7 @@ function visualize() {
     
     var treemap = data => d3.treemap()
         .tile(tile)
-        (d3.hierarchy(data)
+        (data
             .sum(d => d.value)
             .sort((a, b) => b.value - a.value));
 
@@ -459,5 +405,4 @@ function visualizeUserGroups(userGroups){
     .style("text-anchor", function(d) { 
         return d.children ? "end" : "start"; })
     .text(function(d) { return d.data.name; });
-        
 }
