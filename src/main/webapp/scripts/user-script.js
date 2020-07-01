@@ -97,18 +97,19 @@ function postRootOU(ous) {
     }
 }
 
-function getOUs(){
+async function getOUs(){
     fetch("/get-ous").then(response => response.json())
     .then((ous) => {
         data = ous;
         console.log(data);
-        visualize();
+        // fetch users
+        getAllUsers();
+        //visualize();
     })
     .catch((error) => {
         console.error(error);
     })
 }
-
 
 function getAllUsers(){
     console.log(token);
@@ -118,12 +119,51 @@ function getAllUsers(){
         }
         }).
         then(response => response.json())
-        .then((ous) => {
-            console.log(ous);
+        .then((userJSON) => {
+            let users = userJSON['users'];
+            for(var i = 0; i < users.length; i++){
+                let user = users[i];
+                var fullname = user['name']['fullName'];
+                var id = user['id'];
+                var orgUnitPath = user['orgUnitPath'];
+                var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
+                addUsertoOUByPath(data, orgUnitPath, userJSON);
+            }
+            incrementUserCount(data);
+            visualize();
         })
         .catch((error) => {
             console.error('Error:', error);
         });
+}
+
+// add user to the OU it's in by DFS 
+function addUsertoOUByPath(node, path, user){
+    if(node['path'] === path){
+        node['users'].push(user);
+        return;
+    }
+    else{
+        var children = node['children'];
+        for(var i = 0; i < children.length; i++){
+            ou = children[i];
+            if(path.includes(ou['path'])){
+                addUsertoOUByPath(ou, path, user);
+            }
+        }
+    }
+}
+
+// change value of each OU to the number of users in the OU
+function incrementUserCount (node){
+    var value = node['users'].length;
+    node['value'] = value;
+    var children = node['children'];
+    if(children !== undefined){
+        for(var i = 0; i < children.length; i++){
+            incrementUserCount(children[i]);
+        }
+    }
 }
 
 // Visualization
@@ -146,7 +186,7 @@ function visualize() {
     const y = d3.scaleLinear().rangeRound([0, height]);
 
     const svg = d3.create("svg")
-        .attr("viewBox", [0.5, -30.5, width, height + 30])
+        .attr("viewBox", [0.5, -100.5, width, height + 100])
         .style("font", "10px sans-serif");
 
     let group = svg.append("g")
@@ -179,7 +219,7 @@ function visualize() {
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === root ? "bold" : null)
             .selectAll("tspan")
-            .data(d => (d === root ? name(d) : d.data.name).split(/(?=[A-Z][^A-Z])/g).concat(format(d.value)))
+            .data(d => (d === root ? name(d) : d.data.name).split(/(?=[])/g))
             .join("tspan")
             .attr("x", 3)
             .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
@@ -187,15 +227,43 @@ function visualize() {
             .attr("font-weight", (d, i, nodes) => i === nodes.length - 1 ? "normal" : null)
             .text(d => d);
 
+    var nodeSelect = node.append("foreignObject")
+        .attr("width", function(d){return ( x(d.x1) - x(d.x0) - 15)})
+        .attr("height", (d => (d === root ? 60 : y(d.y1) - y(d.y0) - 50)))
+        .attr("x", 10)
+        .attr("y", 30)
+        .append("xhtml:body")
+        .append("div")
+        .append("ul")
+        .attr("style", (d => (d === root ? "max-height: 60px; overflow: auto" : "max-height: " + (y(d.y1) - y(d.y0) - 50)) + "; overflow: auto"))
+       
+    // add users with links to each node
+    nodeSelect.selectAll("li")
+    	.data(function(d){
+            var users = d.data.users;
+            var userlist = []
+            for(var i = 0; i < users.length; i++){
+                userlist.push(users[i].name);
+            }
+            console.log(userlist);
+            return userlist
+    	})
+    	.enter()
+        .append("a")
+        .attr("href", "www.google.com")
+        .append("a")
+    	.append("li")
+    	.text(function(d){ return d })
+
         group.call(position, root);
     }
 
     function position(group, root) {
         group.selectAll("g")
-            .attr("transform", d => d === root ? `translate(0,-30)` : `translate(${x(d.x0)},${y(d.y0)})`)
+            .attr("transform", d => d === root ? `translate(0,-100)` : `translate(${x(d.x0)},${y(d.y0)})`)
         .select("rect")
             .attr("width", d => d === root ? width : x(d.x1) - x(d.x0))
-            .attr("height", d => d === root ? 30 : y(d.y1) - y(d.y0));
+            .attr("height", d => d === root ? 100 : y(d.y1) - y(d.y0));
     }
 
     // When zooming in, draw the new nodes on top, and fade them in.

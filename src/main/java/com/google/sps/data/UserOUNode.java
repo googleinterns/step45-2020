@@ -59,7 +59,9 @@ public class UserOUNode {
     public static JSONObject toJSON(UserOUNode node, List<UserOUNode> NodeChildren){
         JSONObject json = new JSONObject();
         json.put("name", node.getCurrent().getName());
+        json.put("path", node.getCurrent().getPath());
         json.put("value", 5); // default num of users in the OU
+        json.put("users", new ArrayList<JSONObject>()); // default num of users in the OU
         if(NodeChildren.size() != 0){
             List children = new ArrayList<JSONObject>();
             for (UserOUNode each: NodeChildren){
