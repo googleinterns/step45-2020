@@ -9,10 +9,13 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+
         <link rel="stylesheet" href="../styles/style.css">
         <link rel="stylesheet" href="../styles/group-style.css">
         <script src="../scripts/script.js"></script>
         <script src="../scripts/group-script.js"></script>
+
     </head>
 
     <body onload="pagesLoginStatus(); getAllGroups();">
@@ -50,7 +53,7 @@
         </nav>
         <div class="container flex">
             <!-- Page sidebar -->
-            <div class="container sidenav-container">
+            <div class="sidenav-container">
                 <div class="sidenav card">
                     <div class="sidenav-section">
                         <div class="section-title">Domain</div>
@@ -76,9 +79,11 @@
                 </div>
             </div>
             <!-- Page sidebar end -->
-            <div class="container main-container">
-                <div class="main" id="groups">
+            <div class="main-container">
+                <div class="main">
                     <!-- Your main page content goes here -->
+                    <div id="groups"></div>
+                    <div id="chart"></div>
                 </div>
             </div>
         </div>
