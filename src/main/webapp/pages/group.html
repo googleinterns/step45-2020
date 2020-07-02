@@ -8,6 +8,7 @@
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/87ecaf717c.js" crossorigin="anonymous"></script>
 
         <script src="https://d3js.org/d3.v5.min.js"></script>
 
@@ -51,7 +52,7 @@
                 </ul>
             </div>
         </nav>
-        <div class="container flex">
+        <div class="container flex wrap">
             <!-- Page sidebar -->
             <div class="sidenav-container">
                 <div class="sidenav card">
@@ -63,23 +64,72 @@
                         <div class="section-title">Number of groups</div>
                         <p id="num-groups"></p>
                         <div class="section-title">Number of unique users</div>
-                        <p id="num-total-members"></p>
+                        <p id="num-users"></p>
                     </div>
                     <div class="sidenav-section">
                         <div class="section-title">Search</div>
-                        <div>
+                        <div class="flex">
                             <input type="search" class="form-control" id="search" placeholder="Search by group name...">
-                            <button class="btn btn-primary" id="search-enter-btn">Search</button>
+                            <button class="btn btn-primary" id="search-enter-btn">
+                                <i class="fa fa-search"></i>
+                            </button>
                         </div>
                         <div class="section-title">Filters</div>
-                        <p>+ Add a filter</p>
-                        <p>Email: </p>
-                        <p>Member:</p>
+                        <!-- <p>Email(s): </p>
+                        <button type="button" class="btn btn-outline-primary">
+                            Filter
+                            <i class="fa fa-times"></i>
+                        </button>
+                        <div class="flex wrap">
+                            <div class="form-group">
+                                <select class="form-control" id="group-email-sel" onchange="selectGroup()">
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="selectGroup()">+ Add</button>
+                        </div> -->
+
+                        <p>User(s): </p>
+                        <!-- <button type="button" class="btn btn-outline-primary">
+                            Filter
+                            <i class="fa fa-times"></i>
+                        </button> -->
+                        <div class="flex wrap">
+                            <div class="form-group">
+                                <select class="form-control" id="user-sel" onchange="selectUser()">
+                                </select>
+                            </div>
+                            <!-- <button type="button" class="btn btn-primary" onclick="selectUser()">+ Add</button> -->
+                        </div>
+
+                        <div class="section-title">Order By</div>
+                        <div class="form-group">
+                            <select class="form-control" id="order-by-sel" onchange="selectOrderBy()">
+                                <option selected="selected">Select category...</option>
+                                <option value="email">Email</option>
+                            </select>
+                        </div>
+
                         <div class="section-title">View</div>
-                        <p>Nodes per row: </p>
-                        <p>Users per group: </p>
+                        <p>Total groups: </p>
+                        <div class="form-group">
+                            <select class="form-control" id="view-total-groups-sel" onchange="viewGroups()">
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option selected="selected" value="200">200</option>
+                            </select>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                            <label class="form-check-label" for="defaultCheck1">
+                                Show only parent groups
+                            </label>
+                        </div>
+
                         <div class="section-title">Key</div>
-                        <p></p>
+                        <p>loren ipsum</p>
                     </div>
                 </div>
             </div>

@@ -8,8 +8,9 @@ var data = {
     children: [],
 };
 
-/* JSON list of groups */
+/* JSON lists */
 var groups;
+var users = [];
 
 /* Tooltip hover card */
 var tooltip;
@@ -20,9 +21,10 @@ var directMembers;
 
 /* Search and filters */
 var searchName;
-var searchEmail;
-var searchMemberKey;
-var viewTotal;
+// var searchGroupEmails = [];
+var searchMemberKeys = [];
+var orderBy;
+var viewTotal = 200;
 
 function onloadGroupsPage() {
     var searchButton = document.getElementById("search-enter-btn");
@@ -44,18 +46,36 @@ function getAllGroups() {
     // access token expires in 3600 sec after login; fix later
     console.log(token);
     var url = 'https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer'
-    if (searchName) {
-        url += "&query=" + encodeURIComponent("name:" + searchName + "*");
+    if (orderBy) {
+        url += '&orderBy=' + orderBy;
     }
     if (viewTotal) {
         url += '&maxResults=' + viewTotal
     }
-    fetch(url, {
-    headers: {
-        'authorization': `Bearer ` + token,
+    url += "&query=";
+    var hasPreviousQuery = false;
+    if (searchName) {
+        url += encodeURIComponent("name:" + searchName + "* email:" + searchName + "*");
+        hasPreviousQuery = true;
     }
-    }).
-    then(response => response.json())
+    // for (var i = 0; i < searchGroupEmails.length; i++) {
+    //     if (hasPreviousQuery) url += " ";
+    //     url += encodeURIComponent("email:" + searchGroupEmails[i]);
+    //     hasPreviousQuery = true;
+    // }
+    for (var i = 0; i < searchMemberKeys.length; i++) {
+        if (hasPreviousQuery) url += " ";
+        url += encodeURIComponent("memberKey:" + searchMemberKeys[i]);
+    }
+    if (url.split("&").pop() == "query=") {
+        url = url.substring(0, url.length - 7)
+    }
+    fetch(url, {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    })
+    .then(response => response.json())
     .then((res) => {
         console.log(res);
         if (res.groups) {
@@ -63,7 +83,6 @@ function getAllGroups() {
         } else {
             groups = [];
         }
-        loadSidebar();
         loadGroups();
     })
     .catch((error) => {
@@ -78,6 +97,51 @@ function loadSidebar() {
 
     const numGroups = document.getElementById("num-groups");
     numGroups.innerHTML = groups.length;
+
+    const numUsers = document.getElementById("num-users");
+    numUsers.innerHTML = users.length;
+    
+    // var groupOptions = [];
+    // groupOptions.push("<option selected='selected'>Select group email...</option>");
+    // for (var i = 0; i < groups.length; i++) {
+    //     groupOptions.push("<option value='" + groups[i].email + "'>" + groups[i].email + " </option>");
+    // }
+    // document.getElementById("group-email-sel").innerHTML = groupOptions.join();
+
+    var userOptions = [];
+    userOptions.push("<option selected='selected'>Select user...</option>");
+    for (var i = 0; i < users.length; i++) {
+        userOptions.push("<option value='" + users[i].email + "'>" + users[i].email + " </option>");
+    }
+    document.getElementById("user-sel").innerHTML = userOptions.join();
+}
+
+// function selectGroup() {
+//     var groupSel = document.getElementById("group-email-sel");
+//     // if (groupSel.value) searchGroupEmails.push(groupSel.value);
+//     // else searchGroupEmails = [];
+//     searchGroupEmails = [groupSel.value]
+//     getAllGroups();
+// }
+
+function selectUser() {
+    var userSel = document.getElementById("user-sel");
+    // if (userSel.value) searchMemberKeys.push(userSel.value);
+    // else searchMemberKeys = [];
+    searchMemberKeys = [userSel.value]
+    getAllGroups();
+}
+
+function selectOrderBy() {
+    var orderBySel = document.getElementById("order-by-sel");
+    orderBy = orderBySel.value;
+    getAllGroups();
+}
+
+function viewGroups() {
+    var viewSel = document.getElementById("view-total-groups-sel");
+    viewTotal = viewSel.value;
+    getAllGroups();
 }
 
 function visualize() {
@@ -218,10 +282,8 @@ async function loadGroups() {
         children: [],
     };
 
-    // var groupsContainer = document.getElementById("groups");
     // retrieve members from each group
     for (var i = 0; i < groups.length; i++) {
-        // groupsContainer.appendChild(createGroupElement(groups[i]));
         // create a new data point in the global data object for this group
         var newCircle = {
             name: groups[i].name,
@@ -232,9 +294,9 @@ async function loadGroups() {
         const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'
         + groups[i].id 
         + '/members', {
-        headers: {
-            'authorization': `Bearer ` + token,
-        }
+            headers: {
+                'authorization': `Bearer ` + token,
+            }
         })
         const json = await response.json();
         console.log(json)
@@ -248,13 +310,25 @@ async function loadGroups() {
                 if (type == "GROUP") {
                     // there is a nested group inside the current group
                     containsSubGroups = true;
-                    var group = groups[groups.findIndex(elem => elem.id == members[j].id)];
+                    var indexOfGroup = groups.findIndex(elem => elem.id == members[j].id)
+                    var group;
+                    if (indexOfGroup < 0) {
+                        // retrieve group from API
+                        group = await getGroup(members[j].id);
+                    } else {
+                        group = groups[indexOfGroup];
+                    }
                     newCircle.children.push({
                         name: group.name,
                         value: parseInt(group.directMembersCount),
                         id: group.id
                     })
                 } else if (type == "USER") {
+                    var indexOfUser = users.findIndex(elem => elem.id == members[j].id)
+                    if (indexOfUser < 0) {
+                        // if not in the set already, add it
+                        users.push(members[j])
+                    }
                     numUsers++;
                 }
             }
@@ -268,6 +342,23 @@ async function loadGroups() {
     }
     console.log(data)
     if (groups.length != 0) visualize();
+    loadSidebar();
+}
+
+/* Returns the corresponding group with the id */
+async function getGroup(id) {
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'
+    + id, {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    })
+    const json = await response.json();
+    console.log(json)
+
+    if (response.status == 200) {
+        return json;
+    }
 }
 
 /** Creates the components of the hovering <div> element for each group */
@@ -280,33 +371,4 @@ function makeDivElement(d) {
     description.text(group.description)
     email.text(group.email)
     directMembers.text(group.directMembersCount + " direct members")
-}
-
-/** Creates an <div> element for a group. */
-function createGroupElement(group) {
-    const divElement = document.createElement("div");
-    divElement.classList.add("group")
-    divElement.classList.add("card")
-
-    const nameElement = document.createElement("h5");
-    nameElement.classList.add("name")
-    nameElement.innerText = group.name;
-    divElement.appendChild(nameElement);
-
-    const descriptionElement = document.createElement("div");
-    descriptionElement.classList.add("description")
-    descriptionElement.innerText = group.description;
-    divElement.appendChild(descriptionElement);
-    
-    const emailElement = document.createElement("div");
-    emailElement.classList.add("email")
-    emailElement.innerText = group.email;
-    divElement.appendChild(emailElement);
-    
-    const directMembersElement = document.createElement("span");
-    directMembersElement.classList.add("direct-members")
-    directMembersElement.innerText = group.directMembersCount + " direct members";
-    divElement.appendChild(directMembersElement);
-
-    return divElement;
 }
