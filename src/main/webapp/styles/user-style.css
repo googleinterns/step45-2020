@@ -36,3 +36,11 @@ li{
 .side-item{
     margin: 5px;
 }
+
+#single-user-OU-branch {
+    background-color: white;
+}
+
+#user-groups {
+    background-color: white;
+}
