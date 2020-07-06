@@ -293,6 +293,7 @@ async function loadGroups() {
         name: domain,
         children: [],
     };
+    users = [];
 
     // retrieve members from each group
     for (var i = 0; i < groups.length; i++) {
