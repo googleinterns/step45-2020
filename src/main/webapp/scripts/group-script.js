@@ -22,7 +22,7 @@ var directMembers;
 /* Search and filters */
 var searchName;
 // var searchGroupEmails = [];
-var searchMemberKeys = [];
+var searchMemberKey;
 var orderBy;
 var viewTotal = 200;
 
@@ -63,10 +63,12 @@ function getAllGroups() {
     //     url += encodeURIComponent("email:" + searchGroupEmails[i]);
     //     hasPreviousQuery = true;
     // }
-    for (var i = 0; i < searchMemberKeys.length; i++) {
-        if (hasPreviousQuery) url += " ";
-        url += encodeURIComponent("memberKey:" + searchMemberKeys[i]);
+    // for (var i = 0; i < searchMemberKey.length; i++) {
+    if (searchMemberKey) {
+        if (hasPreviousQuery) url += encodeURIComponent("&");
+        url += encodeURIComponent("memberKey=" + searchMemberKey);
     }
+    // }
     if (url.split("&").pop() == "query=") {
         url = url.substring(0, url.length - 7)
     }
@@ -109,11 +111,19 @@ function loadSidebar() {
     // document.getElementById("group-email-sel").innerHTML = groupOptions.join();
 
     var userOptions = [];
-    userOptions.push("<option selected='selected'>Select user...</option>");
+    userOptions.push("<option value=null selected='selected'>Select user...</option>");
     for (var i = 0; i < users.length; i++) {
-        userOptions.push("<option value='" + users[i].email + "'>" + users[i].email + " </option>");
+        userOptions.push("<option value='" + users[i].email + "' id='" + users[i].email + "'>" + users[i].email + " </option>");
     }
     document.getElementById("user-sel").innerHTML = userOptions.join();
+
+    // select preexisting values
+    if (searchMemberKey) {
+        document.getElementById("user-sel").value = searchMemberKey;
+    }
+    if (orderBy) {
+        document.getElementById("order-by-sel").value = orderBy;
+    }
 }
 
 // function selectGroup() {
@@ -126,15 +136,17 @@ function loadSidebar() {
 
 function selectUser() {
     var userSel = document.getElementById("user-sel");
-    // if (userSel.value) searchMemberKeys.push(userSel.value);
-    // else searchMemberKeys = [];
-    searchMemberKeys = [userSel.value]
+    // if (userSel.value) searchMemberKey.push(userSel.value);
+    // else searchMemberKey = [];
+    if (userSel.value == "null") searchMemberKey = null;
+    else searchMemberKey = userSel.value
     getAllGroups();
 }
 
 function selectOrderBy() {
     var orderBySel = document.getElementById("order-by-sel");
-    orderBy = orderBySel.value;
+    if (orderBySel.value == "null") orderBy = null;
+    else orderBy = orderBySel.value;
     getAllGroups();
 }
 

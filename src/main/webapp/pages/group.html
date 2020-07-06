@@ -69,7 +69,7 @@
                     <div class="sidenav-section">
                         <div class="section-title">Search</div>
                         <div class="flex">
-                            <input type="search" class="form-control" id="search" placeholder="Search by group name...">
+                            <input type="search" class="form-control" id="search" placeholder="Search by group name or email...">
                             <button class="btn btn-primary" id="search-enter-btn">
                                 <i class="fa fa-search"></i>
                             </button>
@@ -93,18 +93,18 @@
                             Filter
                             <i class="fa fa-times"></i>
                         </button> -->
-                        <div class="flex wrap">
+                        <!-- <div class="flex wrap"> -->
                             <div class="form-group">
                                 <select class="form-control" id="user-sel" onchange="selectUser()">
                                 </select>
                             </div>
                             <!-- <button type="button" class="btn btn-primary" onclick="selectUser()">+ Add</button> -->
-                        </div>
+                        <!-- </div> -->
 
                         <div class="section-title">Order By</div>
                         <div class="form-group">
                             <select class="form-control" id="order-by-sel" onchange="selectOrderBy()">
-                                <option selected="selected">Select category...</option>
+                                <option value=null selected="selected">Select category...</option>
                                 <option value="email">Email</option>
                             </select>
                         </div>
