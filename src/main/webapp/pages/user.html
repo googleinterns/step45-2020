@@ -16,7 +16,7 @@
     <script src="../scripts/script.js"></script>
     <script src="../scripts/user-script.js"></script>
   </head>
-  <body onload="pagesLoginStatus(); fetchOUs()">
+  <body onload="pagesLoginStatus(); userOnload();">
     <nav class="navbar navbar-expand-lg" id="header-navbar">
         <a class="navbar-brand" href="/">gRoot</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,21 +57,15 @@
                     <div class="section-title">Domain</div>
                     <p id="domain-name">@</p>
                 </div>
-                <div class="sidenav-section blue">
-                    <div class="section-title">Number of OUs</div>
-                    <p id="num-OUs"></p>
-                    <div class="section-title">Number of users in each OU</div>
-                    <p id="num-users"></p>
-                </div>
                 <div class="sidenav-section">
                     <div class="section-title">Search</div>
-                    <input type="search" class="form-control" id="search" placeholder="Enter search...">
-                    <div class="section-title">Filters</div>
+                    <div>
+                        <input id="user-search-input" type="search" class="form-control side-item" placeholder="Search name, email ...">
+                        <button id="user-search-btn" class="btn btn-primary side-item"><span class="glyphicon glyphicon-search"></span> Search</button>
+                    </div>
+                    <p class="side-item"> Number of users from search: <span id="num-search-users"></span></p>
+                    <div class="section-title">Filter by Organization Units</div>
                     <p>+ Add a filter</p>
-                    <div class="section-title">View</div>
-                    <p>Nodes per row: </p>
-                    <p>Users per OU: </p>
-                    <div class="section-title">Key</div>
                     <p></p>
                 </div>
             </div>
@@ -80,10 +74,11 @@
         <div class="container main-container">
             <div class="main" id="users">
                 <!-- Your main page content goes here -->
-                
                 <div id="user-chart"></div>
             </div>
         </div>
     </div>
+    <script src="../scripts/script.js"></script>
+    <script src="../scripts/user-script.js"></script>
   </body>
 </html>

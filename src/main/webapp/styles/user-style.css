@@ -17,3 +17,22 @@
     text-weight: 500px,
     font-family: "Lucida Console", Courier, monospace;
 }
+
+.list-container{
+    background: rgba(0,0,0,0); 
+}
+
+ul{
+    list-style-type: none;
+    font-weight:300;
+    font-size: 1.50em;
+    margin: 5px;
+}
+
+li{
+    margin: 5px;
+}
+
+.side-item{
+    margin: 5px;
+}
