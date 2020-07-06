@@ -21,7 +21,6 @@ var directMembers;
 
 /* Search and filters */
 var searchName;
-// var searchGroupEmails = [];
 var searchMemberKey;
 var orderBy;
 var viewTotal = 200;
@@ -30,6 +29,8 @@ function onloadGroupsPage() {
     var searchButton = document.getElementById("search-enter-btn");
     searchButton.addEventListener("click", function(event) {
         searchName = searchBar.value;
+
+        checkSidebar();
         getAllGroups();
     })
 
@@ -55,20 +56,11 @@ function getAllGroups() {
     url += "&query=";
     var hasPreviousQuery = false;
     if (searchName) {
-        url += encodeURIComponent("name:" + searchName + "* email:" + searchName + "*");
-        hasPreviousQuery = true;
+        url += encodeURIComponent("name:" + searchName + "*");
     }
-    // for (var i = 0; i < searchGroupEmails.length; i++) {
-    //     if (hasPreviousQuery) url += " ";
-    //     url += encodeURIComponent("email:" + searchGroupEmails[i]);
-    //     hasPreviousQuery = true;
-    // }
-    // for (var i = 0; i < searchMemberKey.length; i++) {
     if (searchMemberKey) {
-        if (hasPreviousQuery) url += encodeURIComponent("&");
         url += encodeURIComponent("memberKey=" + searchMemberKey);
     }
-    // }
     if (url.split("&").pop() == "query=") {
         url = url.substring(0, url.length - 7)
     }
@@ -118,28 +110,46 @@ function loadSidebar() {
     document.getElementById("user-sel").innerHTML = userOptions.join();
 
     // select preexisting values
+    checkSidebar();
+}
+
+/* Check if the user has selected filter options or searched; cannot search for group name or email AND memberKey simultaneously */
+function checkSidebar(memberKey) {
+    if (searchName && !memberKey) {
+        document.getElementById("search").value = searchName;
+        document.getElementById("user-sel").value = null;
+        searchMemberKey = null;
+    }
     if (searchMemberKey) {
         document.getElementById("user-sel").value = searchMemberKey;
+        document.getElementById("search").value = "";
+        searchName = null;
     }
     if (orderBy) {
         document.getElementById("order-by-sel").value = orderBy;
     }
 }
 
-// function selectGroup() {
-//     var groupSel = document.getElementById("group-email-sel");
-//     // if (groupSel.value) searchGroupEmails.push(groupSel.value);
-//     // else searchGroupEmails = [];
-//     searchGroupEmails = [groupSel.value]
-//     getAllGroups();
-// }
+function clearSidebar() {
+    searchName = null;
+    searchMemberKey = null;
+    orderBy = null;
+    viewTotal = 200;
+
+    document.getElementById("search").value = "";
+    document.getElementById("user-sel").value = searchMemberKey;
+    document.getElementById("order-by-sel").value = orderBy;
+    document.getElementById("view-total-groups-sel").value = viewTotal;
+
+    getAllGroups();
+}
 
 function selectUser() {
     var userSel = document.getElementById("user-sel");
-    // if (userSel.value) searchMemberKey.push(userSel.value);
-    // else searchMemberKey = [];
     if (userSel.value == "null") searchMemberKey = null;
     else searchMemberKey = userSel.value
+
+    checkSidebar(true);
     getAllGroups();
 }
 
@@ -147,12 +157,16 @@ function selectOrderBy() {
     var orderBySel = document.getElementById("order-by-sel");
     if (orderBySel.value == "null") orderBy = null;
     else orderBy = orderBySel.value;
+
+    checkSidebar();
     getAllGroups();
 }
 
 function viewGroups() {
     var viewSel = document.getElementById("view-total-groups-sel");
     viewTotal = viewSel.value;
+
+    checkSidebar();
     getAllGroups();
 }
 
@@ -354,7 +368,8 @@ async function loadGroups() {
         }
     }
     console.log(data)
-    if (groups.length != 0) visualize();
+    if (groups.length == 0) data = {};
+    visualize();
     loadSidebar();
 }
 
