@@ -1,8 +1,14 @@
 var CLIENT_ID = '597140288373-39l6n11c305hjurg77f99ue04gnp4evh.apps.googleusercontent.com';
-const str = window.location.href;
-const REDIRECT_URI = str.substring(
-    0, str.lastIndexOf("/")
+var windowstr;
+var REDIRECT_URI;
+var domain;
+if(typeof windowstr === "undefined"){
+    windowstr = window.location.href;
+    REDIRECT_URI = windowstr.substring(
+        0, windowstr.lastIndexOf("/")
 );
+}
+
 var fragmentString = location.hash.substring(1);
 
 var isLoggedIn = false;
@@ -27,8 +33,10 @@ function loginStatus() {
     } else {
         // user is not logged 
         isLoggedIn = false;
-    }
+    }  
     updateIndexPage();
+    checkSessionExpired();
+    getDomain();
 }
 
 function pagesLoginStatus(){
@@ -36,6 +44,7 @@ function pagesLoginStatus(){
     if (params && params['access_token']) {
         // user is logged in
         isLoggedIn = true;
+        checkSessionExpired();
     } else {
         // user is not logged 
         isLoggedIn = false;
@@ -74,7 +83,7 @@ function oauth2SignIn() {
     // Parameters to pass to OAuth 2.0 endpoint.
     var params = {'client_id': CLIENT_ID,
                     'redirect_uri': REDIRECT_URI,
-                    'scope': 'https://www.googleapis.com/auth/admin.directory.orgunit https://www.googleapis.com/auth/admin.directory.group https://www.googleapis.com/auth/admin.directory.user', 
+                    'scope': 'https://www.googleapis.com/auth/admin.directory.orgunit https://www.googleapis.com/auth/admin.directory.group https://www.googleapis.com/auth/admin.directory.user https://www.googleapis.com/auth/admin.directory.customer.readonly', 
                     'state': 'pass-through value',
                     'include_granted_scopes': 'true',
                     'response_type': 'token'};
@@ -99,4 +108,50 @@ function logout() {
     isLoggedIn = false;
     window.location.href='/index.html';
     updateIndexPage();
+}
+
+// if the user's oauth session is expired, force logout and prompt to log in again
+function checkSessionExpired(){
+    if(isLoggedIn){
+        var params2 = JSON.parse(localStorage.getItem('oauth2-test-params'));
+        var token = params2['access_token'];
+        fetch('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=' + token).
+        then(response => response.json())
+            .then((token_info) => {
+                console.log(token_info);
+                if(token_info.error){
+                    console.log("token expires");
+                    logout();
+                }
+                else{
+                    console.log("token still valid");
+                }
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+    }
+}
+
+// store current domain of customer into local storage
+function getDomain(){
+    var domainParam = localStorage.getItem('domain');
+    if (!domainParam){
+        var params2 = JSON.parse(localStorage.getItem('oauth2-test-params'));
+        var token = params2['access_token'];
+        fetch('https://www.googleapis.com/admin/directory/v1/customers/my_customer', {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+        }).
+        then(response => response.json())
+        .then((customer) => {
+            console.log(customer);
+            localStorage.setItem('domain', customer.customerDomain);
+        })
+        .catch((error) => {
+            console.error(error);
+        })
+    }
+  
 }

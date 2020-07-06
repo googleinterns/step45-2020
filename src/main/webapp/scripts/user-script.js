@@ -1,7 +1,15 @@
 var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
 var token = params['access_token'];
+var domain = localStorage.getItem('domain');
 var flatdata = []
 var data = {}
+var input;
+
+function userOnload(){
+    pagesLoginStatus(); 
+    sidebar();
+    fetchOUs();
+}
 
 // retrieve all OrgUnits from the API (the API returns all OrgUnits except the root OrgUnit)
 function fetchOUs(){
@@ -13,7 +21,7 @@ function fetchOUs(){
     then(response => response.json())
     .then((ousjson) => {
         var ous = ousjson['organizationUnits'];
-        addOrgUnits2Data(ous);
+        addOrgUnitsToData(ous);
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -21,7 +29,7 @@ function fetchOUs(){
 }
 
 // Add all OrgUnits (including the root OrgUnit) to data
-function addOrgUnits2Data(ous){
+function addOrgUnitsToData(ous){
     for(var i = 0; i < ous.length; i++){
         var eachOU = ous[i];
         var childElement = {"name": eachOU["name"], "path": eachOU["orgUnitPath"], "parentPath": eachOU["parentOrgUnitPath"], "users": []};
@@ -40,13 +48,12 @@ function addOrgUnits2Data(ous){
                 .then((root) => {
                     var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
                     flatdata.push(rootElement);
-                    console.log(flatdata);
                     // convert flat data to nested json with hierachy
                     data = d3.stratify()
                                 .id(function(d) {return d.path})
                                 .parentId(function(d) {return d.parentPath})
                                 (flatdata)
-                    addUser2Data();
+                    addUserToData();
             })
             .catch((error) => {
                 console.error(error);
@@ -54,19 +61,27 @@ function addOrgUnits2Data(ous){
         }
         break;
     }
-    
 }
 
 // add users into the OUs they are in
-function addUser2Data(){
-    fetch('https://www.googleapis.com/admin/directory/v1/users?domain=groot-test.1bot2.info', {
+function addUserToData(){
+    // if there's input in the search bar, only add users from search result
+    if(input){
+        console.log("yes");
+        queryUser(input);
+    }
+    else{
+        var numElement = document.getElementById('num-search-users');
+        numElement.innerText = 0;
+        fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
         headers: {
             'authorization': `Bearer ` + token,
         }
         }).
         then(response => response.json())
         .then((userJSON) => {
-            let users = userJSON['users'];
+            var users = userJSON['users'];
+            console.log(users);
             for(var i = 0; i < users.length; i++){
                 let user = users[i];
                 var fullname = user['name']['fullName'];
@@ -82,6 +97,7 @@ function addUser2Data(){
         .catch((error) => {
             console.error('Error:', error);
         });
+    }
 }
 
 // add user to the OU it's in by DFS 
@@ -101,10 +117,11 @@ function addUsertoOUByPath(node, path, user){
     }
 }
 
-// change value of each OU to the number of users in the OU
+// change numUsers of each OU to the number of users in the OU, 
+// numUsers is 1 more than the actual number of users to prevent empty orgUnits display issue 
 function incrementUserCount (node){
-    var value = node.data['users'].length;
-    node.data['value'] = value;
+    var numUsers = node.data['users'].length + 1;
+    node.data['numUsers'] = numUsers;
     var children = node['children'];
     if(children !== undefined){
         for(var i = 0; i < children.length; i++){
@@ -126,8 +143,8 @@ function visualize() {
     var treemap = data => d3.treemap()
         .tile(tile)
         (data
-            .sum(d => d.value)
-            .sort((a, b) => b.value - a.value));
+            .sum(d => d.numUsers)
+            .sort((a, b) => b.numUsers - a.numUsers));
 
     const x = d3.scaleLinear().rangeRound([0, width]);
     const y = d3.scaleLinear().rangeRound([0, height]);
@@ -150,11 +167,11 @@ function visualize() {
             .on("click", d => d === root ? zoomout(root) : zoomin(d));
 
         node.append("title")
-            .text(d => `${name(d)}\n${format(d.value)}`);
+            .text(d => `${name(d)}\n${format(d.numUsers)}`);
 
         node.append("rect")
             .attr("id", function(d) { return d.data.id; })
-            .attr("fill", d => d === root ? "#fff" : d.children ? "#ccc" : "#ddd")
+            .attr("fill", d => d === root ? "#fff" : d.children ? "#99bbff" : "#ccddff") //#99bbff is darker blue, #ccddff is lighter blue
             .attr("stroke", "#fff");
 
         node.append("clipPath")
@@ -177,10 +194,11 @@ function visualize() {
         var nodeSelect = node.append("foreignObject")
             .attr("width", function(d){return ( x(d.x1) - x(d.x0) - 15)})
             .attr("height", (d => (d === root ? 60 : y(d.y1) - y(d.y0) - 50)))
-            .attr("x", 10)
-            .attr("y", 30)
-            .append("xhtml:body")
+            .attr("x", 0)
+            .attr("y", 20)
+            .append("xhtml:body-user")
             .append("div")
+            .attr("class", "list-container")
             .append("ul")
             .attr("style", (d => (d === root ? "max-height: 60px; overflow: auto" : "max-height: " + (y(d.y1) - y(d.y0) - 50)) + "; overflow: auto"))
         
@@ -192,7 +210,6 @@ function visualize() {
                 for(var i = 0; i < users.length; i++){
                     userlist.push(users[i].name);
                 }
-                console.log(userlist);
                 return userlist
             })
             .enter()
@@ -210,7 +227,6 @@ function visualize() {
                 for(var i = 0; i < users.length; i++){
                     userlist.push(users[i].id);
                 }
-                console.log(userlist);
                 return userlist
             })
             .attr("href", (d => "userdetails.html?user=" + d))
@@ -259,7 +275,6 @@ function visualize() {
         .call(t => group1.transition(t)
             .call(position, d.parent));
     }
-
     var chartElement = document.getElementById("user-chart");
     chartElement.appendChild(svg.node());
 
@@ -276,6 +291,65 @@ function tile(node, x0, y0, x1, y1) {
   }
 }
 
+
+/** Sidebar functionality: search and filter */
+
+// sidebar functionality, including getting domain name, searchbar
+// filter (todo)
+function sidebar(){
+    domainElement = document.getElementById("domain-name");
+    domainElement.innerText = domain;
+    searchField = document.getElementById("user-search-input");
+    searchButton = document.getElementById("user-search-btn");
+    searchButton.addEventListener("click", function(event) {
+        input = searchField.value;
+        chartElement = document.getElementById("user-chart");
+        chartElement.innerHTML = "";
+        flatdata = [];
+        data = {};
+        pagesLoginStatus();
+        fetchOUs();
+    })
+
+    searchField.addEventListener("search", function(event) {
+        searchButton.click();
+});
+}
+
+// query users match the query input, query can be any prefix of name and email
+function queryUser(query){
+    console.log(query);
+    var encodedParam =  encodeURI(query);
+    fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&query=' + encodedParam, {
+    headers: {
+        'authorization': `Bearer ` + token,
+    }
+    }).
+    then(response => response.json())
+    .then((json) => {
+        console.log(json);
+        var numElement = document.getElementById('num-search-users');
+        numElement.innerText = json.users.length;
+        var users = json.users;
+        for(var i = 0; i < users.length; i++){
+            let user = users[i];
+            var fullname = user['name']['fullName'];
+            var id = user['id'];
+            var orgUnitPath = user['orgUnitPath'];
+            var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
+            addUsertoOUByPath(data, orgUnitPath, userJSON);
+        }
+        incrementUserCount(data);
+        visualize();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+/** End of sidebar functionality */
+
+
+/** User details page */
 // user detail onload
 function userdetailOnload(){
     const queryString = window.location.search;
@@ -302,7 +376,6 @@ function userdetailOnload(){
             console.log(each);
             each.innerText = user.name.fullName;
         }
-      
         getSingleBranchOfOU(user);
     })
     .catch((error) => {
@@ -314,7 +387,7 @@ function userdetailOnload(){
 // visualize the path of OUs for a single user
 function getSingleBranchOfOU(user){
     var singleBranchOUs = [];
-    var theUser = {"name": user.name.fullName, "parent": user.orgUnitPath};
+    var theUser = {"name": user.name.fullName, "path": user.name.fullName, "parent": user.orgUnitPath};
     singleBranchOUs.push(theUser);
     fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
     headers: {
@@ -323,6 +396,7 @@ function getSingleBranchOfOU(user){
     }).
     then(response => response.json())
     .then((ousjson) => {
+        console.log(ousjson);
         var ous = ousjson['organizationUnits'];
         for(var i = 0; i < ous.length; i++){
             var eachOU = ous[i];
@@ -342,7 +416,7 @@ function getSingleBranchOfOU(user){
                     .then((root) => {
                         var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
                         flatdata.push(rootElement);
-                        addOU2SingleBranch(user.orgUnitPath);
+                        addOUToSingleBranch(user.orgUnitPath);
                         console.log(singleBranchOUs);
                         visualizeUser(singleBranchOUs, "single-user-OU-branch");
                         getGroups(user.id, user.name.fullName);
@@ -358,15 +432,15 @@ function getSingleBranchOfOU(user){
         console.error('Error:', error);
     });
 
-    function addOU2SingleBranch(path){
+    function addOUToSingleBranch(path){
         if(path === null){
             return;
         }
         for(var i = 0; i < flatdata.length; i++){
             if(flatdata[i].path === path){
-                var branchOU = {"name": path, "parent": flatdata[i].parentPath};
+                var branchOU = {"name": flatdata[i].name, "path": path, "parent": flatdata[i].parentPath};
                 singleBranchOUs.push(branchOU);
-                addOU2SingleBranch(flatdata[i].parentPath);
+                addOUToSingleBranch(flatdata[i].parentPath);
             }
         }
     }
@@ -391,7 +465,6 @@ function getGroups(userid, username){
                 userGroups.push(groupElement);
             }
         }
-        
         console.log(userGroups);
         visualizeUser(userGroups, "user-groups");
     })
@@ -402,16 +475,31 @@ function getGroups(userid, username){
 
 // Generate the tree diagram for a single user, either the OrgUnit branch or all direct groups, passed by params
 function visualizeUser(userData, htmlid){
-    // convert the flat data into a hierarchy 
-    var treeData = d3.stratify()
-    .id(function(d) { return d.name; })
-    .parentId(function(d) { return d.parent; })
-    (userData);
+    var treeData;
+    if(htmlid === "single-user-OU-branch"){
+        treeData = d3.stratify()
+            .id(function(d) { return d.path; })
+            .parentId(function(d) { return d.parent; })
+            (userData);
 
-    // assign the name to each node
-    treeData.each(function(d) {
-        d.name = d.id;
-    });
+        // assign the name to each node
+        treeData.each(function(d) {
+            console.log(d.data.name);
+            d.name = d.data.name; 
+        });
+    }
+    // convert the flat data into a hierarchy 
+    else{
+        treeData = d3.stratify()
+            .id(function(d) { return d.name; })
+            .parentId(function(d) { return d.parent; })
+            (userData);
+
+        // assign the name to each node
+        treeData.each(function(d) {
+            d.name = d.id;
+        });
+    }
 
     // set the dimensions and margins of the diagram
     var margin = {top: 20, right: 160, bottom: 30, left: 160},
@@ -433,8 +521,7 @@ function visualizeUser(userData, htmlid){
     // append the svg object to the body of the page
     // appends a 'group' element to 'svg'
     // moves the 'group' element to the top left margin
-    var str = "#" + htmlid;
-    var svg = d3.select(str).append("svg")
+    var svg = d3.select("#" + htmlid).append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom),
         g = svg.append("g")
@@ -475,3 +562,6 @@ function visualizeUser(userData, htmlid){
         return d.children ? "end" : "start"; })
     .text(function(d) { return d.data.name; });
 }
+/** End of user details page */
+
+
