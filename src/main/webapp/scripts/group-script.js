@@ -94,13 +94,6 @@ function loadSidebar() {
 
     const numUsers = document.getElementById("num-users");
     numUsers.innerHTML = users.length;
-    
-    // var groupOptions = [];
-    // groupOptions.push("<option selected='selected'>Select group email...</option>");
-    // for (var i = 0; i < groups.length; i++) {
-    //     groupOptions.push("<option value='" + groups[i].email + "'>" + groups[i].email + " </option>");
-    // }
-    // document.getElementById("group-email-sel").innerHTML = groupOptions.join();
 
     var userOptions = [];
     userOptions.push("<option value=null selected='selected'>Select user...</option>");
@@ -130,6 +123,7 @@ function checkSidebar(memberKey) {
     }
 }
 
+/* Clear all the searches and filter options in the sidebar */
 function clearSidebar() {
     searchName = null;
     searchMemberKey = null;
@@ -144,24 +138,33 @@ function clearSidebar() {
     getAllGroups();
 }
 
+/* Function called when the user selects an option for memberKey */
 function selectUser() {
     var userSel = document.getElementById("user-sel");
-    if (userSel.value == "null") searchMemberKey = null;
-    else searchMemberKey = userSel.value
+    if (userSel.value == "null") {
+        searchMemberKey = null;
+    } else {
+        searchMemberKey = userSel.value
+    }
 
     checkSidebar(true);
     getAllGroups();
 }
 
+/* Function called when the user selects an option for order by */
 function selectOrderBy() {
     var orderBySel = document.getElementById("order-by-sel");
-    if (orderBySel.value == "null") orderBy = null;
-    else orderBy = orderBySel.value;
+    if (orderBySel.value == "null") {
+        orderBy = null;
+    } else {
+        orderBy = orderBySel.value;
+    }
 
     checkSidebar();
     getAllGroups();
 }
 
+/* Function called when the user selects an option for view number of total groups */
 function viewGroups() {
     var viewSel = document.getElementById("view-total-groups-sel");
     viewTotal = viewSel.value;
@@ -170,6 +173,7 @@ function viewGroups() {
     getAllGroups();
 }
 
+/* d3 master function to display all groups using data */
 function visualize() {
     d3.selectAll("svg > *").remove();
 
@@ -295,7 +299,9 @@ function visualize() {
     }
 
     var chartElement = document.getElementById("chart");
-    if (chartElement.lastChild) chartElement.removeChild(chartElement.lastChild);
+    if (chartElement.lastChild) {
+        chartElement.removeChild(chartElement.lastChild);
+    }
     chartElement.appendChild(svg.node());
 
     return svg.node();
@@ -352,8 +358,8 @@ async function loadGroups() {
                     })
                 } else if (type == "USER") {
                     var indexOfUser = users.findIndex(elem => elem.id == members[j].id)
+                    // if user is not in the set already (when index is -1), add it
                     if (indexOfUser < 0) {
-                        // if not in the set already, add it
                         users.push(members[j])
                     }
                     numUsers++;
