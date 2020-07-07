@@ -26,7 +26,6 @@
     font-weight: 300;
 }
 
-#chart {
-    width: 932px;
-    height: 932px;
+#search, .form-group {
+    margin: 5px 10px 5px 0;
 }

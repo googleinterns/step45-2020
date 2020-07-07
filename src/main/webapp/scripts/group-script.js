@@ -2,32 +2,81 @@ var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
 var token = params['access_token'];
 var domain = "groot-test.1bot2.info"
 
+/* d3 input data */
 var data = {
     name: domain,
     children: [],
 };
 
+/* JSON lists */
 var groups;
+var users = [];
 
+/* Tooltip hover card */
 var tooltip;
 var groupName;
 var description;
 var email;
 var directMembers;
 
-function getAllGroups(){
+/* Search and filters */
+var searchName;
+var searchMemberKey;
+var orderBy;
+var viewTotal = 200;
+
+function onloadGroupsPage() {
+    var searchButton = document.getElementById("search-enter-btn");
+    searchButton.addEventListener("click", function(event) {
+        searchName = searchBar.value;
+
+        checkSidebar();
+        getAllGroups();
+    })
+
+    var searchBar = document.getElementById("search");
+    // Execute a function when the user presses enter or erases the input
+    searchBar.addEventListener("search", function(event) {
+        searchButton.click();
+    });
+
+    getAllGroups();
+}
+
+function getAllGroups() {
     // access token expires in 3600 sec after login; fix later
     console.log(token);
-    fetch('https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer', {
-    headers: {
-        'authorization': `Bearer ` + token,
+    var url = 'https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer'
+    if (orderBy) {
+        url += '&orderBy=' + orderBy;
     }
-    }).
-    then(response => response.json())
+    if (viewTotal) {
+        url += '&maxResults=' + viewTotal
+    }
+    url += "&query=";
+    var hasPreviousQuery = false;
+    if (searchName) {
+        url += encodeURIComponent("name:" + searchName + "*");
+    }
+    if (searchMemberKey) {
+        url += encodeURIComponent("memberKey=" + searchMemberKey);
+    }
+    if (url.split("&").pop() == "query=") {
+        url = url.substring(0, url.length - 7)
+    }
+    fetch(url, {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    })
+    .then(response => response.json())
     .then((res) => {
         console.log(res);
-        groups = res.groups;
-        loadSidebar();
+        if (res.groups) {
+            groups = res.groups;
+        } else {
+            groups = [];
+        }
         loadGroups();
     })
     .catch((error) => {
@@ -42,9 +91,92 @@ function loadSidebar() {
 
     const numGroups = document.getElementById("num-groups");
     numGroups.innerHTML = groups.length;
+
+    const numUsers = document.getElementById("num-users");
+    numUsers.innerHTML = users.length;
+
+    var userOptions = [];
+    userOptions.push("<option value=null selected='selected'>Select user...</option>");
+    for (var i = 0; i < users.length; i++) {
+        userOptions.push("<option value='" + users[i].email + "' id='" + users[i].email + "'>" + users[i].email + " </option>");
+    }
+    document.getElementById("user-sel").innerHTML = userOptions.join();
+
+    // select preexisting values
+    checkSidebar();
 }
 
+/* Check if the user has selected filter options or searched; cannot search for group name or email AND memberKey simultaneously */
+function checkSidebar(memberKey) {
+    if (searchName && !memberKey) {
+        document.getElementById("search").value = searchName;
+        document.getElementById("user-sel").value = null;
+        searchMemberKey = null;
+    }
+    if (searchMemberKey) {
+        document.getElementById("user-sel").value = searchMemberKey;
+        document.getElementById("search").value = "";
+        searchName = null;
+    }
+    if (orderBy) {
+        document.getElementById("order-by-sel").value = orderBy;
+    }
+}
+
+/* Clear all the searches and filter options in the sidebar */
+function clearSidebar() {
+    searchName = null;
+    searchMemberKey = null;
+    orderBy = null;
+    viewTotal = 200;
+
+    document.getElementById("search").value = "";
+    document.getElementById("user-sel").value = searchMemberKey;
+    document.getElementById("order-by-sel").value = orderBy;
+    document.getElementById("view-total-groups-sel").value = viewTotal;
+
+    getAllGroups();
+}
+
+/* Function called when the user selects an option for memberKey */
+function selectUser() {
+    var userSel = document.getElementById("user-sel");
+    if (userSel.value == "null") {
+        searchMemberKey = null;
+    } else {
+        searchMemberKey = userSel.value
+    }
+
+    checkSidebar(true);
+    getAllGroups();
+}
+
+/* Function called when the user selects an option for order by */
+function selectOrderBy() {
+    var orderBySel = document.getElementById("order-by-sel");
+    if (orderBySel.value == "null") {
+        orderBy = null;
+    } else {
+        orderBy = orderBySel.value;
+    }
+
+    checkSidebar();
+    getAllGroups();
+}
+
+/* Function called when the user selects an option for view number of total groups */
+function viewGroups() {
+    var viewSel = document.getElementById("view-total-groups-sel");
+    viewTotal = viewSel.value;
+
+    checkSidebar();
+    getAllGroups();
+}
+
+/* d3 master function to display all groups using data */
 function visualize() {
+    d3.selectAll("svg > *").remove();
+
     var color = d3.scaleLinear()
     .domain([0, 5])
     .range(["hsl(152,80%,80%)", "hsl(228,30%,40%)"])
@@ -166,18 +298,25 @@ function visualize() {
         };
     }
 
-    var chartElement = document.getElementById("chart")
-    chartElement.appendChild(svg.node())
+    var chartElement = document.getElementById("chart");
+    if (chartElement.lastChild) {
+        chartElement.removeChild(chartElement.lastChild);
+    }
+    chartElement.appendChild(svg.node());
 
     return svg.node();
 }
 
 /* Create each of the group <div> elements and display them */
 async function loadGroups() {
-    var groupsContainer = document.getElementById("groups");
+    data = {
+        name: domain,
+        children: [],
+    };
+    users = [];
+
     // retrieve members from each group
     for (var i = 0; i < groups.length; i++) {
-        // groupsContainer.appendChild(createGroupElement(groups[i]));
         // create a new data point in the global data object for this group
         var newCircle = {
             name: groups[i].name,
@@ -185,10 +324,12 @@ async function loadGroups() {
             id: groups[i].id
         }
 
-        const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' + groups[i].id + '/members', {
-        headers: {
-            'authorization': `Bearer ` + token,
-        }
+        const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'
+        + groups[i].id 
+        + '/members', {
+            headers: {
+                'authorization': `Bearer ` + token,
+            }
         })
         const json = await response.json();
         console.log(json)
@@ -202,13 +343,25 @@ async function loadGroups() {
                 if (type == "GROUP") {
                     // there is a nested group inside the current group
                     containsSubGroups = true;
-                    var group = groups[groups.findIndex(elem => elem.id == members[j].id)];
+                    var indexOfGroup = groups.findIndex(elem => elem.id == members[j].id)
+                    var group;
+                    if (indexOfGroup < 0) {
+                        // retrieve group from API
+                        group = await getGroup(members[j].id);
+                    } else {
+                        group = groups[indexOfGroup];
+                    }
                     newCircle.children.push({
                         name: group.name,
                         value: parseInt(group.directMembersCount),
                         id: group.id
                     })
                 } else if (type == "USER") {
+                    var indexOfUser = users.findIndex(elem => elem.id == members[j].id)
+                    // if user is not in the set already (when index is -1), add it
+                    if (indexOfUser < 0) {
+                        users.push(members[j])
+                    }
                     numUsers++;
                 }
             }
@@ -221,7 +374,25 @@ async function loadGroups() {
         }
     }
     console.log(data)
+    if (groups.length == 0) data = {};
     visualize();
+    loadSidebar();
+}
+
+/* Returns the corresponding group with the id */
+async function getGroup(id) {
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'
+    + id, {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    })
+    const json = await response.json();
+    console.log(json)
+
+    if (response.status == 200) {
+        return json;
+    }
 }
 
 /** Creates the components of the hovering <div> element for each group */
@@ -234,33 +405,4 @@ function makeDivElement(d) {
     description.text(group.description)
     email.text(group.email)
     directMembers.text(group.directMembersCount + " direct members")
-}
-
-/** Creates an <div> element for a group. */
-function createGroupElement(group) {
-    const divElement = document.createElement("div");
-    divElement.classList.add("group")
-    divElement.classList.add("card")
-
-    const nameElement = document.createElement("h5");
-    nameElement.classList.add("name")
-    nameElement.innerText = group.name;
-    divElement.appendChild(nameElement);
-
-    const descriptionElement = document.createElement("div");
-    descriptionElement.classList.add("description")
-    descriptionElement.innerText = group.description;
-    divElement.appendChild(descriptionElement);
-    
-    const emailElement = document.createElement("div");
-    emailElement.classList.add("email")
-    emailElement.innerText = group.email;
-    divElement.appendChild(emailElement);
-    
-    const directMembersElement = document.createElement("span");
-    directMembersElement.classList.add("direct-members")
-    directMembersElement.innerText = group.directMembersCount + " direct members";
-    divElement.appendChild(directMembersElement);
-
-    return divElement;
 }
