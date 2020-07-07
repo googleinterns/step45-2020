@@ -53,7 +53,7 @@
             </div>
         </nav>
 
-        <h2>Organizational Units</h2>
+        <div class="page-title card">Organizational Units</div>
 
         <div class="container flex">
             <!-- Page sidebar -->
@@ -89,56 +89,73 @@
                     <div id="chart-container">
                         <div id="tree-chart"></div>
                     </div>
-                    <!-- Ensure the HTML chart elements are loaded before script runs -->
-                    <script>
-                        var scale = 1,
-                            panning = false,
-                            xoff = 0,
-                            yoff = 0,
-                            start = {x: 0, y: 0},
-                            treeChart = document.getElementById("tree-chart");
+                </div>
+            </div>
+        </div>
+        <!-- Outside of flex container -->
 
-                        function setTransform() {
-                        treeChart.style.transform = "translate(" + xoff + "px, " + yoff + "px) scale(" + scale + ")";
-                        }
+        <div class="container">
+            <div class="console">
+                <div class="console-banner">
+                    <div class="console-title">Edit OUs</div>
+                </div>
+                <div class="console-content">
+                    <div class="subheader">Select an Action:</div>
+                    <div class="form-group">
+                        <label for="edit-choice">You can either create a new OU, update an existing OU, or delete an existing OU.</label>
 
-                        treeChart.onmousedown = function(e) {
-                        e.preventDefault();
-                        start = {x: e.clientX - xoff, y: e.clientY - yoff};    
-                        panning = true;
-                        }
+                        <select class="form-control" id="edit-choice">
+                            <option value="create">Create</option>
+                            <option value="update">Update</option>
+                            <option value="delete">Delete</option>
+                        </select>
+                    </div>
 
-                        treeChart.onmouseup = function(e) {
-                        panning = false;
-                        }
+                    <!-- Deletion -->
+                    <form style="display: none;" id="edit-delete" onSubmit="deleteOU();return false">
+                        <div class="subheader">Delete</div>
+                        <label for="fname">Pass in the path below:</label>
 
-                        treeChart.onmousemove = function(e) {
-                        e.preventDefault();         
-                        if (!panning) {
-                            return;
-                        }
-                        xoff = (e.clientX - start.x);
-                        yoff = (e.clientY - start.y);
-                        setTransform();
-                        }
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">/</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="corp/eng/devops" id="delete-path">
+                        </div>
 
-                        treeChart.onwheel = function(e) {
-                            e.preventDefault();
-                            // take the scale into account with the offset
-                            var xs = (e.clientX - xoff) / scale,
-                                ys = (e.clientY - yoff) / scale,
-                                delta = (e.wheelDelta ? e.wheelDelta : -e.deltaY);
+                        <input type="submit" />
+                    </form>
 
-                            // get scroll direction & set zoom level
-                            (delta > 0) ? (scale *= 1.2) : (scale /= 1.2);
+                    <!-- Create -->
+                    <form style="display: block;" id="edit-create" onSubmit="createOU();return false">
+                        <div class="subheader">Create</div>
+                        <label for="fname">Pass in the path below:</label>
 
-                            // reverse the offset amount with the new scale
-                            xoff = e.clientX - xs * scale;
-                            yoff = e.clientY - ys * scale;
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">/</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="corp/eng/devops" id="create-path">
+                        </div>
 
-                            setTransform();          
-                        }
-                    </script>
+                        <input type="submit" />
+                    </form>
+
+                    <!-- Update -->
+                    <form style="display: none;" id="edit-update" onSubmit="updateOU();return false">
+                        <div class="subheader">Update</div>
+                        <label for="fname">Pass in the path below:</label>
+
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">/</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="corp/eng/devops" id="update-path">
+                        </div>
+
+                        <input type="submit" />
+                    </form>
+
                 </div>
             </div>
         </div>

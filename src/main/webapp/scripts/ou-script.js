@@ -12,14 +12,15 @@ function getAllOUs() {
     headers: {
         'authorization': `Bearer ` + token,
     }
-    }).
-    then(response => response.json())
+    })
+    .then(response => response.json())
     .then(directoryOUs => directoryOUs['organizationUnits'])
     .then((orgUnits) => {
         loadSidebar(orgUnits);
         orgUnits.sort(ouDepthSort); // sort by OU depth
         var orgUnitsTree = constructD3JSON(orgUnits); // transform into parent-child JSON
         visualize(orgUnitsTree); // visualize with D3
+        addListeners();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -283,4 +284,110 @@ function visualize(orgUnitsTree) {
             update(d);
         }
     }
+}
+
+/*
+ * Adds interactivity (zoom, drag) to the D3 visualization; adds onChange functions to form.
+*/
+function addListeners() {
+    var scale = 1,
+    panning = false,
+    xoff = 0,
+    yoff = 0,
+    start = {x: 0, y: 0},
+    treeChart = document.getElementById("tree-chart");
+    editSelect = document.getElementById("edit-choice");
+
+    function setTransform() {
+        treeChart.style.transform = "translate(" + xoff + "px, " + yoff + "px) scale(" + scale + ")";
+    }
+
+    treeChart.onmousedown = function(e) {
+        e.preventDefault();
+        start = {x: e.clientX - xoff, y: e.clientY - yoff};    
+        panning = true;
+    }
+
+    treeChart.onmouseup = function(e) {
+        panning = false;
+    }
+
+    treeChart.onmousemove = function(e) {
+        e.preventDefault();         
+        if (!panning) {
+            return;
+        }
+        xoff = (e.clientX - start.x);
+        yoff = (e.clientY - start.y);
+        setTransform();
+    }
+
+    treeChart.onwheel = function(e) {
+        e.preventDefault();
+        // take the scale into account with the offset
+        var xs = (e.clientX - xoff) / scale,
+            ys = (e.clientY - yoff) / scale,
+            delta = (e.wheelDelta ? e.wheelDelta : -e.deltaY);
+
+        // get scroll direction & set zoom level
+        (delta > 0) ? (scale *= 1.2) : (scale /= 1.2);
+
+        // reverse the offset amount with the new scale
+        xoff = e.clientX - xs * scale;
+        yoff = e.clientY - ys * scale;
+
+        setTransform();          
+    }
+
+    editSelect.onchange = function(event) {
+        createDiv = document.getElementById("edit-create");
+        updateDiv = document.getElementById("edit-update");
+        deleteDiv = document.getElementById("edit-delete");
+
+        if (editSelect.value == "create") {
+            deleteDiv.style.display = "none";
+            updateDiv.style.display = "none";
+            createDiv.style.display = "block";
+        } else if (editSelect.value == "update") {
+            deleteDiv.style.display = "none";
+            createDiv.style.display = "none";
+            updateDiv.style.display = "block";
+        } else {
+            updateDiv.style.display = "none";
+            createDiv.style.display = "none";
+            deleteDiv.style.display = "block";
+        }
+    }
+}
+
+/*
+ * Deletes OU based on path.
+*/
+function deleteOU() {
+    const ouPath = document.getElementById('delete-path').value;
+    
+    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath), {
+    headers: {
+        'authorization': `Bearer ` + token,
+    },
+    method: 'delete'
+    })
+    .then(response => {
+        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
+        location.reload();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
+
+
+
+function createOU() {
+    return;
+}
+
+function updateOU(){
+    return;
 }
