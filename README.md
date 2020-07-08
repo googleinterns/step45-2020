@@ -30,3 +30,14 @@ To get started run:
   * If your google corp account is logged in automatically, open up the web console, then type “localStorage.clear();”
 * `404 error`
   * Remember to follow step #4 in the instructions above
+
+### Running tests
+You can execute tests by running `mvn test` which will execute the javascript tests located under test/javascript
+Mavin will download most of the requirments including the Chrome Webdriver, but Chrome will need to be installed. By default it uses the latest beta version.
+
+For Cloud Shell, run the following commands at the start of your session to install Chrome beta
+1. wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb
+2. sudo apt install ./google-chrome-beta_current_amd64.deb
+
+Alternatively, you can create a .customize_environment file based on the sample file provided under samples/ 
+Cloud Shell will execute this script every time Cloud Shell starts.
