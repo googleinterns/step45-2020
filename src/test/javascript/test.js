@@ -1,9 +1,14 @@
-describe("A suite is just a function", function() {
-  var a;
+describe("Test OUDepthSort", function() {
+    
+  var shortPath = "/onedepth";
+  var longPath = "/three/depth/path";
 
-  it("and so is a spec", function() {
-    a = true;
 
-    expect(a).toBe(true);
+  it("difference of path depths", function() {
+    var depthDifference = 0;
+    $.getScript('/src/main/webapp/scripts/ou-script.js', function() {
+        var depthDifference = ouDepthSort(longPath, shortPath)
+        expect(depthDifference).toBe(2); 
+     });
   });
 });
