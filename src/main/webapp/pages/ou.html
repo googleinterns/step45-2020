@@ -158,13 +158,38 @@
                     <form style="display: none;" id="edit-update" onSubmit="updateOU();return false">
                         <div class="subheader">Update</div>
 
-                        <label for="update-path">Pass in the path below:</label>
+                        <label for="update-path">Pass in the path of the OU you wish to update:</label>
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">/</span>
                             </div>
-                            <input type="text" class="form-control" placeholder="corp/eng/devops" id="update-path">
+                            <input type="text" class="form-control" placeholder="corp/business" id="update-path">
                         </div>
+
+                        <div class="subheader">Edit Fields</div>
+                        <p>Note that you only need to fill out the fields you wish to update.</p>
+
+                        <label for="update-parent-path">Pass in the path of the new parent OU:</label>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">/</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="corp/business" id="update-parent-path">
+                        </div>
+
+                        <label for="update-name">Org Unit Name:</label>
+                        <input type="text" class="form-control" id="update-name" placeholder="sales">
+                        <br>
+
+                        <label for="update-descript">Description:</label>
+                        <input type="text" class="form-control" id="update-descript" placeholder="Selling our product!">
+                        <br>
+
+                        <label for="update-inherit">If you would like to block this OU's inheritance, please type '<em>block</em>' into the field below.
+                            If you would like to unblock this OU's inheritance, please type '<em>unblock</em>' into the field below.
+                            Any other entry for this field will result in no update to your current blockInheritance setting.</label>
+                        <input type="text" class="form-control" id="update-inherit">
+                        <br>
 
                         <input type="submit" value="Update" />
                     </form>
