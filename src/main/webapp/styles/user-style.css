@@ -1,46 +1,67 @@
-
 .node circle {
     fill: #fff;
     stroke: steelblue;
     stroke-width: 3px;
 }
-
+ 
 .node text { font: 12px sans-serif; }
-
+ 
 .link {
     fill: none;
     stroke: #ccc;
     stroke-width: 2px;
 }
-
+ 
 .user-title{
     text-weight: 500px,
     font-family: "Lucida Console", Courier, monospace;
 }
-
+ 
 .list-container{
     background: rgba(0,0,0,0); 
 }
-
+ 
 ul{
     list-style-type: none;
     font-weight:300;
     font-size: 1.50em;
     margin: 5px;
 }
-
+ 
 li{
     margin: 5px;
 }
-
+ 
 .side-item{
     margin: 5px;
 }
-
+ 
 #single-user-OU-branch {
     background-color: white;
 }
-
+ 
 #user-groups {
     background-color: white;
+}
+ 
+#user-search-input, .form-group {
+    margin: 5px 10px 5px 0;
+}
+
+.sidenav .sidenav-section .section-subtitle{
+    font-size: 1.05rem;
+    color: 	#505050;
+    margin-top: 3px;
+    font-weight: 400;
+}
+
+#clear {
+    border: none;
+    background: none;
+    color: blue;
+    font-size: 1.00rem;
+}
+
+#clear:hover {
+    text-decoration: underline;
 }
