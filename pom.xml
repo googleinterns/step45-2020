@@ -101,7 +101,7 @@
                <jsSrcDir>${project.basedir}/src/main/resources/public/js</jsSrcDir>
                <jsTestSrcDir>src/test/javascript</jsTestSrcDir>
                <preloadSources>
-                   <sorurce>${project.basedir}/src/third_party/sinon-2.4.1.js</sorurce>
+                   <sorurce>${project.basedir}/src/main/third_party/sinon-2.4.1.js</sorurce>
                </preloadSources>
            </configuration>
        </plugin>
