@@ -361,7 +361,7 @@ function addListeners() {
 }
 
 /*
- * Deletes OU based on path.
+ * Deletes an existing OU given its path.
 */
 function deleteOU() {
     const ouPath = document.getElementById('delete-path').value;
@@ -381,11 +381,50 @@ function deleteOU() {
     });
 }
 
-
-
-
+/*
+ * Adds a new OU given a name, the parent's path, and (optionally) description / inheritance setting.
+*/
 function createOU() {
-    return;
+    var parentPath = '/' + document.getElementById('create-path').value;
+    var name = document.getElementById('create-name').value;
+    var descript =  document.getElementById('create-descript').value;
+    var blockInherit = document.getElementById('create-inherit').value;
+
+    if (blockInherit == 'block') {
+        blockInherit = true;
+    } else {
+        blockInherit = false;
+    }
+
+    console.log(parentPath);
+    console.log(name);
+    console.log(descript);
+    console.log(blockInherit);
+
+    var newOU = {
+            "name": name,
+            "description": descript,
+            "parentOrgUnitPath": parentPath,
+            "blockInheritance": blockInherit
+        };
+
+    console.log(newOU);
+
+    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits'), {
+    headers: {
+        'authorization': `Bearer ` + token,
+    },
+    method: 'POST',
+    body: JSON.stringify(newOU)
+    })
+    .then(response => {
+        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
+        //location.reload();
+        console.log('hi there');
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }
 
 function updateOU(){

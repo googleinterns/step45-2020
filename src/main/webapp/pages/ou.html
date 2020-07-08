@@ -114,8 +114,8 @@
                     <!-- Deletion -->
                     <form style="display: none;" id="edit-delete" onSubmit="deleteOU();return false">
                         <div class="subheader">Delete</div>
-                        <label for="fname">Pass in the path below:</label>
 
+                        <label for="delete-path">Pass in the path below:</label>
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">/</span>
@@ -123,29 +123,42 @@
                             <input type="text" class="form-control" placeholder="corp/eng/devops" id="delete-path">
                         </div>
 
-                        <input type="submit" />
+                        <input type="submit" value="Delete" />
                     </form>
 
                     <!-- Create -->
                     <form style="display: block;" id="edit-create" onSubmit="createOU();return false">
                         <div class="subheader">Create</div>
-                        <label for="fname">Pass in the path below:</label>
 
+                        <label for="create-path">Pass in the path of the desired parent OU:</label>
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">/</span>
                             </div>
-                            <input type="text" class="form-control" placeholder="corp/eng/devops" id="create-path">
+                            <input type="text" class="form-control" placeholder="corp/business" id="create-path">
                         </div>
 
-                        <input type="submit" />
+                        <label for="create-name">Org Unit Name:</label>
+                        <input type="text" class="form-control" id="create-name" placeholder="sales">
+                        <br>
+
+                        <label for="create-descript">Description (optional):</label>
+                        <input type="text" class="form-control" id="create-descript" placeholder="Selling our product!">
+                        <br>
+
+                        <label for="create-inherit">By default, the policies and permissions of the parent OU are inherited by the child. 
+                            If you would like to block inheritance, please type '<em>block</em>' into the field below.</label>
+                        <input type="text" class="form-control" id="create-inherit">
+                        <br>
+
+                        <input type="submit" value="Create" />
                     </form>
 
                     <!-- Update -->
                     <form style="display: none;" id="edit-update" onSubmit="updateOU();return false">
                         <div class="subheader">Update</div>
-                        <label for="fname">Pass in the path below:</label>
 
+                        <label for="update-path">Pass in the path below:</label>
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">/</span>
@@ -153,7 +166,7 @@
                             <input type="text" class="form-control" placeholder="corp/eng/devops" id="update-path">
                         </div>
 
-                        <input type="submit" />
+                        <input type="submit" value="Update" />
                     </form>
 
                 </div>
