@@ -1,16 +1,14 @@
 var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
 var token = params['access_token'];
-var domain = "groot-test.1bot2.info"
+var domain = localStorage.getItem('domain');
 
 /* d3 input data */
-var data = {
-    name: domain,
-    children: [],
-};
+var data;
 
-/* JSON lists */
+/* JSON lists and maps */
 var groups;
-var users = [];
+var users;
+var visited;
 
 /* Tooltip hover card */
 var tooltip;
@@ -24,6 +22,7 @@ var searchName;
 var searchMemberKey;
 var orderBy;
 var viewTotal = 200;
+var showOnlyParentGroups = false;
 
 function onloadGroupsPage() {
     var searchButton = document.getElementById("search-enter-btn");
@@ -173,6 +172,14 @@ function viewGroups() {
     getAllGroups();
 }
 
+/* Function called when the user toggles whether to show parent groups only */
+function checkParentGroups(input) {
+    showOnlyParentGroups = input.checked;
+
+    checkSidebar();
+    getAllGroups();
+}
+
 /* d3 master function to display all groups using data */
 function visualize() {
     d3.selectAll("svg > *").remove();
@@ -235,7 +242,7 @@ function visualize() {
         .data(root.descendants().splice(1))
         .join("circle")
         .attr("fill", d => d.children ? color(d.depth) : "white")
-        // .attr("pointer-events", d => !d.children ? "none" : null)
+        .attr("pointer-events", d => !d.children ? "none" : null)
         .on("mouseover", function(d) { 
             d3.select(this).attr("stroke", "#000");
             makeDivElement(d)
@@ -307,76 +314,110 @@ function visualize() {
     return svg.node();
 }
 
-/* Create each of the group <div> elements and display them */
+/* Load all of the groups into data for d3 */
 async function loadGroups() {
-    data = {
-        name: domain,
-        children: [],
-    };
+    // reset data and unique users
+    // if empty groups, data should also be empty
     users = [];
-
-    // retrieve members from each group
-    for (var i = 0; i < groups.length; i++) {
-        // create a new data point in the global data object for this group
-        var newCircle = {
-            name: groups[i].name,
+    if (groups.length == 0) {
+        data = {};
+    } else {
+        data = {
+            name: domain,
             children: [],
-            id: groups[i].id
-        }
-
-        const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'
-        + groups[i].id 
-        + '/members', {
-            headers: {
-                'authorization': `Bearer ` + token,
-            }
-        })
-        const json = await response.json();
-        console.log(json)
-
-        if (response.status == 200) {
-            var members = json.members;
-            var containsSubGroups = false;
-            var numUsers = 0;
-            for (var j = 0; j < members.length; j++) {
-                var type = members[j].type;
-                if (type == "GROUP") {
-                    // there is a nested group inside the current group
-                    containsSubGroups = true;
-                    var indexOfGroup = groups.findIndex(elem => elem.id == members[j].id)
-                    var group;
-                    if (indexOfGroup < 0) {
-                        // retrieve group from API
-                        group = await getGroup(members[j].id);
-                    } else {
-                        group = groups[indexOfGroup];
-                    }
-                    newCircle.children.push({
-                        name: group.name,
-                        value: parseInt(group.directMembersCount),
-                        id: group.id
-                    })
-                } else if (type == "USER") {
-                    var indexOfUser = users.findIndex(elem => elem.id == members[j].id)
-                    // if user is not in the set already (when index is -1), add it
-                    if (indexOfUser < 0) {
-                        users.push(members[j])
-                    }
-                    numUsers++;
+        };
+        // create the visited hash set for groups already processed, containing group IDs
+        visited = {};
+        
+        for (var i = 0; i < groups.length; i++) {
+            // if already visited, then add the circle data
+            if (visited.hasOwnProperty(groups[i].id)) {
+                if (!showOnlyParentGroups) {
+                    var visitedGroup = visited[groups[i].id];
+                    data.children.push(visitedGroup)
                 }
+            } else {
+                // recursive DFS on the new group to get the new data
+                var newData = await loadGroupsDFS(groups[i]);
+                data.children.push(newData);
             }
-            if (!containsSubGroups) {
-                newCircle.value = parseInt(groups[i].directMembersCount);
-                delete newCircle.children
-            }
-            newCircle.value = parseInt(numUsers);
-            data.children.push(newCircle);
         }
     }
-    console.log(data)
-    if (groups.length == 0) data = {};
+    
     visualize();
     loadSidebar();
+}
+
+async function loadGroupsDFS(currGroup) {
+    if (currGroup.type == "USER") {
+        users.push(currGroup);
+        return {
+            name: currGroup.email,
+            value: 1,
+            id: currGroup.id
+        }
+    }
+    // create a new circle for this current group with an initial empty children list
+    var newCircle = {
+        name: currGroup.name,
+        children: [],
+        id: currGroup.id
+    }
+    // iterate through all the direct members of this current group
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'+ currGroup.id + '/members', {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    })
+    const json = await response.json();
+
+    if (response.status == 200) {
+        var members = json.members;
+        for (var j = 0; j < members.length; j++) {
+            // if already visited, then add the circle into newCircle children list
+            if (visited.hasOwnProperty(members[j].id)) {
+                // find where the group is located in data
+                var visitedGroup = visited[members[j].id];
+                newCircle.children.push(visitedGroup);
+                // if only show parent groups, then delete this group from data
+                if (showOnlyParentGroups) {
+                    var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
+                    if (indexOfGroupData >= 0) {
+                        data.children.splice(indexOfGroupData, 1);
+                    }
+                }
+            }
+            // otherwise, recurse on the member and push to newCircle children list
+            else {
+                var member = members[j];
+                // if group, get the group with the name
+                if (members[j].type == "GROUP") {
+                    member = await getGroup(member.id);
+                }
+                var newData = await loadGroupsDFS(member);
+                newCircle.children.push(newData);
+            }
+        }
+    }
+    // mark this current group as visited
+    visited[currGroup.id] = newCircle;
+    return newCircle;
+}
+
+/* Returns a new circle object based on group */
+async function getGroupCircle(id) {
+    var indexOfGroup = groups.findIndex(elem => elem.id == id)
+    var group;
+    if (indexOfGroup < 0) {
+        group = await getGroup(id); // retrieve group from API
+    } else {
+        group = groups[indexOfGroup];
+    }
+    return {
+        name: group.name,
+        value: parseInt(group.directMembersCount),
+        id: group.id
+    }
 }
 
 /* Returns the corresponding group with the id */
