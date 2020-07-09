@@ -95,7 +95,7 @@ async function addUserToData(){
             addUserToOUByPath(data, orgUnitPath, userJSON);
         }
         incrementUserCount(data);
-        visualize();
+        visualize(null);
     }
     // if there's filter, get users from filters
     else if(groupInput.length > 0 || orgUnitInput.length > 0){
@@ -145,7 +145,7 @@ async function addUserToData(){
             addUserToOUByPath(data, json.orgUnitPath, userJSON);
         }
         incrementUserCount(data);
-        visualize();
+        visualize(null);
     }
     // if there's no search and no filter
     else{
@@ -170,7 +170,7 @@ async function addUserToData(){
                 addUserToOUByPath(data, orgUnitPath, userJSON);
             }
             incrementUserCount(data);
-            visualize();
+            visualize(null);
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -212,7 +212,7 @@ function incrementUserCount (node){
 }
 
 // Visualization
-function visualize() {
+function visualize(order) {
     console.log(data);
     function name(d) {
         return d.ancestors().reverse().map(d => d.data.name).join("/");
@@ -287,10 +287,27 @@ function visualize() {
         nodeSelect.selectAll("li")
             .data(function(d){
                 var users = d.data.users;
+                if(order === "firstname"){
+                    users.sort(function(a, b) {
+                        return a.name.toLowerCase() == b.name.toLowerCase()
+                            ? 0
+                            : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+                    });
+                }
+                else if(order === "lastname"){
+                    users.sort(function(a, b) {
+                        var lastname1 = a.name.toLowerCase().split(" ")[1];
+                        var lastname2 = b.name.toLowerCase().split(" ")[1];
+                        return lastname1 == lastname2
+                            ? 0
+                            : (lastname1 > lastname2 ? 1 : -1);
+                    });
+                }
                 var userlist = []
                 for(var i = 0; i < users.length; i++){
                     userlist.push(users[i].name);
                 }
+                console.log(userlist);
                 return userlist;
             })
             .enter()
@@ -490,6 +507,21 @@ function clearFilters(){
     numFilterElement.innerText = 0;
     pagesLoginStatus();
     fetchOUs();
+}
+
+function orderBy(){
+    var order = document.getElementById("order-by-sel").value;
+    chartElement = document.getElementById("user-chart");
+    chartElement.innerHTML = "";
+    visualize(order);
+}
+
+function sortByName(a, b){
+    if(a.innerText.toLowerCase() < b.innerText.toLowerCase())
+        return -1;
+    if(a.innerText.toLowerCase() < b.innerText.toLowerCase())
+        return 1;
+    return 0;
 }
 
 /** End of sidebar functionality */
