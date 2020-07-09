@@ -161,3 +161,9 @@ body {
   width: 100%;
   z-index: 1;
 }
+
+.page-title {
+    padding: 20px 5rem;
+    color: #666;
+    font-size: 1.25em;
+}
