@@ -1,10 +1,13 @@
 var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
 var token = params['access_token'];
 var domain = localStorage.getItem('domain');
-var flatdata = []
-var data = {}
-var input;
+var flatdata = [] // flatdata to contain all orgUnits, will be converted to hierarchical data 
+var data = {} // data to contail all orgUnits and users 
+var searchInput; // input for searchbar
+var orgUnitInput = []; // input for filter by orgUnit
+var groupInput = []; // input for filter by group
 
+// the function called onload for user.html
 function userOnload(){
     pagesLoginStatus(); 
     sidebar();
@@ -13,6 +16,10 @@ function userOnload(){
 
 // retrieve all OrgUnits from the API (the API returns all OrgUnits except the root OrgUnit)
 function fetchOUs(){
+    chartElement = document.getElementById("user-chart");
+    chartElement.innerHTML = "";
+    flatdata = [];
+    data = {};
     fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
     headers: {
         'authorization': `Bearer ` + token,
@@ -64,15 +71,88 @@ function addOrgUnitsToData(ous){
 }
 
 // add users into the OUs they are in
-function addUserToData(){
+async function addUserToData(){
     // if there's input in the search bar, only add users from search result
-    if(input){
-        console.log("yes");
-        queryUser(input);
-    }
-    else{
+    // query users match the query input, query can be any prefix of name and email
+    if(searchInput){
+        console.log("search input");
+        var encodedParam =  encodeURI(searchInput);
+        var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&query=' + encodedParam, {
+                    headers: {
+                        'authorization': `Bearer ` + token,
+                    }
+                });
+        var json = await response.json();
         var numElement = document.getElementById('num-search-users');
-        numElement.innerText = 0;
+        numElement.innerText = json.users.length;
+        var users = json.users;
+        for(var i = 0; i < users.length; i++){
+            let user = users[i];
+            var fullname = user['name']['fullName'];
+            var id = user['id'];
+            var orgUnitPath = user['orgUnitPath'];
+            var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
+            addUserToOUByPath(data, orgUnitPath, userJSON);
+        }
+        incrementUserCount(data);
+        visualize(null);
+    }
+    // if there's filter, get users from filters
+    else if(groupInput.length > 0 || orgUnitInput.length > 0){
+        console.log("filter input");
+        var userIds = new Set();
+        // for each orgUnit id, get users of the orgUnit
+        await Promise.all(orgUnitInput.map(async (orgUnit) => {
+            var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&query=orgUnitPath=' + orgUnit, {
+                    headers: {
+                        'authorization': `Bearer ` + token,
+                    }
+                });
+            var json = await response.json();
+            var users = json.users;
+            if(users){
+                for(var i = 0; i < users.length; i++){
+                    userIds.add(users[i].id);
+                }
+            }
+        }));
+        // for each group id, get members of the group
+        await Promise.all(groupInput.map(async (group) => {
+            var response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' + group + '/members', {
+                    headers: {
+                        'authorization': `Bearer ` + token,
+                    }
+                });
+            var json = await response.json();
+            var members = json.members;
+            for(var i = 0; i < members.length; i++){
+                if(members[i].type === 'USER'){
+                    userIds.add(members[i].id);
+                }          
+            }
+        }));
+        userIds = Array.from(userIds);
+        var numElement = document.getElementById('num-filter-users');
+        numElement.innerText = userIds.length;
+        for(var i = 0; i < userIds.length; i++){
+            var response = await fetch('https://www.googleapis.com/admin/directory/v1/users/' + userIds[i], {
+                    headers: {
+                        'authorization': `Bearer ` + token,
+                    }
+                });
+            var json = await response.json();
+            var userJSON = {"name": json.name.fullName, "id": json.id, "orgUnitPath": json.orgUnitPath};
+            addUserToOUByPath(data, json.orgUnitPath, userJSON);
+        }
+        incrementUserCount(data);
+        visualize(null);
+    }
+    // if there's no search and no filter
+    else{
+        var numSearchElement = document.getElementById('num-search-users');
+        numSearchElement.innerText = 0;
+        var numFilterElement = document.getElementById('num-filter-users');
+        numFilterElement.innerText = 0;
         fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
         headers: {
             'authorization': `Bearer ` + token,
@@ -81,18 +161,16 @@ function addUserToData(){
         then(response => response.json())
         .then((userJSON) => {
             var users = userJSON['users'];
-            console.log(users);
             for(var i = 0; i < users.length; i++){
                 let user = users[i];
                 var fullname = user['name']['fullName'];
                 var id = user['id'];
                 var orgUnitPath = user['orgUnitPath'];
                 var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
-                addUsertoOUByPath(data, orgUnitPath, userJSON);
+                addUserToOUByPath(data, orgUnitPath, userJSON);
             }
             incrementUserCount(data);
-            console.log(data);
-            visualize();
+            visualize(null);
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -101,7 +179,7 @@ function addUserToData(){
 }
 
 // add user to the OU it's in by DFS 
-function addUsertoOUByPath(node, path, user){
+function addUserToOUByPath(node, path, user){
     if(node.data['path'] === path){
         node.data['users'].push(user);
         return;
@@ -111,7 +189,7 @@ function addUsertoOUByPath(node, path, user){
         for(var i = 0; i < children.length; i++){
             ou = children[i];
             if(path.includes(ou.data['path'])){
-                addUsertoOUByPath(ou, path, user);
+                addUserToOUByPath(ou, path, user);
             }
         }
     }
@@ -128,11 +206,14 @@ function incrementUserCount (node){
             incrementUserCount(children[i]);
         }
     }
+    else{
+        return;
+    }
 }
 
 // Visualization
-function visualize() {
-    console.log(data)
+function visualize(order) {
+    console.log(data);
     function name(d) {
         return d.ancestors().reverse().map(d => d.data.name).join("/");
     }
@@ -206,11 +287,28 @@ function visualize() {
         nodeSelect.selectAll("li")
             .data(function(d){
                 var users = d.data.users;
+                if(order === "firstname"){
+                    users.sort(function(a, b) {
+                        return a.name.toLowerCase() == b.name.toLowerCase()
+                            ? 0
+                            : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+                    });
+                }
+                else if(order === "lastname"){
+                    users.sort(function(a, b) {
+                        var lastname1 = a.name.toLowerCase().split(" ")[1];
+                        var lastname2 = b.name.toLowerCase().split(" ")[1];
+                        return lastname1 == lastname2
+                            ? 0
+                            : (lastname1 > lastname2 ? 1 : -1);
+                    });
+                }
                 var userlist = []
                 for(var i = 0; i < users.length; i++){
                     userlist.push(users[i].name);
                 }
-                return userlist
+                console.log(userlist);
+                return userlist;
             })
             .enter()
             .append("li")
@@ -294,58 +392,138 @@ function tile(node, x0, y0, x1, y1) {
 
 /** Sidebar functionality: search and filter */
 
-// sidebar functionality, including getting domain name, searchbar
-// filter (todo)
-function sidebar(){
+// sidebar functionality, including getting domain name, searchbar, filter
+async function sidebar(){
+    // custom domain @
     domainElement = document.getElementById("domain-name");
     domainElement.innerText = domain;
+
+    // search bar
     searchField = document.getElementById("user-search-input");
     searchButton = document.getElementById("user-search-btn");
     searchButton.addEventListener("click", function(event) {
-        input = searchField.value;
-        chartElement = document.getElementById("user-chart");
-        chartElement.innerHTML = "";
-        flatdata = [];
-        data = {};
+        searchInput = searchField.value;
+        orgUnitInput = []; 
+        groupInput = [];
+        $(':checkbox:enabled').prop('checked', false);
+        var numFilterElement = document.getElementById('num-filter-users');
+        numFilterElement.innerText = 0;
         pagesLoginStatus();
         fetchOUs();
     })
 
     searchField.addEventListener("search", function(event) {
-        searchButton.click();
-});
+            searchButton.click();
+    });
+
+    // filter by orgUnit(s)
+    var response = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    });
+    var json = await response.json();
+    var orgUnits = json.organizationUnits;
+    var orgUnitOptions = [];
+    for (var i = 0; i < orgUnits.length; i++) {
+        orgUnitOptions.push("<input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label><br>");
+    }
+    document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
+    var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
+    for (var i = 0; i < checkboxElems.length; i++) {
+        checkboxElems[i].addEventListener("click", updateOrgUnitInput);
+    }
+
+    // filter by group(s)
+    var response = await fetch('https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer', {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    });
+    var json = await response.json();
+    var groups = json.groups;
+    var groupOptions = [];
+    for (var i = 0; i < groups.length; i++) {
+        groupOptions.push("<input type='checkbox' class='form-check-input' id='" + groups[i].id + "' value='" + groups[i].id + "'><label class='form-check-label' for='" + groups[i].id + "'> " + groups[i].name + "</label><br>");
+    }
+    document.getElementById("group-sel").innerHTML = groupOptions.join('');
+    var checkboxElems = document.querySelectorAll("#group-sel input[type='checkbox']");
+    for (var i = 0; i < checkboxElems.length; i++) {
+        checkboxElems[i].addEventListener("click", updateGroupInput);
+    }
 }
 
-// query users match the query input, query can be any prefix of name and email
-function queryUser(query){
-    console.log(query);
-    var encodedParam =  encodeURI(query);
-    fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&query=' + encodedParam, {
-    headers: {
-        'authorization': `Bearer ` + token,
-    }
-    }).
-    then(response => response.json())
-    .then((json) => {
-        console.log(json);
-        var numElement = document.getElementById('num-search-users');
-        numElement.innerText = json.users.length;
-        var users = json.users;
-        for(var i = 0; i < users.length; i++){
-            let user = users[i];
-            var fullname = user['name']['fullName'];
-            var id = user['id'];
-            var orgUnitPath = user['orgUnitPath'];
-            var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
-            addUsertoOUByPath(data, orgUnitPath, userJSON);
-        }
-        incrementUserCount(data);
-        visualize();
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+// clear search inputs
+function clearSearch(){
+    searchInput = "";
+    var searchField = document.getElementById("user-search-input");
+    searchField.value = "";
+    var numSearchElement = document.getElementById('num-search-users');
+    numSearchElement.innerText = 0;
 }
+
+// update variable orgUnitInput based on checkbox
+function updateOrgUnitInput(e){
+    var selections = {};
+    var selectedOrgUnits = []
+    if(e.target.checked){
+        orgUnitInput.push(e.target.value);
+    }
+    else{
+        var index = orgUnitInput.indexOf(e.target.value);
+        if(index > -1){
+            orgUnitInput.splice(index, 1);
+        }
+    }
+    clearSearch();
+    pagesLoginStatus();
+    fetchOUs();
+}
+
+// update variable groupInput based on checkbox
+function updateGroupInput(e) {
+    var selections = {};
+    var selectedGroups = []
+    if(e.target.checked){
+        groupInput.push(e.target.id);
+    }
+    else{
+        var index = groupInput.indexOf(e.target.id);
+        if(index > -1){
+            groupInput.splice(index, 1);
+        }
+    }
+    clearSearch();
+    pagesLoginStatus();
+    fetchOUs();
+}
+
+// clear all filters, display all users
+function clearFilters(){ 
+    orgUnitInput = []; 
+    groupInput = [];
+    $(':checkbox:enabled').prop('checked', false);
+    var numFilterElement = document.getElementById('num-filter-users');
+    numFilterElement.innerText = 0;
+    pagesLoginStatus();
+    fetchOUs();
+}
+
+function orderBy(){
+    var order = document.getElementById("order-by-sel").value;
+    chartElement = document.getElementById("user-chart");
+    chartElement.innerHTML = "";
+    visualize(order);
+}
+
+function sortByName(a, b){
+    if(a.innerText.toLowerCase() < b.innerText.toLowerCase())
+        return -1;
+    if(a.innerText.toLowerCase() < b.innerText.toLowerCase())
+        return 1;
+    return 0;
+}
+
 /** End of sidebar functionality */
 
 

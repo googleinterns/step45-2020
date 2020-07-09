@@ -8,7 +8,9 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.clouaddUsertoOUByPathaddUsertoOUByPathaddUsertoOUByPathaddUsertoOUBy are.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/87ecaf717c.js" crossorigin="anonymous"></script>
+ 
     <link rel="stylesheet" href="../styles/style.css">
     <link rel="stylesheet" href="../styles/user-style.css">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
@@ -49,6 +51,7 @@
             </ul>
         </div>
     </nav>
+    <div class="page-title card">Users</div>
     <div class="container flex">
         <!-- Page sidebar -->
         <div class="container sidenav-container">
@@ -59,14 +62,27 @@
                 </div>
                 <div class="sidenav-section">
                     <div class="section-title">Search</div>
-                    <div>
-                        <input id="user-search-input" type="search" class="form-control side-item" placeholder="Search name, email ...">
-                        <button id="user-search-btn" class="btn btn-primary side-item"><span class="glyphicon glyphicon-search"></span> Search</button>
+                    <div class="flex">
+                        <input type="search" class="form-control" id="user-search-input" placeholder="Search by name or email ...">
+                        <button class="btn btn-primary" id="user-search-btn">
+                            <i class="fa fa-search"></i>
+                        </button>
                     </div>
-                    <p class="side-item"> Number of users from search: <span id="num-search-users"></span></p>
-                    <div class="section-title">Filter by Organization Units</div>
-                    <p>+ Add a filter</p>
-                    <p></p>
+                    <p class="section-subtitle"> Number of users from search: <span id="num-search-users"></span></p>
+                    <div class="section-title">Filters <div class="btn" id="clear" onclick="clearFilters()">Clear filters</div></div>
+                    <div class="section-subtitle">OrgUnit(s): </div>
+                    <div class="form-check" id="orgunit-sel"></div>
+                    <div class="section-subtitle">Group(s): </div>
+                    <div class="form-check" id="group-sel"></div>
+                    <p class="section-subtitle"> Number of users from filter: <span id="num-filter-users"></span></p>
+                    <div class="section-title">Order By</div>
+                    <div class="form-group">
+                        <select class="form-control" id="order-by-sel" onchange="orderBy()">
+                            <option value=null selected="selected">Select category...</option>
+                            <option value="firstname">First Name</option>
+                            <option value="lastname">Last Name</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -82,3 +98,4 @@
     <script src="../scripts/user-script.js"></script>
   </body>
 </html>
+
