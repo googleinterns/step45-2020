@@ -22,7 +22,7 @@ var searchName;
 var searchMemberKey;
 var orderBy;
 var viewTotal = 200;
-var showOnlyParentGroups = false;
+var showOnlyParentGroups = true;
 
 function onloadGroupsPage() {
     var searchButton = document.getElementById("search-enter-btn");
@@ -128,6 +128,7 @@ function clearSidebar() {
     searchMemberKey = null;
     orderBy = null;
     viewTotal = 200;
+    showOnlyParentGroups = true;
 
     document.getElementById("search").value = "";
     document.getElementById("user-sel").value = searchMemberKey;
@@ -173,8 +174,8 @@ function viewGroups() {
 }
 
 /* Function called when the user toggles whether to show parent groups only */
-function checkParentGroups(input) {
-    showOnlyParentGroups = input.checked;
+function checkParentGroups() {
+    showOnlyParentGroups = !showOnlyParentGroups;
 
     checkSidebar();
     getAllGroups();
@@ -191,7 +192,8 @@ function visualize() {
 
     var format = d3.format(",d")
 
-    var width = window.innerWidth * 3/4 - 80;
+    var minDimension = Math.min(window.innerWidth, window.innerHeight);
+    var width = minDimension;
     var height = width
 
     var pack = data => d3.pack()
@@ -235,6 +237,8 @@ function visualize() {
         .style("display", "block")
         .style("background", color(0))
         .style("cursor", "pointer")
+        .style("max-width", width + "px")
+        .style("max-height", height + "px")
         .on("click", () => zoom(root));
 
     const node = svg.append("g")
@@ -256,7 +260,7 @@ function visualize() {
         .on("click", d => focus !== d && (zoom(d), d3.event.stopPropagation()));
 
     const label = svg.append("g")
-        .style("font", "10px sans-serif")
+        .style("font", "1.25em sans-serif")
         .attr("pointer-events", "none")
         .attr("text-anchor", "middle")
         .selectAll("text")
@@ -264,7 +268,6 @@ function visualize() {
         .join("text")
         .style("fill-opacity", d => d.parent === root ? 1 : 0)
         .style("display", d => d.parent === root ? "inline" : "none")
-        .style("font-size", "1.5em")
         .text(d => d.data.name);
 
     zoomTo([root.x, root.y, root.r * 2]);
