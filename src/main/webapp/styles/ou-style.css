@@ -19,7 +19,6 @@
 }
 
 #chart-container {
-    width: 1000px;
     height: 539px;
     background-color: white;
     display: flex;
@@ -30,4 +29,38 @@
 #tree-chart {
     transform-origin: 0px 0px;
     transform: scale(1) translate(0px, 0px);
+}
+
+.console {
+    background: #fff;
+    border-radius: 2px;
+    border-top: 1px solid #e0e0e0;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12), 0 1px 3px 0 rgba(0,0,0,0.2);
+}
+
+.console .console-banner {
+    background-color: rgba(51,103,214,1);
+    padding:  1em;
+}
+
+.console .console-banner .console-title {
+    font-size: 1.5rem;
+    color: white;
+    font-weight: 400;
+}
+
+.console .console-content {
+    padding: 1em;
+}
+
+.console .console-content .subheader {
+    font-size: 1.25rem;
+    color: black;
+    margin-bottom: 10px;
+    font-weight: 400;
+    border-bottom: 1px solid lightgray;
+}
+
+#edit-choice {
+    background-color: aliceblue;
 }

@@ -53,7 +53,7 @@
             </div>
         </nav>
 
-        <h2>Organizational Units</h2>
+        <div class="page-title card">Organizational Units</div>
 
         <div class="container flex">
             <!-- Page sidebar -->
@@ -89,56 +89,111 @@
                     <div id="chart-container">
                         <div id="tree-chart"></div>
                     </div>
-                    <!-- Ensure the HTML chart elements are loaded before script runs -->
-                    <script>
-                        var scale = 1,
-                            panning = false,
-                            xoff = 0,
-                            yoff = 0,
-                            start = {x: 0, y: 0},
-                            treeChart = document.getElementById("tree-chart");
+                </div>
+            </div>
+        </div>
+        <!-- Outside of flex container -->
 
-                        function setTransform() {
-                        treeChart.style.transform = "translate(" + xoff + "px, " + yoff + "px) scale(" + scale + ")";
-                        }
+        <div class="container">
+            <div class="console">
+                <div class="console-banner">
+                    <div class="console-title">Edit OUs</div>
+                </div>
+                <div class="console-content">
+                    <div class="subheader">Select an Action:</div>
+                    <div class="form-group">
+                        <label for="edit-choice">You can either create a new OU, update an existing OU, or delete an existing OU.</label>
 
-                        treeChart.onmousedown = function(e) {
-                        e.preventDefault();
-                        start = {x: e.clientX - xoff, y: e.clientY - yoff};    
-                        panning = true;
-                        }
+                        <select class="form-control" id="edit-choice">
+                            <option value="create">Create</option>
+                            <option value="update">Update</option>
+                            <option value="delete">Delete</option>
+                        </select>
+                    </div>
 
-                        treeChart.onmouseup = function(e) {
-                        panning = false;
-                        }
+                    <!-- Deletion -->
+                    <form style="display: none;" id="edit-delete" onSubmit="deleteOU();return false">
+                        <div class="subheader">Delete</div>
 
-                        treeChart.onmousemove = function(e) {
-                        e.preventDefault();         
-                        if (!panning) {
-                            return;
-                        }
-                        xoff = (e.clientX - start.x);
-                        yoff = (e.clientY - start.y);
-                        setTransform();
-                        }
+                        <label for="delete-path">Pass in the path below:</label>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">/</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="corp/eng/devops" id="delete-path">
+                        </div>
 
-                        treeChart.onwheel = function(e) {
-                            e.preventDefault();
-                            // take the scale into account with the offset
-                            var xs = (e.clientX - xoff) / scale,
-                                ys = (e.clientY - yoff) / scale,
-                                delta = (e.wheelDelta ? e.wheelDelta : -e.deltaY);
+                        <input type="submit" value="Delete" />
+                    </form>
 
-                            // get scroll direction & set zoom level
-                            (delta > 0) ? (scale *= 1.2) : (scale /= 1.2);
+                    <!-- Create -->
+                    <form style="display: block;" id="edit-create" onSubmit="createOU();return false">
+                        <div class="subheader">Create</div>
 
-                            // reverse the offset amount with the new scale
-                            xoff = e.clientX - xs * scale;
-                            yoff = e.clientY - ys * scale;
+                        <label for="create-path">Pass in the path of the desired parent OU:</label>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">/</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="corp/business" id="create-path">
+                        </div>
 
-                            setTransform();          
-                        }
-                    </script>
+                        <label for="create-name">Org Unit Name:</label>
+                        <input type="text" class="form-control" id="create-name" placeholder="sales">
+                        <br>
+
+                        <label for="create-descript">Description (optional):</label>
+                        <input type="text" class="form-control" id="create-descript" placeholder="Selling our product!">
+                        <br>
+
+                        <label for="create-inherit">By default, the policies and permissions of the parent OU are inherited by the child. 
+                            If you would like to block inheritance, please type '<em>block</em>' into the field below.</label>
+                        <input type="text" class="form-control" id="create-inherit">
+                        <br>
+
+                        <input type="submit" value="Create" />
+                    </form>
+
+                    <!-- Update -->
+                    <form style="display: none;" id="edit-update" onSubmit="updateOU();return false">
+                        <div class="subheader">Update</div>
+
+                        <label for="update-path">Pass in the path of the OU you wish to update:</label>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">/</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="corp/business" id="update-path">
+                        </div>
+
+                        <div class="subheader">Edit Fields</div>
+                        <p>Note that you only need to fill out the fields you wish to update.</p>
+
+                        <label for="update-parent-path">Pass in the path of the new parent OU:</label>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">/</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="corp/business" id="update-parent-path">
+                        </div>
+
+                        <label for="update-name">Org Unit Name:</label>
+                        <input type="text" class="form-control" id="update-name" placeholder="sales">
+                        <br>
+
+                        <label for="update-descript">Description:</label>
+                        <input type="text" class="form-control" id="update-descript" placeholder="Selling our product!">
+                        <br>
+
+                        <label for="update-inherit">If you would like to block this OU's inheritance, please type '<em>block</em>' into the field below.
+                            If you would like to unblock this OU's inheritance, please type '<em>unblock</em>' into the field below.
+                            Any other entry for this field will result in no update to your current blockInheritance setting.</label>
+                        <input type="text" class="form-control" id="update-inherit">
+                        <br>
+
+                        <input type="submit" value="Update" />
+                    </form>
+
                 </div>
             </div>
         </div>
