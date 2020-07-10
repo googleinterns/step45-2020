@@ -205,12 +205,15 @@ function visualize() {
     .sort((a, b) => b.value - a.value))
 
     tooltip = d3.select("body")
-	.append("div")
+	.append("a")
 	.style("position", "absolute")
 	.style("z-index", "10")
 	.style("visibility", "hidden")
     .classed("card", true)
     .classed("group", true)
+    .on("mouseover", function(d) {
+        return tooltip.style("visibility", "visible");
+    })
 
     groupName = tooltip
     .append("h5")
@@ -250,7 +253,7 @@ function visualize() {
         .on("mouseover", function(d) { 
             d3.select(this).attr("stroke", "#000");
             makeDivElement(d)
-            return tooltip.style("visibility", "visible").style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");;
+            return tooltip.style("visibility", "visible").style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");
         })
         .on("mouseout", function(d) { 
             d3.select(this).attr("stroke", null); 
@@ -407,22 +410,6 @@ async function loadGroupsDFS(currGroup) {
     return newCircle;
 }
 
-/* Returns a new circle object based on group */
-async function getGroupCircle(id) {
-    var indexOfGroup = groups.findIndex(elem => elem.id == id)
-    var group;
-    if (indexOfGroup < 0) {
-        group = await getGroup(id); // retrieve group from API
-    } else {
-        group = groups[indexOfGroup];
-    }
-    return {
-        name: group.name,
-        value: parseInt(group.directMembersCount),
-        id: group.id
-    }
-}
-
 /* Returns the corresponding group with the id */
 async function getGroup(id) {
     const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'
@@ -441,12 +428,47 @@ async function getGroup(id) {
 
 /** Creates the components of the hovering <div> element for each group */
 function makeDivElement(d) {
-    // tooltip.text(d.data.name)
-
     // find group with this id
     var group = groups[groups.findIndex(elem => elem.id == d.data.id)]
     groupName.text(group.name)
     description.text(group.description)
     email.text(group.email)
     directMembers.text(group.directMembersCount + " direct members")
+    tooltip.attr("href", "/pages/group.html?group=" + d.data.id)
+}
+
+async function onloadGroupDetails() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    var groupId = urlParams.get('group');
+    
+    var group = await getGroup(groupId);
+    setGroupDetails(group);
+    setGroupSettings(group);
+}
+
+/** Set <div> content for group details */
+function setGroupDetails(group) {
+    const groupNameTitle = document.getElementById("group-name-title");
+    groupNameTitle.innerHTML = group.name;
+
+    const groupName = document.getElementById("group-name");
+    groupName.innerHTML = group.name;
+
+    const groupEmail = document.getElementById("group-email");
+    groupEmail.innerHTML = group.email;
+
+    const groupDescription = document.getElementById("group-description");
+    groupDescription.innerHTML = group.description;
+
+    const numGroups = document.getElementById("num-groups");
+    numGroups.innerHTML = group.directMembersCount;
+
+    const numUsers = document.getElementById("num-users");
+    numUsers.innerHTML = group.directMembersCount;
+}
+
+/** Get groups settings for specific group */
+function setGroupSettings(group) {
+
 }
