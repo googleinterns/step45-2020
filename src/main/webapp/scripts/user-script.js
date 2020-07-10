@@ -153,28 +153,23 @@ async function addUserToData(){
         numSearchElement.innerText = 0;
         var numFilterElement = document.getElementById('num-filter-users');
         numFilterElement.innerText = 0;
-        fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
-        headers: {
-            'authorization': `Bearer ` + token,
-        }
-        }).
-        then(response => response.json())
-        .then((userJSON) => {
-            var users = userJSON['users'];
-            for(var i = 0; i < users.length; i++){
-                let user = users[i];
-                var fullname = user['name']['fullName'];
-                var id = user['id'];
-                var orgUnitPath = user['orgUnitPath'];
-                var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
-                addUserToOUByPath(data, orgUnitPath, userJSON);
+        var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
+            headers: {
+                'authorization': `Bearer ` + token,
             }
-            incrementUserCount(data);
-            visualize(null);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
         });
+        var userJSON = await response.json();
+        var users = userJSON['users'];
+        for(var i = 0; i < users.length; i++){
+            let user = users[i];
+            var fullname = user['name']['fullName'];
+            var id = user['id'];
+            var orgUnitPath = user['orgUnitPath'];
+            var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
+            addUserToOUByPath(data, orgUnitPath, userJSON);
+        }
+        incrementUserCount(data);
+        visualize(null);
     }
 }
 
@@ -182,6 +177,7 @@ async function addUserToData(){
 function addUserToOUByPath(node, path, user){
     if(node.data['path'] === path){
         node.data['users'].push(user);
+        console.log(user);
         return;
     }
     else{
@@ -284,7 +280,7 @@ function visualize(order) {
             .attr("style", (d => (d === root ? "max-height: 60px; overflow: auto" : "max-height: " + (y(d.y1) - y(d.y0) - 50)) + "; overflow: auto"))
         
         // add users with links to each node
-        nodeSelect.selectAll("li")
+         nodeSelect.selectAll("li")
             .data(function(d){
                 var users = d.data.users;
                 if(order === "firstname"){
@@ -529,37 +525,56 @@ function sortByName(a, b){
 
 /** User details page */
 // user detail onload
-function userdetailOnload(){
+async function userdetailOnload(){
+    pagesLoginStatus(); 
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     var userid = urlParams.get('user');
     console.log(userid);
-    fetch("https://www.googleapis.com/admin/directory/v1/users/" + userid, {
+    var response = await fetch("https://www.googleapis.com/admin/directory/v1/users/" + userid, {
     headers: {
         'authorization': `Bearer ` + token,
     }
-    }).
-    then(response => response.json())
-    .then((user) => {
-        var userNameElement = document.getElementById("user-name");
-        userNameElement.innerText = user.name.fullName;
-        var userEmailElement = document.getElementById("user-email");
-        userEmailElement.innerText = user.primaryEmail;
-        var userOrgUnitElement = document.getElementById("user-orgUnit");
-        userOrgUnitElement.innerText = user.orgUnitPath;
-        var userName2Element = document.getElementsByClassName("username");
-        console.log(userName2Element);
-        for (var i = 0; i < userName2Element.length; i++){
-            each = userName2Element[i];
-            console.log(each);
-            each.innerText = user.name.fullName;
-        }
-        getSingleBranchOfOU(user);
-    })
-    .catch((error) => {
-        console.error(error);
     });
+    var user = await response.json();
+    var userNameElement = document.getElementById("user-name");
+    userNameElement.innerText = user.name.fullName;
+    var userEmailElement = document.getElementById("user-email");
+    userEmailElement.innerText = user.primaryEmail;
+    var userOrgUnitElement = document.getElementById("user-orgUnit");
+    userOrgUnitElement.innerText = user.orgUnitPath;
+    var userName2Element = document.getElementsByClassName("username");
+    console.log(userName2Element);
+    for (var i = 0; i < userName2Element.length; i++){
+        each = userName2Element[i];
+        console.log(each);
+        each.innerText = user.name.fullName;
+    }
+    var src = await getPhoto(user.id);
+    var imageElement = document.getElementById("profile");
+    imageElement.src = src;
+    getSingleBranchOfOU(user);
+}
 
+async function getPhoto(userid){
+    try{
+        var response = await fetch("https://www.googleapis.com/admin/directory/v1/users/" + userid + "/photos/thumbnail", {
+            headers: {
+                'authorization': `Bearer ` + token,
+            }
+        });
+        if(response.status === 404){
+            Promise.reject('The user hasnt uploaded profile image.');
+            return '../images/default-profile.jpeg';
+        }
+    }
+    catch(err){
+        console.log(error);
+        
+    }
+    var json = await response.json();
+    var image = json.photoData;
+    return "data:" + json.mimeType + ";base64," + image.replace(/_/g, '/').replace(/-/g,'+');
 }
 
 // visualize the path of OUs for a single user
