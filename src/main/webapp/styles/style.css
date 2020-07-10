@@ -2,6 +2,10 @@
     display: none;
 }
 
+.light {
+    color: #888;
+}
+
 /* BODY */
 
 body {
@@ -68,10 +72,17 @@ body {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
+.page-title {
+    padding: 20px 5rem;
+    color: #666;
+    font-size: 1.25em;
+    display: inherit;
+}
+
 /* SIDEBAR */
 
 .sidenav-container {
-    width: 25%;
+    width: 30%;
     padding-right: 40px;
 }
 
@@ -84,9 +95,13 @@ body {
 .sidenav .sidenav-section {
   padding: 1em;
   text-decoration: none;
-  color: #888;
   display: block;
   border-bottom: 1px solid lightgray;
+}
+
+.sidenav .sidenav-section .section-right {
+    display: inline;
+    float: right;
 }
 
 .sidenav .sidenav-section.blue {
@@ -102,6 +117,7 @@ body {
 
 .sidenav .sidenav-section p {
     margin: 0;
+  color: #888;
 }
 
 @media screen and (max-height: 450px) {
@@ -154,17 +170,10 @@ body {
 /* MAIN */
 
 .main-container {
-  width: 75%;
+  width: 70%;
 }
 
 .main {
   width: 100%;
   z-index: 1;
-}
-
-.page-title {
-    padding: 20px 5rem;
-    color: #666;
-    font-size: 1.25em;
-    display: inherit;
 }

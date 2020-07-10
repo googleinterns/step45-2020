@@ -407,6 +407,11 @@ async function loadGroupsDFS(currGroup) {
     }
     // mark this current group as visited
     visited[currGroup.id] = newCircle;
+    // if on group details page, then add to the groups list
+    var indexOfGroup = groups.findIndex(elem => elem.id == currGroup.id);
+    if (indexOfGroup < 0) {
+        groups.push(currGroup);
+    }
     return newCircle;
 }
 
@@ -443,6 +448,28 @@ async function onloadGroupDetails() {
     var groupId = urlParams.get('group');
     
     var group = await getGroup(groupId);
+
+    loadGroup(group);
+}
+
+/** Load the group into data for d3 */
+async function loadGroup(group) {
+    // reset data and unique users
+    users = [];
+    data = {
+            name: domain,
+            children: [],
+        };
+    // create the visited hash set for groups already processed, containing group IDs
+    visited = {};
+
+    // initialize empty groups list
+    groups = [];
+        
+    var newData = await loadGroupsDFS(group);
+    data.children.push(newData);
+    
+    visualize();
     setGroupDetails(group);
     setGroupSettings(group);
 }
@@ -462,10 +489,10 @@ function setGroupDetails(group) {
     groupDescription.innerHTML = group.description;
 
     const numGroups = document.getElementById("num-groups");
-    numGroups.innerHTML = group.directMembersCount;
+    numGroups.innerHTML = Object.keys(visited).length;
 
     const numUsers = document.getElementById("num-users");
-    numUsers.innerHTML = group.directMembersCount;
+    numUsers.innerHTML = users.length;
 }
 
 /** Get groups settings for specific group */
