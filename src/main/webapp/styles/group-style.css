@@ -1,11 +1,13 @@
-#groups {
-    display: flex;
-}
-
 .group {
     max-width: 300px;
     margin: 0 40px 40px 0;
     padding: 40px;
+    color: #333;
+}
+
+.group:hover {
+    text-decoration: none;
+    color: #333;
 }
 
 .group .name {

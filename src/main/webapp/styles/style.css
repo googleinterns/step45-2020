@@ -166,4 +166,5 @@ body {
     padding: 20px 5rem;
     color: #666;
     font-size: 1.25em;
+    display: inherit;
 }
