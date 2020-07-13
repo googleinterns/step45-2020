@@ -30,7 +30,7 @@
                     <a class="nav-link" href="ou.html">Organizational Units</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="group.html">Groups</a>
+                    <a class="nav-link" href="groups.html">Groups</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="user.html">Users</a>
@@ -52,9 +52,9 @@
         </div>
     </nav>
     <div class="page-title card">Users</div>
-    <div class="container flex">
+    <div class="container flex wrap">
         <!-- Page sidebar -->
-        <div class="container sidenav-container">
+        <div class="sidenav-container">
             <div class="sidenav card">
                 <div class="sidenav-section">
                     <div class="section-title">Domain</div>
@@ -92,6 +92,27 @@
                 <!-- Your main page content goes here -->
                 <div id="user-chart"></div>
             </div>
+        </div>
+
+        <!-- Delete User Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Delete User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure to delete? All data for the user will be erased.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="deleteButton" type="button" class="btn btn-primary" onclick="">Delete</button>
+            </div>
+            </div>
+        </div>
         </div>
     </div>
     <script src="../scripts/script.js"></script>

@@ -279,8 +279,18 @@ function visualize(order) {
             .append("ul")
             .attr("style", (d => (d === root ? "max-height: 60px; overflow: auto" : "max-height: " + (y(d.y1) - y(d.y0) - 50)) + "; overflow: auto"))
         
+        // var addNode = nodeSelect.insert("div", "ul")
+        //     .attr("type", "button")
+        //     .attr("class", "iconadd")
+        //     .attr("data-toggle", "modal")
+        //     .attr("data-target", "addModal")
+        //     .text("Add")
+        //     .append("i")
+        //     .attr("class", "fa fa-user-plus")
+        //     .attr("aria-hidden", "true")
+
         // add users with links to each node
-         nodeSelect.selectAll("li")
+        var nodeselect = nodeSelect.selectAll("li")
             .data(function(d){
                 var users = d.data.users;
                 if(order === "firstname"){
@@ -301,17 +311,30 @@ function visualize(order) {
                 }
                 var userlist = []
                 for(var i = 0; i < users.length; i++){
-                    userlist.push(users[i].name);
+                    var userInfo = {"name": users[i].name, "id": users[i].id }
+                    userlist.push(userInfo);
                 }
-                console.log(userlist);
                 return userlist;
             })
             .enter()
             .append("li")
+
+        nodeselect
             .append("a")
             .attr("href", "#")
             .attr("class", "userdetail")
-            .text(function(d){ return d })
+            .text(function(d){ return d.name })
+        
+        nodeselect
+            .append("div")
+            .attr("type", "button")
+            .attr("class", "icon")
+            .attr("onclick", function(){  return  "event.stopPropagation(); triggerDelete(event)"})
+            .append("i")
+            .attr("id", function(d){ return d.id })
+            .attr("class", "icon fa fa-trash")
+            .attr("aria-hidden", "true")
+            
 
         // Change links to include user id 
         nodeSelect.selectAll("a.userdetail")
@@ -375,6 +398,27 @@ function visualize(order) {
     return svg.node();
 }
 
+// trigger delete modal in user.html
+function triggerDelete(e){
+    console.log(e);
+    console.log(e.target.id);
+    var userid = e.target.id;
+    console.log("trigger");
+    $('#deleteModal').modal('show');
+    var deleteElement = document.getElementById("deleteButton");
+    deleteElement.addEventListener("click", async function(){
+        var response = await fetch('https://www.googleapis.com/admin/directory/v1/users/' + userid,{
+            method: 'DELETE',
+            headers: {
+                'authorization': `Bearer ` + token,
+            }
+        });
+        console.log(response);
+        location.reload();
+    })
+
+}
+
 function tile(node, x0, y0, x1, y1) {
   d3.treemapBinary(node, 0, 0, width, height);
   for (const child of node.children) {
@@ -384,7 +428,6 @@ function tile(node, x0, y0, x1, y1) {
     child.y1 = y0 + child.y1 / height * (y1 - y0);
   }
 }
-
 
 /** Sidebar functionality: search and filter */
 
@@ -544,7 +587,17 @@ async function userdetailOnload(){
     var userOrgUnitElement = document.getElementById("user-orgUnit");
     userOrgUnitElement.innerText = user.orgUnitPath;
     var userName2Element = document.getElementsByClassName("username");
-    console.log(userName2Element);
+
+    // set rename user modal default values
+    var firstnameInput = document.getElementById("edit-firstname");
+    firstnameInput.value = user.name.givenName;
+    var lastnameInput = document.getElementById("edit-lastname");
+    lastnameInput.value = user.name.familyName;
+    var emailInput = document.getElementById("edit-email");
+    emailInput.value = user.primaryEmail.substring(0, user.primaryEmail.indexOf("@"));
+    var emailDomainElement = document.getElementById("email-domain");
+    emailDomainElement.innerText = "@"+domain;
+
     for (var i = 0; i < userName2Element.length; i++){
         each = userName2Element[i];
         console.log(each);
@@ -696,8 +749,8 @@ function visualizeUser(userData, htmlid){
 
     // set the dimensions and margins of the diagram
     var margin = {top: 20, right: 160, bottom: 30, left: 160},
-        width = 850 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom;
+        width = 800 - margin.left - margin.right,
+        height = 360 - margin.top - margin.bottom;
 
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
@@ -754,6 +807,46 @@ function visualizeUser(userData, htmlid){
     .style("text-anchor", function(d) { 
         return d.children ? "end" : "start"; })
     .text(function(d) { return d.data.name; });
+}
+
+async function renameUser(){
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    var userid = urlParams.get('user');
+    var firstname = document.getElementById("edit-firstname").value;
+    var lastname = document.getElementById("edit-lastname").value;
+    var email = document.getElementById("edit-email").value + "@" + domain;
+    var updatedInfo = {
+        "primaryEmail": email,
+        "name": {
+        "givenName": firstname,
+        "familyName": lastname
+        }
+    }
+    var response = await fetch('https://www.googleapis.com/admin/directory/v1/users/' + userid,{
+        method: 'PUT',
+        headers: {
+            'authorization': `Bearer ` + token,
+            'dataType': 'application/json',
+        },
+        body: JSON.stringify(updatedInfo),
+    })
+    console.log(response);
+   location.reload();
+}
+
+async function deleteUser(){
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    var userid = urlParams.get('user');
+    var response = await fetch('https://www.googleapis.com/admin/directory/v1/users/' + userid,{
+        method: 'DELETE',
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    });
+    console.log(response);
+    window.location.replace("user.html");
 }
 /** End of user details page */
 
