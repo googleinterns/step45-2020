@@ -2,6 +2,9 @@ var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
 var token = params['access_token'];
 var domain = localStorage.getItem('domain');
 
+/* Show refresh button and overlay */
+var isLoading;
+
 /* d3 input data */
 var data;
 
@@ -43,8 +46,9 @@ function onloadGroupsPage() {
 }
 
 function getAllGroups() {
-    // access token expires in 3600 sec after login; fix later
-    console.log(token);
+    isLoading = true;
+    setLoadingOverlay();
+
     var url = 'https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer'
     if (orderBy) {
         url += '&orderBy=' + orderBy;
@@ -205,12 +209,15 @@ function visualize() {
     .sort((a, b) => b.value - a.value))
 
     tooltip = d3.select("body")
-	.append("div")
+	.append("a")
 	.style("position", "absolute")
 	.style("z-index", "10")
 	.style("visibility", "hidden")
     .classed("card", true)
     .classed("group", true)
+    .on("mouseover", function(d) {
+        return tooltip.style("visibility", "visible");
+    })
 
     groupName = tooltip
     .append("h5")
@@ -250,7 +257,7 @@ function visualize() {
         .on("mouseover", function(d) { 
             d3.select(this).attr("stroke", "#000");
             makeDivElement(d)
-            return tooltip.style("visibility", "visible").style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");;
+            return tooltip.style("visibility", "visible").style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");
         })
         .on("mouseout", function(d) { 
             d3.select(this).attr("stroke", null); 
@@ -313,6 +320,9 @@ function visualize() {
         chartElement.removeChild(chartElement.lastChild);
     }
     chartElement.appendChild(svg.node());
+
+    isLoading = false;
+    setLoadingOverlay();
 
     return svg.node();
 }
@@ -404,23 +414,12 @@ async function loadGroupsDFS(currGroup) {
     }
     // mark this current group as visited
     visited[currGroup.id] = newCircle;
-    return newCircle;
-}
-
-/* Returns a new circle object based on group */
-async function getGroupCircle(id) {
-    var indexOfGroup = groups.findIndex(elem => elem.id == id)
-    var group;
+    // if on group details page, then add to the groups list
+    var indexOfGroup = groups.findIndex(elem => elem.id == currGroup.id);
     if (indexOfGroup < 0) {
-        group = await getGroup(id); // retrieve group from API
-    } else {
-        group = groups[indexOfGroup];
+        groups.push(currGroup);
     }
-    return {
-        name: group.name,
-        value: parseInt(group.directMembersCount),
-        id: group.id
-    }
+    return newCircle;
 }
 
 /* Returns the corresponding group with the id */
@@ -441,12 +440,82 @@ async function getGroup(id) {
 
 /** Creates the components of the hovering <div> element for each group */
 function makeDivElement(d) {
-    // tooltip.text(d.data.name)
-
     // find group with this id
     var group = groups[groups.findIndex(elem => elem.id == d.data.id)]
     groupName.text(group.name)
     description.text(group.description)
     email.text(group.email)
     directMembers.text(group.directMembersCount + " direct members")
+    tooltip.attr("href", "/pages/group.html?group=" + d.data.id)
+}
+
+async function onloadGroupDetails() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    var groupId = urlParams.get('group');
+    
+    var group = await getGroup(groupId);
+
+    loadGroup(group);
+}
+
+/** Load the group into data for d3 */
+async function loadGroup(group) {
+    isLoading = true;
+    setLoadingOverlay();
+
+    // reset data and unique users
+    users = [];
+    data = {
+            name: domain,
+            children: [],
+        };
+    // create the visited hash set for groups already processed, containing group IDs
+    visited = {};
+
+    // initialize empty groups list
+    groups = [];
+        
+    var newData = await loadGroupsDFS(group);
+    data.children.push(newData);
+    
+    visualize();
+    setGroupDetails(group);
+    setGroupSettings(group);
+}
+
+/** Set <div> content for group details */
+function setGroupDetails(group) {
+    const groupNameTitle = document.getElementById("group-name-title");
+    groupNameTitle.innerHTML = group.name;
+
+    const groupName = document.getElementById("group-name");
+    groupName.innerHTML = group.name;
+
+    const groupEmail = document.getElementById("group-email");
+    groupEmail.innerHTML = group.email;
+
+    const groupDescription = document.getElementById("group-description");
+    groupDescription.innerHTML = group.description;
+
+    const numGroups = document.getElementById("num-groups");
+    numGroups.innerHTML = Object.keys(visited).length;
+
+    const numUsers = document.getElementById("num-users");
+    numUsers.innerHTML = users.length;
+}
+
+/** Get groups settings for specific group */
+function setGroupSettings(group) {
+
+}
+
+function setLoadingOverlay() {
+    var overlay = document.getElementsByClassName("overlay");
+    var overlayArray = Array.from(overlay);
+    if (isLoading) {
+        overlayArray.map(elem => elem.classList.remove("hidden"))
+    } else {
+        overlayArray.map(elem => elem.classList.add("hidden"))
+    }
 }

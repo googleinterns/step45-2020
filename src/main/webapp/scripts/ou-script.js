@@ -12,14 +12,15 @@ function getAllOUs() {
     headers: {
         'authorization': `Bearer ` + token,
     }
-    }).
-    then(response => response.json())
+    })
+    .then(response => response.json())
     .then(directoryOUs => directoryOUs['organizationUnits'])
     .then((orgUnits) => {
         loadSidebar(orgUnits);
         orgUnits.sort(ouDepthSort); // sort by OU depth
         var orgUnitsTree = constructD3JSON(orgUnits); // transform into parent-child JSON
         visualize(orgUnitsTree); // visualize with D3
+        addListeners();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -283,4 +284,188 @@ function visualize(orgUnitsTree) {
             update(d);
         }
     }
+}
+
+/*
+ * Adds interactivity (zoom, drag) to the D3 visualization; adds onChange functions to form.
+*/
+function addListeners() {
+    var scale = 1,
+    panning = false,
+    xoff = 0,
+    yoff = 0,
+    start = {x: 0, y: 0},
+    treeChart = document.getElementById("tree-chart");
+    editSelect = document.getElementById("edit-choice");
+
+    function setTransform() {
+        treeChart.style.transform = "translate(" + xoff + "px, " + yoff + "px) scale(" + scale + ")";
+    }
+
+    treeChart.onmousedown = function(e) {
+        e.preventDefault();
+        start = {x: e.clientX - xoff, y: e.clientY - yoff};    
+        panning = true;
+    }
+
+    treeChart.onmouseup = function(e) {
+        panning = false;
+    }
+
+    treeChart.onmousemove = function(e) {
+        e.preventDefault();         
+        if (!panning) {
+            return;
+        }
+        xoff = (e.clientX - start.x);
+        yoff = (e.clientY - start.y);
+        setTransform();
+    }
+
+    treeChart.onwheel = function(e) {
+        e.preventDefault();
+        // take the scale into account with the offset
+        var xs = (e.clientX - xoff) / scale,
+            ys = (e.clientY - yoff) / scale,
+            delta = (e.wheelDelta ? e.wheelDelta : -e.deltaY);
+
+        // get scroll direction & set zoom level
+        (delta > 0) ? (scale *= 1.2) : (scale /= 1.2);
+
+        // reverse the offset amount with the new scale
+        xoff = e.clientX - xs * scale;
+        yoff = e.clientY - ys * scale;
+
+        setTransform();          
+    }
+
+    editSelect.onchange = function(event) {
+        createDiv = document.getElementById("edit-create");
+        updateDiv = document.getElementById("edit-update");
+        deleteDiv = document.getElementById("edit-delete");
+
+        if (editSelect.value == "create") {
+            deleteDiv.style.display = "none";
+            updateDiv.style.display = "none";
+            createDiv.style.display = "block";
+        } else if (editSelect.value == "update") {
+            deleteDiv.style.display = "none";
+            createDiv.style.display = "none";
+            updateDiv.style.display = "block";
+        } else {
+            updateDiv.style.display = "none";
+            createDiv.style.display = "none";
+            deleteDiv.style.display = "block";
+        }
+    }
+}
+
+/*
+ * Deletes an existing OU given its path.
+*/
+function deleteOU() {
+    const ouPath = document.getElementById('delete-path').value;
+    
+    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath), {
+    headers: {
+        'authorization': `Bearer ` + token,
+    },
+    method: 'DELETE'
+    })
+    .then(response => {
+        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
+        location.reload();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
+/*
+ * Adds a new OU given a name, the parent's path, and (optionally) description / inheritance setting.
+*/
+function createOU() {
+    var parentPath = '/' + document.getElementById('create-path').value.trim();
+    var name = document.getElementById('create-name').value.trim();
+    var descript =  document.getElementById('create-descript').value.trim();
+    var blockInherit = document.getElementById('create-inherit').value.trim();
+
+    if (blockInherit == 'block') {
+        blockInherit = true;
+    } else {
+        blockInherit = false;
+    }
+
+    var newOU = {
+            "name": name,
+            "description": descript,
+            "parentOrgUnitPath": parentPath,
+            "blockInheritance": blockInherit
+        };
+
+    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits'), {
+    headers: {
+        'authorization': `Bearer ` + token,
+        'dataType': 'application/json',
+        'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    body: JSON.stringify(newOU)
+    })
+    .then(response => {
+        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
+        location.reload();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
+/*
+ * Updates an OU with a new name, parent path, description, or inheritance setting.
+*/
+function updateOU() {
+
+    var updateOU = {};
+
+    var ouPath = document.getElementById('update-path').value.trim();
+
+    var parentPath = document.getElementById('update-parent-path').value.trim();
+    var name = document.getElementById('update-name').value.trim();
+    var descript =  document.getElementById('update-descript').value.trim();
+    var blockInherit = document.getElementById('update-inherit').value.trim();
+
+    // update fields if non-empty
+    if (parentPath != '') {
+        updateOU.parentOrgUnitPath = '/' + parentPath;
+    }
+    if (name != '') {
+        updateOU.name = name;
+    }
+    if (descript != '') {
+        updateOU.description = descript;
+    }
+    if (blockInherit == 'block') {
+        updateOU.blockInheritance = true;
+    }
+    if (blockInherit == 'unblock') {
+        updateOU.blockInheritance = false;
+    }
+
+    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath), {
+    headers: {
+        'authorization': `Bearer ` + token,
+        'dataType': 'application/json',
+        'Content-Type': 'application/json'
+    },
+    method: 'PUT',
+    body: JSON.stringify(updateOU)
+    })
+    .then(response => {
+        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
+        // location.reload();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }
