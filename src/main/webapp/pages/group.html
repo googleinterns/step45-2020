@@ -53,33 +53,60 @@
             </div>
         </nav>
         <div class="page-title card"><a href="groups.html">Groups</a> > <span id="group-name-title"></span></div>
-        <div class="container flex wrap">
+        <div class="container flex wrap between">
+            <!-- Page sidebar -->
+            <div class="sidenav-container">
+                <div class="overlay">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+                <div class="sidenav card">
+                    <div class="sidenav-section">
+                        <div class="section-right">
+                            <button type="button" class="btn btn-light" onclick="showEditForm()">
+                                <i class="fa fa-edit"></i>
+                                Edit
+                            </button>
+                        </div>
+                        <div class="section-title">Email</div>
+                        <p id="group-email"></p>
+                        <div class="section-title">Name</div>
+                        <p id="group-name"></p>
+                        <div class="section-title">Description</div>
+                        <p id="group-description"></p>
+                    </div>
+                    <div class="sidenav-section blue">
+                        <div class="section-title">Number of unique groups</div>
+                        <p id="num-groups"></p>
+                        <div class="section-title">Number of unique users</div>
+                        <p id="num-users"></p>
+                    </div>
+                    <div class="sidenav-section">
+                        <div class="section-right">
+                            <button type="button" class="btn btn-light" onclick="showEditForm()">
+                                <i class="fa fa-edit"></i>
+                                Edit
+                            </button>
+                        </div>
+                        <div class="section-title">Settings</div>
+                    </div>
+                    <div class="sidenav-section">
+                        <div class="section-title">Danger zone</div>
+                        <button type="button" class="btn btn-danger" onclick="deleteGroup()">
+                            <i class="fa fa-trash"></i>
+                            Delete group
+                        </button>
+                        <p class="light">This action is irreversible.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Page sidebar end -->
             <div class="main-container">
+                <div class="overlay">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
                 <div class="main">
                     <!-- Your main page content goes here -->
-                    <div class="sidenav card">
-                        <div class="sidenav-section">
-                            <div class="section-title">Email</div>
-                            <p id="group-email"></p>
-                            <div class="section-title">Name</div>
-                            <p id="group-name"></p>
-                            <div class="section-title">Description</div>
-                            <p id="group-description"></p>
-                        </div>
-                        <div class="sidenav-section blue">
-                            <div class="section-title">Number of unique subgroups</div>
-                            <p id="num-groups"></p>
-                            <div class="section-title">Number of unique users</div>
-                            <p id="num-users"></p>
-                        </div>
-                        <div class="sidenav-section">
-                            <div class="section-title">Settings</div>
-                        </div>
-                        <div class="sidenav-section blue">
-                            <div class="section-title">Edit</div>
-                            <div class="section-title">Delete</div>
-                        </div>
-                    </div>
+                    <div id="chart"></div>
                 </div>
             </div>
         </div>

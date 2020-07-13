@@ -2,6 +2,9 @@ var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
 var token = params['access_token'];
 var domain = localStorage.getItem('domain');
 
+/* Show refresh button and overlay */
+var isLoading;
+
 /* d3 input data */
 var data;
 
@@ -43,8 +46,9 @@ function onloadGroupsPage() {
 }
 
 function getAllGroups() {
-    // access token expires in 3600 sec after login; fix later
-    console.log(token);
+    isLoading = true;
+    setLoadingOverlay();
+
     var url = 'https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer'
     if (orderBy) {
         url += '&orderBy=' + orderBy;
@@ -317,6 +321,9 @@ function visualize() {
     }
     chartElement.appendChild(svg.node());
 
+    isLoading = false;
+    setLoadingOverlay();
+
     return svg.node();
 }
 
@@ -407,6 +414,11 @@ async function loadGroupsDFS(currGroup) {
     }
     // mark this current group as visited
     visited[currGroup.id] = newCircle;
+    // if on group details page, then add to the groups list
+    var indexOfGroup = groups.findIndex(elem => elem.id == currGroup.id);
+    if (indexOfGroup < 0) {
+        groups.push(currGroup);
+    }
     return newCircle;
 }
 
@@ -443,6 +455,31 @@ async function onloadGroupDetails() {
     var groupId = urlParams.get('group');
     
     var group = await getGroup(groupId);
+
+    loadGroup(group);
+}
+
+/** Load the group into data for d3 */
+async function loadGroup(group) {
+    isLoading = true;
+    setLoadingOverlay();
+
+    // reset data and unique users
+    users = [];
+    data = {
+            name: domain,
+            children: [],
+        };
+    // create the visited hash set for groups already processed, containing group IDs
+    visited = {};
+
+    // initialize empty groups list
+    groups = [];
+        
+    var newData = await loadGroupsDFS(group);
+    data.children.push(newData);
+    
+    visualize();
     setGroupDetails(group);
     setGroupSettings(group);
 }
@@ -462,13 +499,23 @@ function setGroupDetails(group) {
     groupDescription.innerHTML = group.description;
 
     const numGroups = document.getElementById("num-groups");
-    numGroups.innerHTML = group.directMembersCount;
+    numGroups.innerHTML = Object.keys(visited).length;
 
     const numUsers = document.getElementById("num-users");
-    numUsers.innerHTML = group.directMembersCount;
+    numUsers.innerHTML = users.length;
 }
 
 /** Get groups settings for specific group */
 function setGroupSettings(group) {
 
+}
+
+function setLoadingOverlay() {
+    var overlay = document.getElementsByClassName("overlay");
+    var overlayArray = Array.from(overlay);
+    if (isLoading) {
+        overlayArray.map(elem => elem.classList.remove("hidden"))
+    } else {
+        overlayArray.map(elem => elem.classList.add("hidden"))
+    }
 }
