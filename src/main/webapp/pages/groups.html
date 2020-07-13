@@ -53,16 +53,19 @@
             </div>
         </nav>
         <div class="page-title card">Groups</div>
-        <div class="container flex wrap">
+        <div class="container flex wrap between">
             <!-- Page sidebar -->
             <div class="sidenav-container">
+                <div class="overlay">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
                 <div class="sidenav card">
                     <div class="sidenav-section">
                         <div class="section-title">Domain</div>
                         <p id="domain-name">@</p>
                     </div>
                     <div class="sidenav-section blue">
-                        <div class="section-title">Number of groups</div>
+                        <div class="section-title">Number of unique groups</div>
                         <p id="num-groups"></p>
                         <div class="section-title">Number of unique users</div>
                         <p id="num-users"></p>
@@ -89,7 +92,7 @@
                             <button type="button" class="btn btn-primary" onclick="selectGroup()">+ Add</button>
                         </div> -->
 
-                        <p>User(s): </p>
+                        <p>User: </p>
                         <!-- <button type="button" class="btn btn-outline-primary">
                             Filter
                             <i class="fa fa-times"></i>
@@ -125,8 +128,9 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" checked="showOnlyParentGroups" id="parent-groups-check" onclick="checkParentGroups()">
                             <label class="form-check-label" for="parent-groups-check">
-                                Show only parent groups
+                                Show only top-level parent groups
                             </label>
+                            <p class="light">(Hide all groups that are children of other groups)</p>
                         </div>
 
                         <button type="button" class="btn btn-light" onclick="clearSidebar()">
@@ -136,12 +140,20 @@
                     </div>
                     <div class="sidenav-section blue">
                         <div class="section-title">Key</div>
-                        <p>White circles = Users</p>
+                        <ul>
+                            <li>White circles = Users</li>
+                            <li>Blue-shaded circles = Groups 
+                                <p class="light">Click on the hover card for more details</p>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
             <!-- Page sidebar end -->
             <div class="main-container">
+                <div class="overlay">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
                 <div class="main">
                     <!-- Your main page content goes here -->
                     <div id="chart"></div>
