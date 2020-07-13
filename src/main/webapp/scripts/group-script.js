@@ -2,6 +2,9 @@ var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
 var token = params['access_token'];
 var domain = localStorage.getItem('domain');
 
+/* Show refresh button and overlay */
+var isLoading;
+
 /* d3 input data */
 var data;
 
@@ -43,8 +46,9 @@ function onloadGroupsPage() {
 }
 
 function getAllGroups() {
-    // access token expires in 3600 sec after login; fix later
-    console.log(token);
+    isLoading = true;
+    setLoadingOverlay();
+
     var url = 'https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer'
     if (orderBy) {
         url += '&orderBy=' + orderBy;
@@ -317,6 +321,9 @@ function visualize() {
     }
     chartElement.appendChild(svg.node());
 
+    isLoading = false;
+    setLoadingOverlay();
+
     return svg.node();
 }
 
@@ -454,6 +461,9 @@ async function onloadGroupDetails() {
 
 /** Load the group into data for d3 */
 async function loadGroup(group) {
+    isLoading = true;
+    setLoadingOverlay();
+
     // reset data and unique users
     users = [];
     data = {
@@ -498,4 +508,14 @@ function setGroupDetails(group) {
 /** Get groups settings for specific group */
 function setGroupSettings(group) {
 
+}
+
+function setLoadingOverlay() {
+    var overlay = document.getElementsByClassName("overlay");
+    var overlayArray = Array.from(overlay);
+    if (isLoading) {
+        overlayArray.map(elem => elem.classList.remove("hidden"))
+    } else {
+        overlayArray.map(elem => elem.classList.add("hidden"))
+    }
 }
