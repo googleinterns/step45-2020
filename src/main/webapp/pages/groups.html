@@ -31,7 +31,7 @@
                         <a class="nav-link" href="ou.html">Organizational Units</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="group.html">Groups</a>
+                        <a class="nav-link" href="groups.html">Groups</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="user.html">Users</a>
@@ -71,6 +71,12 @@
                         <p id="num-users"></p>
                     </div>
                     <div class="sidenav-section">
+                        <div class="section-right">
+                            <button type="button" class="btn btn-light" onclick="clearSidebar()">
+                                Reset all
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
                         <div class="section-title">Search</div>
                         <div class="flex">
                             <input type="search" class="form-control" id="search" placeholder="Search by group name ...">
@@ -126,22 +132,25 @@
                         </div>
 
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" checked="showOnlyParentGroups" id="parent-groups-check" onclick="checkParentGroups()">
+                            <input class="form-check-input" type="checkbox" checked id="parent-groups-check" onclick="checkParentGroups()">
                             <label class="form-check-label" for="parent-groups-check">
                                 Show only top-level parent groups
                             </label>
-                            <p class="light">(Hide all groups that are children of other groups)</p>
+                            <p class="light">Hide all groups that are children of other groups</p>
                         </div>
 
-                        <button type="button" class="btn btn-light" onclick="clearSidebar()">
-                            Reset all options
-                            <i class="fa fa-times"></i>
-                        </button>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="flatten-groups-check" onclick="checkFlattenGroups()">
+                            <label class="form-check-label" for="flatten-groups-check">
+                                Flatten groups
+                            </label>
+                            <p class="light">Hide all children groups and show only direct user members</p>
+                        </div>
                     </div>
                     <div class="sidenav-section blue">
                         <div class="section-title">Key</div>
                         <ul>
-                            <li>White circles = Users</li>
+                            <li>White circles = Users / Flattened groups with no direct users</li>
                             <li>Blue-shaded circles = Groups 
                                 <p class="light">Click on the hover card for more details</p>
                             </li>
