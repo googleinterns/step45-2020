@@ -14,7 +14,7 @@
  
 .user-title{
     text-weight: 500px,
-    font-family: "Lucida Console", Courier, monospace;
+    font-family: "Lucida Console", Courier, monos<div><div><ce;
 }
  
 .list-container{
@@ -50,9 +50,28 @@ li{
 
 .sidenav .sidenav-section .section-subtitle{
     font-size: 1.05rem;
-    color: 	#505050;
     margin-top: 3px;
+    padding: 2px;
     font-weight: 400;
+}
+
+.icon {
+    font-size: 0.70rem;
+    font-weight: 400;
+    color: #888;
+    padding: 2px;
+    float: left;
+}
+
+.iconadd {
+    font-size: 0.70rem;
+    font-weight: 400;
+    color: #888;
+    padding: 2px;
+}
+
+.fa fa-user-plus {
+    padding: 2px;
 }
 
 #clear {
@@ -76,4 +95,50 @@ img {
   width: 50px;
   height: 50px;
   border-radius: 50%;
+}
+
+.userdetail-title {
+  padding: 5px; 
+  font-weight: 400;
+  color: #888;
+  font-size: 1.20rem;
+}
+
+.modal-header {
+    background: rgba(51,103,214,1);
+    color: white;
+}
+
+.modal-text {
+    font-size: 0.90rem;
+    margin-top: 1px;
+    padding: 2px;
+    font-weight: 400;
+    color: #888;
+}
+
+.input-group-addon {
+    background-color: transparent;
+  border-left: 0px solid transparent;
+    color: #888;
+}
+
+#userEmail {
+    padding-right: 85px;
+}
+
+.shorter-input{
+    display: block;
+    overflow: hidden; 
+    padding-right: 10px;
+}
+
+#email-domain{
+    float: right;
+    padding-top: 6px;
+}
+
+#rename-span{
+    background-color: #ffe680;
+    padding: 10px 5px;
 }

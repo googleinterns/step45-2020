@@ -8,7 +8,8 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    
+    <script src="https://kit.fontawesome.com/87ecaf717c.js" crossorigin="anonymous"></script>
+
     <link rel="stylesheet" href="../styles/style.css">
     <link rel="stylesheet" href="../styles/user-style.css">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
@@ -28,7 +29,7 @@
                     <a class="nav-link" href="ou.html">Organizational Units</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="group.html">Groups</a>
+                    <a class="nav-link" href="groups.html">Groups</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="user.html">Users</a>
@@ -49,7 +50,15 @@
             </ul>
         </div>
     </nav>
-    <div class="page-title card">Users</div>
+    <div class="page-title card">
+        <div>
+            <span style="color: #888;">
+                <a href="user.html" style="text-decoration:none; color: #888;">Users </a>
+                <i class="fa fa-xs fa-chevron-right" aria-hidden="true"></i>
+            </span>
+            <span class="username">
+        </div>
+    </div>
     <div class="container flex">
         <!-- Page sidebar -->
         <div class="container sidenav-container">
@@ -71,17 +80,125 @@
                     <div class="section-title">Orginization Unit</div>
                     <p id="user-orgUnit"></p>
                 </div>
-               
+                <div class="sidenav-section">
+                    <div type="button" id="open-edit" data-toggle="modal" data-target="#renameModal">
+                        <div class="section-subtitle"><i class="fa fa-pencil" aria-hidden="true"></i> ReName User</div>
+                    </div>
+                    <div type="button" data-toggle="modal" data-target="#deleteModal">
+                        <div class="section-subtitle"><i class="fa fa-trash" aria-hidden="true"></i> Delete User</div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Delete User Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Delete User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure to delete? All data for the user will be erased.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="deleteUser()">Delete</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Rename User Modal -->
+        <div class="modal fade" id="renameModal" tabindex="-1" role="dialog" aria-labelledby="renameModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="renameModalLabel">Rename User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="rename-span">Renaming a user is a system-wide change that can take up to 10 minutes.</div>
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="edit-firstname">First Name</div>
+                    <input type="text" id="edit-firstname" class="form-control validate">
+                </div>
+
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="edit-lastname">Last Name</div>
+                    <input type="text" id="edit-lastname" class="form-control validate">
+                </div>
+
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="edit-email">Primary Email</div>
+                    <span id="email-domain" class="input-group-addon"></span>
+                    <span class="shorter-input"><input type="text" id="edit-email" class="form-control" name="email" required /></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="renameUser()">ReName</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Add User Modal -->
+        <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModalLabel">Add User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="add-firstname">First Name</div>
+                    <input type="text" id="add-firstname" class="form-control validate">
+                </div>
+
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="add-lastname">Last Name</div>
+                    <input type="text" id="add-lastname" class="form-control validate">
+                </div>
+
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="add-email">Primary Email</div>
+                    <span id="add-email-domain" class="input-group-addon"></span>
+                    <span class="shorter-input"><input type="text" id="add-email" class="form-control" name="email" required /></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="">Add</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
         <!-- Page sidebar end -->
         <div class="container main-container">
             <div class="main" id="users">
                 <!-- Your main page content goes here -->
-                <div class="section-title">OrgUnit Path for <span class="username"></span></div>
-                <div id="single-user-OU-branch"></div>
-                <div class="section-title">Groups for <span class="username"></span></div>
-                <div id="user-groups"></div>
+                <div class="card my-3">  
+                    <div class="card-body">
+                        <div class="userdetail-title">OrgUnit Path for <span class="username"></span></div>
+                        <div id="single-user-OU-branch"></div>
+                    </div>
+                </div>
+                <div class="card my-3">
+                    <div class="card-body">
+                        <div class="userdetail-title">Groups for <span class="username"></span></div>
+                        <div id="user-groups"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
