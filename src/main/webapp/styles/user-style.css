@@ -12,24 +12,14 @@
     stroke-width: 2px;
 }
  
-.user-title{
-    text-weight: 500px,
-    font-family: "Lucida Console", Courier, monospace;
-}
- 
 .list-container{
     background: rgba(0,0,0,0); 
 }
  
 ul{
     list-style-type: none;
-    font-weight:300;
-    font-size: 1.50em;
     margin: 5px;
-}
- 
-li{
-    margin: 3px 0px;
+    padding: 0;
 }
  
 .side-item{
@@ -50,9 +40,24 @@ li{
 
 .sidenav .sidenav-section .section-subtitle{
     font-size: 1.05rem;
-    color: 	#505050;
     margin-top: 3px;
+    padding: 2px;
     font-weight: 400;
+}
+
+.icon {
+    color: #888;
+    float: right;
+    padding-right: 2px;
+}
+
+.iconadd i {
+    color: #888;
+    padding: 0 2px 2px 2px;
+}
+
+.fa fa-user-plus {
+    padding: 2px;
 }
 
 #clear {
@@ -76,4 +81,68 @@ img {
   width: 50px;
   height: 50px;
   border-radius: 50%;
+}
+
+.userdetail-title {
+  padding: 5px; 
+  font-weight: 400;
+  color: #888;
+  font-size: 1.20rem;
+}
+
+.modal-header {
+    background: rgba(51,103,214,1);
+    color: white;
+}
+
+.modal-text {
+    font-size: 0.90rem;
+    margin-top: 1px;
+    padding: 2px;
+    font-weight: 400;
+    color: #888;
+}
+
+.input-group-addon {
+    background-color: transparent;
+  border-left: 0px solid transparent;
+    color: #888;
+}
+
+#userEmail {
+    padding-right: 85px;
+}
+
+.shorter-input{
+    display: block;
+    overflow: hidden; 
+    padding-right: 10px;
+}
+
+#email-domain, #add-email-domain {
+    float: right;
+    padding-top: 6px;
+}
+
+#rename-span {
+    background-color: #ffe680;
+    padding: 3px;
+}
+
+.filter-btn {
+    margin: 1px;
+}
+
+#instruction {
+    background-color: #ffe680;
+    font: 20px sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    padding: 10px;
+    margin-bottom: 12px;
+}
+
+.heighlight {
+    font-size: 21px;
+    color: rgba(51,103,214,1);
 }

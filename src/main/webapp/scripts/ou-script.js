@@ -7,7 +7,6 @@ var isLoading;
  * Onload: fetches all OUs, constructs parent-child hierarchy JSON, creates tree visualization.
 */
 function getAllOUs() {
-    // console.log(token);
     // fetch all OUs from API
     fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?orgUnitPath=/&type=all', {
     headers: {
