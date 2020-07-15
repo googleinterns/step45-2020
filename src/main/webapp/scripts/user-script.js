@@ -177,10 +177,11 @@ async function addUserToData(){
 function addUserToOUByPath(node, path, user){
     if(node.data['path'] === path){
         node.data['users'].push(user);
-        console.log(user);
         return;
     }
     else{
+        if(node['children'] === undefined)
+            return;
         var children = node['children'];
         for(var i = 0; i < children.length; i++){
             ou = children[i];
@@ -213,7 +214,7 @@ function visualize(order) {
     function name(d) {
         return d.ancestors().reverse().map(d => d.data.name).join("/");
     }
-    width = 600;
+    width = 650;
     height = 400;
     format = d3.format(",d");
     
@@ -228,7 +229,9 @@ function visualize(order) {
 
     const svg = d3.create("svg")
         .attr("viewBox", [0.5, -100.5, width, height + 100])
-        .style("font", "10px sans-serif");
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .style("font", "12px Courier monospace");
 
     let group = svg.append("g")
         .call(render, treemap(data));
@@ -246,7 +249,7 @@ function visualize(order) {
         node.append("title")
             .text(d => `${name(d)}\n${format(d.numUsers)}`);
 
-        node.append("rect")
+        var rect = node.append("rect")
             .attr("id", function(d) { return d.data.id; })
             .attr("fill", d => d === root ? "#fff" : d.children ? "#99bbff" : "#ccddff") //#99bbff is darker blue, #ccddff is lighter blue
             .attr("stroke", "#fff");
@@ -262,16 +265,14 @@ function visualize(order) {
             .selectAll("tspan")
             .data(d => (d === root ? name(d) : d.data.name).split(/(?=[])/g))
             .join("tspan")
-            .attr("x", 3)
+            .attr("x", 10)
             .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
             .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
-            .attr("font-weight", (d, i, nodes) => i === nodes.length - 1 ? "normal" : null)
+            .attr("font-weight", (d, i, nodes) => i === nodes.length - 1 ? "600" : null)
             .text(d => d);
-
+        
         var nodeSelect = node.append("foreignObject")
-            .attr("width", function(d){return ( x(d.x1) - x(d.x0) - 15)})
-            .attr("height", (d => (d === root ? 60 : y(d.y1) - y(d.y0) - 50)))
-            .attr("x", 0)
+            .attr("x", 8)
             .attr("y", 20)
             .append("xhtml:body-user")
             .append("div")
@@ -279,15 +280,16 @@ function visualize(order) {
             .append("ul")
             .attr("style", (d => (d === root ? "max-height: 60px; overflow: auto" : "max-height: " + (y(d.y1) - y(d.y0) - 50)) + "; overflow: auto"))
         
-        // var addNode = nodeSelect.insert("div", "ul")
-        //     .attr("type", "button")
-        //     .attr("class", "iconadd")
-        //     .attr("data-toggle", "modal")
-        //     .attr("data-target", "addModal")
-        //     .text("Add")
-        //     .append("i")
-        //     .attr("class", "fa fa-user-plus")
-        //     .attr("aria-hidden", "true")
+        // icon to add users
+        var addNode = nodeSelect.insert("div", ".list-container")
+            .attr("type", "button")
+            .attr("class", "iconadd")
+            
+            .append("i")
+            .attr("id", function(d){ console.log(d.data); return d.data.path })
+            .attr("class", "fa fa-user-plus")
+            .attr("onclick", function(){  return  "event.stopPropagation(); triggerAdd(event)"})
+            .attr("aria-hidden", "true")
 
         // add users with links to each node
         var nodeselect = nodeSelect.selectAll("li")
@@ -357,40 +359,50 @@ function visualize(order) {
         .select("rect")
             .attr("width", d => d === root ? width : x(d.x1) - x(d.x0))
             .attr("height", d => d === root ? 100 : y(d.y1) - y(d.y0));
+
+        group.selectAll("foreignObject")
+            .attr("width", function(d){return ( x(d.x1) - x(d.x0) - 10)})
+            .attr("height", (d => (d === root ? 60 : y(d.y1) - y(d.y0) - 20)));
     }
 
     // When zooming in, draw the new nodes on top, and fade them in.
     function zoomin(d) {
-    const group0 = group.attr("pointer-events", "none");
-    const group1 = group = svg.append("g").call(render, d);
+        const group0 = group.attr("pointer-events", "none");
+        const group1 = group = svg.append("g").call(render, d);
 
-    x.domain([d.x0, d.x1]);
-    y.domain([d.y0, d.y1]);
+        console.log(x.domain, y.domain);
+       
+        x.domain([d.x0, d.x1]);
+        y.domain([d.y0, d.y1]);
+        console.log("zoom in ", d.x0, d.x1, x.domain, y.domian);
 
-    svg.transition()
-        .duration(750)
-        .call(t => group0.transition(t).remove()
-            .call(position, d.parent))
-        .call(t => group1.transition(t)
-            .attrTween("opacity", () => d3.interpolate(0, 1))
-            .call(position, d));
+        svg.transition()
+            .duration(750)
+            .call(t => group0.transition(t).remove()
+                .call(position, d.parent))
+            .call(t => group1.transition(t)
+                .attrTween("opacity", () => d3.interpolate(0, 1))
+                .call(position, d));
     }
 
     // When zooming out, draw the old nodes on top, and fade them out.
     function zoomout(d) {
-    const group0 = group.attr("pointer-events", "none");
-    const group1 = group = svg.insert("g", "*").call(render, d.parent);
+        const group0 = group.attr("pointer-events", "none");
+        const group1 = group = svg.insert("g", "*").call(render, d.parent);
 
-    x.domain([d.parent.x0, d.parent.x1]);
-    y.domain([d.parent.y0, d.parent.y1]);
+        console.log(x.domain, y.domain);
+        x.domain([d.parent.x0, d.parent.x1]);
+        y.domain([d.parent.y0, d.parent.y1]);
+        console.log("zoom out", d.x0, d.x1, x.domain, y.domain);
+        console.log("zoom out", d.parent.x0, d.parent.x1);
 
-    svg.transition()
-        .duration(750)
-        .call(t => group0.transition(t).remove()
-            .attrTween("opacity", () => d3.interpolate(1, 0))
-            .call(position, d))
-        .call(t => group1.transition(t)
-            .call(position, d.parent));
+        svg.transition()
+            .duration(750)
+            .call(t => group0.transition(t).remove()
+                .attrTween("opacity", () => d3.interpolate(1, 0))
+                .call(position, d))
+            .call(t => group1.transition(t)
+                .call(position, d.parent));
     }
     var chartElement = document.getElementById("user-chart");
     chartElement.appendChild(svg.node());
@@ -400,10 +412,7 @@ function visualize(order) {
 
 // trigger delete modal in user.html
 function triggerDelete(e){
-    console.log(e);
-    console.log(e.target.id);
     var userid = e.target.id;
-    console.log("trigger");
     $('#deleteModal').modal('show');
     var deleteElement = document.getElementById("deleteButton");
     deleteElement.addEventListener("click", async function(){
@@ -416,7 +425,63 @@ function triggerDelete(e){
         console.log(response);
         location.reload();
     })
+}
 
+// trigger add modal in user.html
+function triggerAdd(e){
+    var selectedPath = e.target.id;
+    var emailDomainElement = document.getElementById("add-email-domain");
+    emailDomainElement.innerText = "@"+domain;
+    $('#addModal').modal('show');
+    var addElement = document.getElementById("addButton");
+    addElement.addEventListener("click", async function(){ 
+        var firstname = document.getElementById("add-firstname").value;
+        var lastname = document.getElementById("add-lastname").value;
+        var email = document.getElementById("add-email").value + "@" + domain;
+        var password = document.getElementById("add-password").value;
+        var emptyWarning = document.getElementById("empty-warning");
+        if(firstname === "" || lastname === "" || email === "@" + domain || password === ""){
+            console.log("empty field");
+            emptyWarning.style.display = "inline";
+            return;
+        }
+        else if(password.length < 8){
+            console.log("password too short");
+            emptyWarning.style.display = "none";
+            var passwordWarning = document.getElementById("password-warning");
+            passwordWarning.style.display = "block";
+            return;
+        }
+        var userInfo = {
+            "primaryEmail": email,
+            "name": {
+                "givenName": firstname,
+                "familyName": lastname,
+                "fullName": firstname + ' ' + lastname,
+            },
+            "password": password,
+            "orgUnitPath": selectedPath
+        }
+        console.log(userInfo);
+        var response = await fetch('https://www.googleapis.com/admin/directory/v1/users',{
+            method: 'POST',
+            headers: {
+                'authorization': `Bearer ` + token,
+                'dataType': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userInfo),
+        }) 
+        console.log(response);
+        if(response.status === 200){
+            $('#addModal').modal('hide');
+            window.alert("Add user successfully");
+        }
+        else{
+            window.alert("Some errors");
+        }
+       // location.reload();
+    })
 }
 
 function tile(node, x0, y0, x1, y1) {
