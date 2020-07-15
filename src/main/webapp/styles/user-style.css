@@ -127,5 +127,9 @@ img {
 
 #rename-span {
     background-color: #ffe680;
-    padding: 10px 5px;
+    padding: 3px;
+}
+
+.filter-btn{
+    margin: 1px;
 }

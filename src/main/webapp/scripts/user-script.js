@@ -6,6 +6,9 @@ var data = {} // data to contail all orgUnits and users
 var searchInput; // input for searchbar
 var orgUnitInput = []; // input for filter by orgUnit
 var groupInput = []; // input for filter by group
+var oulength = 0; // length of all ous
+var rootID;
+var isLoading;
 
 // the function called onload for user.html
 function userOnload(){
@@ -28,6 +31,7 @@ function fetchOUs(){
     then(response => response.json())
     .then((ousjson) => {
         var ous = ousjson['organizationUnits'];
+        oulength = ous.length;
         addOrgUnitsToData(ous);
     })
     .catch((error) => {
@@ -45,7 +49,7 @@ function addOrgUnitsToData(ous){
     // add root OrgUnit to data
     for(var i = 0; i < ous.length; i++){
         if(ous[i]['parentOrgUnitPath'] === "/"){
-            var rootID = ous[i]['parentOrgUnitId'];
+            rootID = ous[i]['parentOrgUnitId'];
             fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
             headers: {
                 'authorization': `Bearer ` + token,
@@ -54,6 +58,7 @@ function addOrgUnitsToData(ous){
             then(response => response.json())
                 .then((root) => {
                     var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
+                    rootOUName = root["name"];
                     flatdata.push(rootElement);
                     // convert flat data to nested json with hierachy
                     data = d3.stratify()
@@ -72,6 +77,10 @@ function addOrgUnitsToData(ous){
 
 // add users into the OUs they are in
 async function addUserToData(){
+    isLoading = true; 
+    setLoadingOverlay();
+    console.log(orgUnitInput.length);
+    console.log(oulength);
     // if there's input in the search bar, only add users from search result
     // query users match the query input, query can be any prefix of name and email
     if(searchInput){
@@ -98,9 +107,26 @@ async function addUserToData(){
         visualize(null);
     }
     // if there's filter, get users from filters
-    else if(groupInput.length > 0 || orgUnitInput.length > 0){
+    else if((groupInput.length > 0 || orgUnitInput.length > 0) && orgUnitInput.length !== oulength + 1){
         console.log("filter input");
+        console.log(orgUnitInput);
         var userIds = new Set();
+        if(orgUnitInput.includes("/")){
+            console.log("rootid");
+            orgUnitInput.splice(orgUnitInput.indexOf("/"), 1);
+            var allUsersResponse = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
+                headers: {
+                    'authorization': `Bearer ` + token,
+                }
+            });
+            var allUsersJSON = await allUsersResponse.json();
+            var allUsers = allUsersJSON['users'];
+            for(var i = 0; i < allUsers.length; i++){
+                let user = allUsers[i];
+                if(user.orgUnitPath === "/")
+                    userIds.add(user.id);
+            }
+        }
         // for each orgUnit id, get users of the orgUnit
         await Promise.all(orgUnitInput.map(async (orgUnit) => {
             var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&query=orgUnitPath=' + orgUnit, {
@@ -171,6 +197,8 @@ async function addUserToData(){
         incrementUserCount(data);
         visualize(null);
     }
+    isLoading = false; 
+    setLoadingOverlay();
 }
 
 // add user to the OU it's in by DFS 
@@ -480,7 +508,6 @@ function triggerAdd(e){
         else{
             window.alert("Some errors");
         }
-       // location.reload();
     })
 }
 
@@ -529,6 +556,23 @@ async function sidebar(){
     var json = await response.json();
     var orgUnits = json.organizationUnits;
     var orgUnitOptions = [];
+    // add root OU
+    for(var i = 0; i < orgUnits.length; i++){
+        if(orgUnits[i]['parentOrgUnitPath'] === "/"){
+            rootID = orgUnits[i]['parentOrgUnitId'];
+            console.log(rootID);
+            var rootresponse = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
+            headers: {
+                'authorization': `Bearer ` + token,
+            }
+            });
+            break;
+        }
+    }
+    var rootobject = await rootresponse.json();
+    var rootname = rootobject.name;
+    orgUnitOptions.push("<input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label><br>");
+    
     for (var i = 0; i < orgUnits.length; i++) {
         orgUnitOptions.push("<input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label><br>");
     }
@@ -609,6 +653,28 @@ function clearFilters(){
     $(':checkbox:enabled').prop('checked', false);
     var numFilterElement = document.getElementById('num-filter-users');
     numFilterElement.innerText = 0;
+    pagesLoginStatus();
+    fetchOUs();
+}
+
+function checkAllOUFilters(){
+    var ouchecks = document.getElementById("orgunit-sel").getElementsByTagName("input");
+    orgUnitInput = []; 
+    for(var i = 0; i < ouchecks.length; i++){
+        ouchecks[i].checked = true;
+        orgUnitInput.push(ouchecks[i].value);
+    }  
+    pagesLoginStatus();
+    fetchOUs();
+}
+
+function checkAllGroupFilters(){
+    var groupchecks = document.getElementById("group-sel").getElementsByTagName("input");
+    groupInput = []; 
+    for(var i = 0; i < groupchecks.length; i++){
+        groupchecks[i].checked = true;
+        groupInput.push(groupchecks[i].value);
+    }  
     pagesLoginStatus();
     fetchOUs();
 }

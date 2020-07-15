@@ -55,6 +55,9 @@
     <div class="container flex wrap">
         <!-- Page sidebar -->
         <div class="sidenav-container">
+            <div class="overlay">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
             <div class="sidenav card">
                 <div class="sidenav-section">
                     <div class="section-title">Domain</div>
@@ -69,7 +72,11 @@
                         </button>
                     </div>
                     <p class="section-subtitle"> Number of users from search: <span id="num-search-users"></span></p>
-                    <div class="section-title">Filters <div class="btn" id="clear" onclick="clearFilters()">Clear filters</div></div>
+                    <div class="section-title">Filters 
+                        <div class="btn filter-btn" id="clear" onclick="clearFilters()">Clear filters</div>
+                        <div class="btn filter-btn" id="clear" onclick="checkAllOUFilters()">Check All OrgUnits</div>
+                        <div class="btn filter-btn" id="clear" onclick="checkAllGroupFilters()">Check All Groups</div>
+                    </div>
                     <div class="section-subtitle">OrgUnit(s): </div>
                     <div class="form-check" id="orgunit-sel"></div>
                     <div class="section-subtitle">Group(s): </div>
@@ -88,6 +95,9 @@
         </div>
         <!-- Page sidebar end -->
         <div class="container main-container">
+             <div class="overlay">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
             <div class="main" id="users">
                 <!-- Your main page content goes here -->
                 <div id="user-chart"></div>
