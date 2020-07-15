@@ -175,6 +175,11 @@ body {
     color: #666;
 }
 
+.home-icon {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* MAIN */
 
 .main-container {
