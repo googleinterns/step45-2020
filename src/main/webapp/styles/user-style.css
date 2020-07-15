@@ -12,24 +12,14 @@
     stroke-width: 2px;
 }
  
-.user-title{
-    text-weight: 500px,
-    font-family: "Lucida Console", Courier, monos<div><div><ce;
-}
- 
 .list-container{
     background: rgba(0,0,0,0); 
 }
  
 ul{
     list-style-type: none;
-    font-weight:300;
-    font-size: 1.50em;
     margin: 5px;
-}
- 
-li{
-    margin: 3px 0px;
+    padding: 0;
 }
  
 .side-item{
@@ -56,18 +46,14 @@ li{
 }
 
 .icon {
-    font-size: 0.70rem;
-    font-weight: 400;
     color: #888;
-    padding: 2px;
-    float: left;
+    float: right;
+    padding-right: 2px;
 }
 
-.iconadd {
-    font-size: 0.70rem;
-    font-weight: 400;
+.iconadd i {
     color: #888;
-    padding: 2px;
+    padding: 0 2px 2px 2px;
 }
 
 .fa fa-user-plus {
@@ -133,12 +119,30 @@ img {
     padding-right: 10px;
 }
 
-#email-domain{
+#email-domain, #add-email-domain {
     float: right;
     padding-top: 6px;
 }
 
-#rename-span{
+#rename-span {
     background-color: #ffe680;
-    padding: 10px 5px;
+    padding: 3px;
+}
+
+.filter-btn {
+    margin: 1px;
+}
+
+#instruction {
+    background-color: #ffe680;
+    font: 20px sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    padding: 10px;
+    margin-bottom: 12px;
+}
+
+.heighlight {
+    font-size: 21px;
+    color: rgba(51,103,214,1);
 }

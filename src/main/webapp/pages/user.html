@@ -52,9 +52,12 @@
         </div>
     </nav>
     <div class="page-title card">Users</div>
-    <div class="container flex wrap">
+    <div class="container flex wrap between">
         <!-- Page sidebar -->
         <div class="sidenav-container">
+            <div class="overlay">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
             <div class="sidenav card">
                 <div class="sidenav-section">
                     <div class="section-title">Domain</div>
@@ -69,7 +72,11 @@
                         </button>
                     </div>
                     <p class="section-subtitle"> Number of users from search: <span id="num-search-users"></span></p>
-                    <div class="section-title">Filters <div class="btn" id="clear" onclick="clearFilters()">Clear filters</div></div>
+                    <div class="section-title">Filters 
+                        <div class="btn filter-btn" id="clear" onclick="clearFilters()">Clear filters</div>
+                        <div class="btn filter-btn" id="clear" onclick="checkAllOUFilters()">Check All OrgUnits</div>
+                        <div class="btn filter-btn" id="clear" onclick="checkAllGroupFilters()">Check All Groups</div>
+                    </div>
                     <div class="section-subtitle">OrgUnit(s): </div>
                     <div class="form-check" id="orgunit-sel"></div>
                     <div class="section-subtitle">Group(s): </div>
@@ -87,9 +94,16 @@
             </div>
         </div>
         <!-- Page sidebar end -->
-        <div class="container main-container">
+        <div class="main-container">
+             <div class="overlay">
+                <i class="fa fa-refresh fa-spin"></i>
+            </div>
             <div class="main" id="users">
                 <!-- Your main page content goes here -->
+                <div id="instruction">Click the darker blue rectangles to <span class="heighlight">zoom in</span> to its child orgUnits<br>
+                    Click the top white rectangle to <span class="heighlight">zoom out</span> levels<br>
+                    Click user name to <span class="heighlight">view details</span> of single user
+                </div>
                 <div id="user-chart"></div>
             </div>
         </div>
@@ -114,6 +128,49 @@
             </div>
         </div>
         </div>
+
+          <!-- Add User Modal -->
+        <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModalLabel">Add User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="add-firstname">First Name</div>
+                    <input type="text" id="add-firstname" class="form-control validate">
+                </div>
+
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="add-lastname">Last Name</div>
+                    <input type="text" id="add-lastname" class="form-control validate">
+                </div>
+
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="add-email">Primary Email</div>
+                    <span id="add-email-domain" class="input-group-addon"></span>
+                    <span class="shorter-input"><input type="text" id="add-email" class="form-control" name="email" required /></span>
+                </div>
+
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="add-password">Password</div>
+                    <input type="password" id="add-password" class="form-control validate" minlength="8">
+                    <text id="password-warning" style="color: red; display: none">Password must contain at least 8 characters.</text>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <text id="empty-warning" style="color: red; display: none">Some input fileds are empty.</text>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="addButton" type="button" class="btn btn-primary" onclick="">Add</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
     </div>
     <script src="../scripts/script.js"></script>
     <script src="../scripts/user-script.js"></script>
