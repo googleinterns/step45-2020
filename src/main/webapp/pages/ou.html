@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../styles/style.css">
     <link rel="stylesheet" href="../styles/ou-style.css">
     <script src="../scripts/ou-script.js"></script>
+    <script src="../scripts/ou-edits.js"></script>
     <script src="../scripts/script.js"></script>
 
     <!-- load the d3.js library -->	
@@ -31,7 +32,7 @@
                         <a class="nav-link" href="ou.html">Organizational Units</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="group.html">Groups</a>
+                        <a class="nav-link" href="groups.html">Groups</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="user.html">Users</a>
@@ -55,9 +56,12 @@
 
         <div class="page-title card">Organizational Units</div>
 
-        <div class="container flex">
+        <div class="container flex wrap between">
             <!-- Page sidebar -->
             <div class="sidenav-container">
+                <div class="overlay">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
                 <!-- info card -->
                 <div class="sidenav card">
                     <div class="sidenav-section">
@@ -189,6 +193,9 @@
             </div>
             <!-- Page sidebar end -->
             <div class="main-container">
+                <div class="overlay">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
                 <div class="main">
                     <!-- Your main page content goes here -->
                     <div id="chart-container">

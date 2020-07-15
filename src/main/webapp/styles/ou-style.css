@@ -34,7 +34,7 @@
 .console {
     background: #fff;
     border-radius: 2px;
-    border-top: 15px solid #e0e0e0;
+    border-top: 15px solid #f3f3f3ff;
     box-shadow: 0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12), 0 1px 3px 0 rgba(0,0,0,0.2);
 }
 
