@@ -26,6 +26,7 @@ var searchMemberKey;
 var orderBy;
 var viewTotal = 200;
 var showOnlyParentGroups = true;
+var flattenGroups = false;
 
 function onloadGroupsPage() {
     var searchButton = document.getElementById("search-enter-btn");
@@ -185,6 +186,14 @@ function checkParentGroups() {
     getAllGroups();
 }
 
+/* Function called when the user toggles whether to show parent groups only */
+function checkFlattenGroups() {
+    flattenGroups = !flattenGroups;
+
+    checkSidebar();
+    getAllGroups();
+}
+
 /* d3 master function to display all groups using data */
 function visualize() {
     d3.selectAll("svg > *").remove();
@@ -202,7 +211,7 @@ function visualize() {
 
     var pack = data => d3.pack()
     .size([width, height])
-    .padding(5)
+    .padding(10)
 
     (d3.hierarchy(data)
     .sum(d => d.value)
@@ -256,8 +265,13 @@ function visualize() {
         .attr("pointer-events", d => !d.children ? "none" : null)
         .on("mouseover", function(d) { 
             d3.select(this).attr("stroke", "#000");
+            var pageY = event.pageY;
+            var pageX = event.pageX;
             makeDivElement(d)
-            return tooltip.style("visibility", "visible").style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");
+            tooltip.style("top", (pageY-10)+"px").style("left",(pageX+10)+"px")
+            setTimeout(function() {
+                return tooltip.style("visibility", "visible");
+            }, 500)
         })
         .on("mouseout", function(d) { 
             d3.select(this).attr("stroke", null); 
@@ -374,6 +388,7 @@ async function loadGroupsDFS(currGroup) {
     var newCircle = {
         name: currGroup.name,
         children: [],
+        value: parseInt(currGroup.directMembersCount),
         id: currGroup.id
     }
     // iterate through all the direct members of this current group
@@ -389,9 +404,14 @@ async function loadGroupsDFS(currGroup) {
         for (var j = 0; j < members.length; j++) {
             // if already visited, then add the circle into newCircle children list
             if (visited.hasOwnProperty(members[j].id)) {
-                // find where the group is located in data
                 var visitedGroup = visited[members[j].id];
-                newCircle.children.push(visitedGroup);
+
+                // if flatten groups, then don't add this group to children
+                if (!flattenGroups) {
+                    // find where the group is located in data
+                    newCircle.children.push(visitedGroup);
+                }
+
                 // if only show parent groups, then delete this group from data
                 if (showOnlyParentGroups) {
                     var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
@@ -403,12 +423,23 @@ async function loadGroupsDFS(currGroup) {
             // otherwise, recurse on the member and push to newCircle children list
             else {
                 var member = members[j];
+
                 // if group, get the group with the name
-                if (members[j].type == "GROUP") {
+                if (member.type == "GROUP") {
                     member = await getGroup(member.id);
                 }
                 var newData = await loadGroupsDFS(member);
-                newCircle.children.push(newData);
+
+                // if flatten groups, then don't add this group to children
+                if (!flattenGroups) {
+                    newCircle.children.push(newData);
+                } else {
+                    if (member.type == "USER") {
+                        newCircle.children.push(newData);
+                    } else {
+                        newCircle.value += newData.value;
+                    }
+                }
             }
         }
     }

@@ -108,6 +108,10 @@ body {
     float: right;
 }
 
+.sidenav .sidenav-section .flex {
+    width: 100%;
+}
+
 .sidenav .sidenav-section.blue {
   background-color: #f3faffff;
 }
@@ -180,6 +184,7 @@ body {
 
 .main {
   width: 100%;
+  height: 100%;
   z-index: 1;
 }
 
