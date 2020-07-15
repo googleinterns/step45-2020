@@ -20,7 +20,6 @@ ul{
     list-style-type: none;
     margin: 5px;
     padding: 0;
-    /* font-family: "Times New Roman", Times, serif; */ 
 }
  
 .side-item{
@@ -130,6 +129,20 @@ img {
     padding: 3px;
 }
 
-.filter-btn{
+.filter-btn {
     margin: 1px;
+}
+
+#instruction {
+    background-color: #ffe680;
+    font: 20px sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    padding: 10px;
+    margin-bottom: 12px;
+}
+
+.heighlight {
+    font-size: 21px;
+    color: rgba(51,103,214,1);
 }
