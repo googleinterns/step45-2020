@@ -79,8 +79,6 @@ function addOrgUnitsToData(ous){
 async function addUserToData(){
     isLoading = true; 
     setLoadingOverlay();
-    console.log(orgUnitInput.length);
-    console.log(oulength);
     // if there's input in the search bar, only add users from search result
     // query users match the query input, query can be any prefix of name and email
     if(searchInput){
@@ -113,7 +111,6 @@ async function addUserToData(){
         var userIds = new Set();
         if(orgUnitInput.includes("/")){
             console.log("rootid");
-            orgUnitInput.splice(orgUnitInput.indexOf("/"), 1);
             var allUsersResponse = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
                 headers: {
                     'authorization': `Bearer ` + token,
@@ -123,24 +120,29 @@ async function addUserToData(){
             var allUsers = allUsersJSON['users'];
             for(var i = 0; i < allUsers.length; i++){
                 let user = allUsers[i];
+                // fetch with orgunit will return all users, but we only want direct users in the root orgUnits.
                 if(user.orgUnitPath === "/")
                     userIds.add(user.id);
             }
         }
         // for each orgUnit id, get users of the orgUnit
         await Promise.all(orgUnitInput.map(async (orgUnit) => {
-            var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&query=orgUnitPath=' + orgUnit, {
-                    headers: {
-                        'authorization': `Bearer ` + token,
+            // fetch with orgunit will return all users, but we only want direct users in the root orgUnits.
+            if(orgUnit !== "/"){
+                 var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&query=orgUnitPath=' + orgUnit, {
+                        headers: {
+                            'authorization': `Bearer ` + token,
+                        }
+                    });
+                var json = await response.json();
+                var users = json.users;
+                if(users){
+                    for(var i = 0; i < users.length; i++){
+                        userIds.add(users[i].id);
                     }
-                });
-            var json = await response.json();
-            var users = json.users;
-            if(users){
-                for(var i = 0; i < users.length; i++){
-                    userIds.add(users[i].id);
                 }
             }
+           
         }));
         // for each group id, get members of the group
         await Promise.all(groupInput.map(async (group) => {
@@ -314,7 +316,7 @@ function visualize(order) {
             .attr("class", "iconadd")
             
             .append("i")
-            .attr("id", function(d){ console.log(d.data); return d.data.path })
+            .attr("id", function(d){ return d.data.path })
             .attr("class", "fa fa-user-plus")
             .attr("onclick", function(){  return  "event.stopPropagation(); triggerAdd(event)"})
             .attr("aria-hidden", "true")
@@ -612,8 +614,8 @@ function clearSearch(){
 
 // update variable orgUnitInput based on checkbox
 function updateOrgUnitInput(e){
-    var selections = {};
-    var selectedOrgUnits = []
+    console.log(e.target);
+    console.log(orgUnitInput);
     if(e.target.checked){
         orgUnitInput.push(e.target.value);
     }
@@ -623,6 +625,7 @@ function updateOrgUnitInput(e){
             orgUnitInput.splice(index, 1);
         }
     }
+    console.log(orgUnitInput);
     clearSearch();
     pagesLoginStatus();
     fetchOUs();
@@ -630,8 +633,6 @@ function updateOrgUnitInput(e){
 
 // update variable groupInput based on checkbox
 function updateGroupInput(e) {
-    var selections = {};
-    var selectedGroups = []
     if(e.target.checked){
         groupInput.push(e.target.id);
     }
@@ -664,6 +665,7 @@ function checkAllOUFilters(){
         ouchecks[i].checked = true;
         orgUnitInput.push(ouchecks[i].value);
     }  
+    clearSearch();
     pagesLoginStatus();
     fetchOUs();
 }
@@ -675,6 +677,7 @@ function checkAllGroupFilters(){
         groupchecks[i].checked = true;
         groupInput.push(groupchecks[i].value);
     }  
+    clearSearch();
     pagesLoginStatus();
     fetchOUs();
 }
