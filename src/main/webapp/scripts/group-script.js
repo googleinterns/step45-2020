@@ -566,20 +566,99 @@ async function setGroupSettings(group) {
         accessType.innerHTML = getAccessType(json);
 
         const joinGroup = document.getElementById("join-group");
-        joinGroup.innerHTML = json.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone" : "Special access";
+        joinGroup.innerHTML = json.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone" : "Request access";
 
         const membersOutsideOrg = document.getElementById("members-outside-org");
         membersOutsideOrg.innerHTML = json.allowExternalMembers == "true" ? "Yes" : "No";
     }
 }
 
+/** Returns the access type based on this group's settings */
 function getAccessType(group) {
-//     whoCanPostMessage: "ALL_MEMBERS_CAN_POST" // restricted
-//     	whoCanViewGroup: "ALL_MEMBERS_CAN_VIEW"
-// whoCanViewMembership: "ALL_MEMBERS_CAN_VIEW"
-//     whoCanJoin: "CAN_REQUEST_TO_JOIN" // team
-//     	whoCanJoin: "ALL_IN_DOMAIN_CAN_JOIN" // public
-    return "public";
+    // Default public settings object
+    let publicSettings = {
+        whoCanAdd: "ALL_MANAGERS_CAN_ADD",	
+        whoCanAddReferences: "NONE",
+        whoCanApproveMembers: "ALL_MANAGERS_CAN_APPROVE",	
+        whoCanApproveMessages: "OWNERS_AND_MANAGERS",	
+        whoCanAssignTopics: "NONE",	
+        whoCanAssistContent: "NONE",	
+        whoCanBanUsers: "OWNERS_AND_MANAGERS",	
+        whoCanContactOwner: "ANYONE_CAN_CONTACT",	
+        whoCanDeleteAnyPost: "OWNERS_AND_MANAGERS",	
+        whoCanDeleteTopics: "OWNERS_AND_MANAGERS",	
+        whoCanDiscoverGroup: "ALL_IN_DOMAIN_CAN_DISCOVER",	
+        whoCanEnterFreeFormTags: "NONE",	
+        whoCanHideAbuse: "NONE",	
+        whoCanInvite: "ALL_MANAGERS_CAN_INVITE",	
+        whoCanJoin: "ALL_IN_DOMAIN_CAN_JOIN",	
+        whoCanLeaveGroup: "ALL_MEMBERS_CAN_LEAVE",	
+        whoCanLockTopics: "OWNERS_AND_MANAGERS",	
+        whoCanMakeTopicsSticky: "NONE",	
+        whoCanMarkDuplicate: "NONE",	
+        whoCanMarkFavoriteReplyOnAnyTopic: "NONE",	
+        whoCanMarkFavoriteReplyOnOwnTopic: "NONE",	
+        whoCanMarkNoResponseNeeded: "NONE",	
+        whoCanModerateContent: "OWNERS_AND_MANAGERS",	
+        whoCanModerateMembers: "OWNERS_AND_MANAGERS",	
+        whoCanModifyMembers: "OWNERS_AND_MANAGERS",	
+        whoCanModifyTagsAndCategories: "NONE",	
+        whoCanMoveTopicsIn: "OWNERS_AND_MANAGERS",	
+        whoCanMoveTopicsOut: "OWNERS_AND_MANAGERS",	
+        whoCanPostAnnouncements: "OWNERS_AND_MANAGERS",	
+        whoCanPostMessage: "ALL_IN_DOMAIN_CAN_POST",	
+        whoCanTakeTopics: "NONE",	
+        whoCanUnassignTopic: "NONE",	
+        whoCanUnmarkFavoriteReplyOnAnyTopic: "NONE",	
+        whoCanViewGroup: "ALL_IN_DOMAIN_CAN_VIEW",	
+        whoCanViewMembership: "ALL_IN_DOMAIN_CAN_VIEW"
+    }
+    // Differences for team
+    let teamDiffs = {
+        whoCanJoin: "CAN_REQUEST_TO_JOIN"
+    }
+    // Differences for announcement only
+    let announcementDiffs = {
+        whoCanPostMessage: "ALL_MANAGERS_CAN_POST",
+        whoCanViewMembership: "ALL_MANAGERS_CAN_VIEW"
+    }
+    // Differences for restricted
+    let restrictedDiffs = {
+        whoCanJoin: "CAN_REQUEST_TO_JOIN",
+        whoCanPostMessage: "ALL_MEMBERS_CAN_POST",
+        whoCanViewGroup: "ALL_MEMBERS_CAN_VIEW",
+        whoCanViewMembership: "ALL_MEMBERS_CAN_VIEW",
+    }
+    // Find out differences between this group's settings and default public settings
+    let diffs = diff(group, publicSettings);
+    console.log(diffs)
+    if (Object.keys(diffs).length == 0) {
+        return "Public";
+    } else if (Object.keys(diff(teamDiffs, diffs)).length == 0) {
+        return "Team";
+    } else if (Object.keys(diff(announcementDiffs, diffs)).length == 0) {
+        return "Announcement Only";
+    } else if (Object.keys(diff(restrictedDiffs, diffs)).length == 0) {
+        return "Restricted";
+    } else {
+        return "Custom";
+    }
+}
+
+/** Returns an object containing the key and value pairs for each difference between two objects
+  * obj1: object you are comparing to default
+  * obj2: default object
+ */
+function diff(obj1, obj2) {
+    var diffs = {};
+    for (key in obj2) {
+        if (obj2.hasOwnProperty(key)) {
+            if (obj1[key] !== obj2[key]) {
+                diffs[key] = obj1[key];
+            }
+        }
+    }
+    return diffs;
 }
 
 function setLoadingOverlay() {
