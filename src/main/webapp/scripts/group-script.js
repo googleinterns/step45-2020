@@ -566,7 +566,7 @@ async function setGroupSettings(group) {
         accessType.innerHTML = getAccessType(json);
 
         const joinGroup = document.getElementById("join-group");
-        joinGroup.innerHTML = json.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone" : "Request access";
+        joinGroup.innerHTML = json.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone in the organization can join" : json.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "Anyone in the organization can ask" : "Only invited users";
 
         const membersOutsideOrg = document.getElementById("members-outside-org");
         membersOutsideOrg.innerHTML = json.allowExternalMembers == "true" ? "Yes" : "No";
