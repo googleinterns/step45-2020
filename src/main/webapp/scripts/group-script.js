@@ -232,13 +232,13 @@ function visualize() {
     .append("h5")
     .classed("name", true)
 
-    description = tooltip
-    .append("div")
-    .classed("description", true)
-
     email = tooltip
     .append("div")
     .classed("email", true)
+
+    description = tooltip
+    .append("div")
+    .classed("description", true)
 
     directMembers = tooltip
     .append("span")
@@ -388,7 +388,7 @@ async function loadGroupsDFS(currGroup) {
     var newCircle = {
         name: currGroup.name,
         children: [],
-        value: parseInt(currGroup.directMembersCount),
+        value: parseInt(currGroup.directMembersCount == 0 ? 1 : currGroup.directMembersCount),
         id: currGroup.id
     }
     // iterate through all the direct members of this current group
@@ -401,43 +401,45 @@ async function loadGroupsDFS(currGroup) {
 
     if (response.status == 200) {
         var members = json.members;
-        for (var j = 0; j < members.length; j++) {
-            // if already visited, then add the circle into newCircle children list
-            if (visited.hasOwnProperty(members[j].id)) {
-                var visitedGroup = visited[members[j].id];
+        if (members) {
+            for (var j = 0; j < members.length; j++) {
+                // if already visited, then add the circle into newCircle children list
+                if (visited.hasOwnProperty(members[j].id)) {
+                    var visitedGroup = visited[members[j].id];
 
-                // if flatten groups, then don't add this group to children
-                if (!flattenGroups) {
-                    // find where the group is located in data
-                    newCircle.children.push(visitedGroup);
-                }
+                    // if flatten groups, then don't add this group to children
+                    if (!flattenGroups) {
+                        // find where the group is located in data
+                        newCircle.children.push(visitedGroup);
+                    }
 
-                // if only show parent groups, then delete this group from data
-                if (showOnlyParentGroups) {
-                    var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
-                    if (indexOfGroupData >= 0) {
-                        data.children.splice(indexOfGroupData, 1);
+                    // if only show parent groups, then delete this group from data
+                    if (showOnlyParentGroups) {
+                        var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
+                        if (indexOfGroupData >= 0) {
+                            data.children.splice(indexOfGroupData, 1);
+                        }
                     }
                 }
-            }
-            // otherwise, recurse on the member and push to newCircle children list
-            else {
-                var member = members[j];
+                // otherwise, recurse on the member and push to newCircle children list
+                else {
+                    var member = members[j];
 
-                // if group, get the group with the name
-                if (member.type == "GROUP") {
-                    member = await getGroup(member.id);
-                }
-                var newData = await loadGroupsDFS(member);
+                    // if group, get the group with the name
+                    if (member.type == "GROUP") {
+                        member = await getGroup(member.id);
+                    }
+                    var newData = await loadGroupsDFS(member);
 
-                // if flatten groups, then don't add this group to children
-                if (!flattenGroups) {
-                    newCircle.children.push(newData);
-                } else {
-                    if (member.type == "USER") {
+                    // if flatten groups, then don't add this group to children
+                    if (!flattenGroups) {
                         newCircle.children.push(newData);
                     } else {
-                        newCircle.value += newData.value;
+                        if (member.type == "USER") {
+                            newCircle.children.push(newData);
+                        } else {
+                            newCircle.value += newData.value;
+                        }
                     }
                 }
             }
@@ -527,7 +529,7 @@ function setGroupDetails(group) {
     groupEmail.innerHTML = group.email;
 
     const groupDescription = document.getElementById("group-description");
-    groupDescription.innerHTML = group.description;
+    if (group.description) groupDescription.innerHTML = group.description;
 
     const numGroups = document.getElementById("num-groups");
     numGroups.innerHTML = Object.keys(visited).length;

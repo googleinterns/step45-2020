@@ -131,7 +131,14 @@ body {
 
 .sidenav .sidenav-section p {
     margin: 0;
-  color: #888;
+    color: #888;
+}
+
+.sidenav .sidenav-section .section-link {
+    margin: 0;
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 @media screen and (max-height: 450px) {
