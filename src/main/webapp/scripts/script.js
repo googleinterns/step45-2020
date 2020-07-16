@@ -90,7 +90,7 @@ function oauth2SignIn() {
     // Parameters to pass to OAuth 2.0 endpoint.
     var params = {'client_id': CLIENT_ID,
                     'redirect_uri': REDIRECT_URI,
-                    'scope': scopeArray.join(' '); // join all urls in scopeArray with space inbetween them
+                    'scope': scopeArray.join(' '), // join all urls in scopeArray with space inbetween them
                     'state': 'pass-through value',
                     'include_granted_scopes': 'true',
                     'response_type': 'token'};
