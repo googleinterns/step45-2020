@@ -14,6 +14,7 @@ var users;
 var visited;
 
 /* Tooltip hover card */
+var displayTooltip;
 var tooltip;
 var groupName;
 var description;
@@ -261,24 +262,30 @@ function visualize() {
         .selectAll("circle")
         .data(root.descendants().splice(1))
         .join("circle")
-        .attr("fill", d => d.children ? color(d.depth) : "white")
-        .attr("pointer-events", d => !d.children ? "none" : null)
+        .attr("fill", d => d.data.type == "user" ? "white" : (d.data.children ? color(d.depth) : "rgb(116, 215, 202)"))
+        .attr("pointer-events", d => d.data.type == "user" ? "none" : null)
         .on("mouseover", function(d) { 
+            if (d.type == "user") return;
             d3.select(this).attr("stroke", "#000");
             var pageY = event.pageY;
             var pageX = event.pageX;
             makeDivElement(d)
+            displayTooltip = true;
             tooltip.style("top", (pageY-10)+"px").style("left",(pageX+10)+"px")
             setTimeout(function() {
-                return tooltip.style("visibility", "visible");
+                if (displayTooltip == true) return tooltip.style("visibility", "visible");
             }, 500)
         })
         .on("mouseout", function(d) { 
+            if (d.data.type == "user") return;
+            displayTooltip = false;
             d3.select(this).attr("stroke", null); 
             return tooltip.style("visibility", "hidden");
         })
-        // .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
-        .on("click", d => focus !== d && (zoom(d), d3.event.stopPropagation()));
+        .on("click", function(d) {
+            if (d.data.type == "user") return;
+            focus !== d && (zoom(d), d3.event.stopPropagation())
+        });
 
     const label = svg.append("g")
         .style("font", "1.25em sans-serif")
@@ -381,6 +388,7 @@ async function loadGroupsDFS(currGroup) {
         return {
             name: currGroup.email,
             value: 1,
+            type: 'user',
             id: currGroup.id
         }
     }
@@ -444,6 +452,10 @@ async function loadGroupsDFS(currGroup) {
                 }
             }
         }
+    }
+    // if no children, delete
+    if (newCircle.children.length == 0) {
+        delete newCircle.children
     }
     // mark this current group as visited
     visited[currGroup.id] = newCircle;
@@ -550,8 +562,8 @@ async function setGroupSettings(group) {
     console.log(json)
 
     if (response.status == 200) {
-        // const accessType = document.getElementById("access-type");
-        // groupNameTitle.innerHTML = json.name;
+        const accessType = document.getElementById("access-type");
+        accessType.innerHTML = getAccessType(json);
 
         const joinGroup = document.getElementById("join-group");
         joinGroup.innerHTML = json.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone" : "Special access";
@@ -559,6 +571,15 @@ async function setGroupSettings(group) {
         const membersOutsideOrg = document.getElementById("members-outside-org");
         membersOutsideOrg.innerHTML = json.allowExternalMembers == "true" ? "Yes" : "No";
     }
+}
+
+function getAccessType(group) {
+//     whoCanPostMessage: "ALL_MEMBERS_CAN_POST" // restricted
+//     	whoCanViewGroup: "ALL_MEMBERS_CAN_VIEW"
+// whoCanViewMembership: "ALL_MEMBERS_CAN_VIEW"
+//     whoCanJoin: "CAN_REQUEST_TO_JOIN" // team
+//     	whoCanJoin: "ALL_IN_DOMAIN_CAN_JOIN" // public
+    return "public";
 }
 
 function setLoadingOverlay() {
