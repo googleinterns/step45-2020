@@ -34,7 +34,7 @@ ul{
     background-color: white;
 }
  
-#user-search-input, .form-group {
+#user-search-input, #search-checkbox-input, .form-group {
     margin: 5px 10px 5px 0;
 }
 
@@ -133,13 +133,20 @@ img {
     margin: 1px;
 }
 
-#instruction {
-    background-color: #ffe680;
-    font: 20px sans-serif;
+.accordion {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    font: 18px sans-serif;
     font-weight: 400;
     line-height: 1.7;
-    padding: 10px;
-    margin-bottom: 12px;
+}
+
+.accordion .card .card-header {
+    padding: 3px;
+}
+
+.accordion .fa {
+    margin-right: 0.5rem;
 }
 
 .heighlight {
