@@ -537,8 +537,26 @@ function setGroupDetails(group) {
 }
 
 /** Get groups settings for specific group */
-function setGroupSettings(group) {
+async function setGroupSettings(group) {
+    const response = await fetch('https://www.googleapis.com/groups/v1/groups/'
+    + group.email + "?alt=json", {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    })
+    const json = await response.json();
+    console.log(json)
 
+    if (response.status == 200) {
+        // const accessType = document.getElementById("access-type");
+        // groupNameTitle.innerHTML = json.name;
+
+        const joinGroup = document.getElementById("join-group");
+        joinGroup.innerHTML = json.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone" : "Special access";
+
+        const membersOutsideOrg = document.getElementById("members-outside-org");
+        membersOutsideOrg.innerHTML = json.allowExternalMembers == "true" ? "Yes" : "No";
+    }
 }
 
 function setLoadingOverlay() {

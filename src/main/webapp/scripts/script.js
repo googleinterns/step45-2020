@@ -83,7 +83,7 @@ function oauth2SignIn() {
     // Parameters to pass to OAuth 2.0 endpoint.
     var params = {'client_id': CLIENT_ID,
                     'redirect_uri': REDIRECT_URI,
-                    'scope': 'https://www.googleapis.com/auth/admin.directory.orgunit https://www.googleapis.com/auth/admin.directory.group https://www.googleapis.com/auth/admin.directory.user https://www.googleapis.com/auth/admin.directory.customer.readonly', 
+                    'scope': 'https://www.googleapis.com/auth/admin.directory.orgunit https://www.googleapis.com/auth/admin.directory.group https://www.googleapis.com/auth/admin.directory.user https://www.googleapis.com/auth/admin.directory.customer.readonly https://www.googleapis.com/auth/apps.groups.settings', 
                     'state': 'pass-through value',
                     'include_granted_scopes': 'true',
                     'response_type': 'token'};
