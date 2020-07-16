@@ -34,7 +34,7 @@ ul{
     background-color: white;
 }
  
-#user-search-input, .form-group {
+#user-search-input, #search-checkbox-input, .form-group {
     margin: 5px 10px 5px 0;
 }
 

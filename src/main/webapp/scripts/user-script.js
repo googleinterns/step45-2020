@@ -457,11 +457,28 @@ function triggerDelete(e){
     })
 }
 
+// trigger warning if password is too short
+function shortPassword(){
+    var password = document.getElementById("add-password").value;
+    var passwordWarning = document.getElementById("password-warning");
+    if(password.length < 8){
+        console.log("password too short");    
+        passwordWarning.style.display = "block";
+    }
+    else{
+        passwordWarning.style.display = "none";
+    }
+}
+
 // trigger add modal in user.html
 function triggerAdd(e){
     var selectedPath = e.target.id;
     var emailDomainElement = document.getElementById("add-email-domain");
     emailDomainElement.innerText = "@"+domain;
+    document.getElementById("add-firstname").value = "";
+    document.getElementById("add-lastname").value = "";
+    document.getElementById("add-email").value = "";
+    document.getElementById("add-password").value = "";
     $('#addModal').modal('show');
     var addElement = document.getElementById("addButton");
     addElement.addEventListener("click", async function(){ 
@@ -470,18 +487,16 @@ function triggerAdd(e){
         var email = document.getElementById("add-email").value + "@" + domain;
         var password = document.getElementById("add-password").value;
         var emptyWarning = document.getElementById("empty-warning");
+        var passwordWarning = document.getElementById("password-warning");
         if(firstname === "" || lastname === "" || email === "@" + domain || password === ""){
             console.log("empty field");
             emptyWarning.style.display = "inline";
             return;
         }
-        else if(password.length < 8){
-            console.log("password too short");
-            emptyWarning.style.display = "none";
-            var passwordWarning = document.getElementById("password-warning");
-            passwordWarning.style.display = "block";
+        else if(password.length < 8)
             return;
-        }
+        emptyWarning.style.display = "none";
+        passwordWarning.style.display = "none";
         var userInfo = {
             "primaryEmail": email,
             "name": {
@@ -510,6 +525,7 @@ function triggerAdd(e){
         else{
             window.alert("Some errors");
         }
+        location.reload();
     })
 }
 
@@ -544,7 +560,6 @@ async function sidebar(){
         pagesLoginStatus();
         fetchOUs();
     })
-
     searchField.addEventListener("search", function(event) {
             searchButton.click();
     });
@@ -573,10 +588,10 @@ async function sidebar(){
     }
     var rootobject = await rootresponse.json();
     var rootname = rootobject.name;
-    orgUnitOptions.push("<input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label><br>");
+    orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>");
     
     for (var i = 0; i < orgUnits.length; i++) {
-        orgUnitOptions.push("<input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label><br>");
+        orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label></div>");
     }
     document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
     var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
@@ -594,13 +609,35 @@ async function sidebar(){
     var groups = json.groups;
     var groupOptions = [];
     for (var i = 0; i < groups.length; i++) {
-        groupOptions.push("<input type='checkbox' class='form-check-input' id='" + groups[i].id + "' value='" + groups[i].id + "'><label class='form-check-label' for='" + groups[i].id + "'> " + groups[i].name + "</label><br>");
+        groupOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + groups[i].id + "' value='" + groups[i].id + "'><label class='form-check-label' for='" + groups[i].id + "'> " + groups[i].name + "</label></div>");
     }
     document.getElementById("group-sel").innerHTML = groupOptions.join('');
     var checkboxElems = document.querySelectorAll("#group-sel input[type='checkbox']");
     for (var i = 0; i < checkboxElems.length; i++) {
         checkboxElems[i].addEventListener("click", updateGroupInput);
     }
+
+    // search filter-checkboxes
+    searchCheckboxField = document.getElementById("search-checkbox-input")
+    searchCheckboxField.addEventListener("keyup", function(event){
+
+        searchCheckboxInput = searchCheckboxField.value.toLowerCase();
+        var checkboxes = document.getElementsByClassName("checkboxes");
+        for(var k = 0; k < checkboxes.length; k++){
+            var checkbox = checkboxes[k];
+            var checkboxName = checkbox.getElementsByTagName("label")[0].innerText;
+            console.log(checkboxName);
+            console.log(searchCheckboxInput);
+            console.log(checkboxName.toLowerCase().indexOf(searchCheckboxInput));
+            if(checkboxName.toLowerCase().indexOf(searchCheckboxInput) > -1){
+                console.log("find", checkboxName);
+                checkbox.style.display = "";
+            }
+            else{
+                checkbox.style.display = "none";
+            }
+        }
+    })
 }
 
 // clear search inputs
@@ -966,7 +1003,7 @@ async function renameUser(){
         body: JSON.stringify(updatedInfo),
     })
     console.log(response);
-   location.reload();
+    location.reload();
 }
 
 async function deleteUser(){
