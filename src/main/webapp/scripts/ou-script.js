@@ -1,12 +1,12 @@
 var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
 var token = params['access_token'];
-var domain = "groot-test.1bot2.info";
+var domain = localStorage.getItem('domain');
+var isLoading;
 
 /*
  * Onload: fetches all OUs, constructs parent-child hierarchy JSON, creates tree visualization.
 */
 function getAllOUs() {
-    // console.log(token);
     // fetch all OUs from API
     fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?orgUnitPath=/&type=all', {
     headers: {
@@ -16,6 +16,8 @@ function getAllOUs() {
     .then(response => response.json())
     .then(directoryOUs => directoryOUs['organizationUnits'])
     .then((orgUnits) => {
+        isLoading = true; // or false
+        setLoadingOverlay();
         loadSidebar(orgUnits);
         orgUnits.sort(ouDepthSort); // sort by OU depth
         var orgUnitsTree = constructD3JSON(orgUnits); // transform into parent-child JSON
@@ -25,6 +27,16 @@ function getAllOUs() {
     .catch((error) => {
         console.error('Error:', error);
     });
+}
+
+function setLoadingOverlay() {
+    var overlay = document.getElementsByClassName("overlay");
+    var overlayArray = Array.from(overlay);
+    if (isLoading) {
+        overlayArray.map(elem => elem.classList.remove("hidden"))
+    } else {
+        overlayArray.map(elem => elem.classList.add("hidden"))
+    }
 }
 
 /* Fill in informational fields on the sidebar of the page */
@@ -284,6 +296,10 @@ function visualize(orgUnitsTree) {
             update(d);
         }
     }
+
+    // d3 visualization has loaded
+    isLoading = false;
+    setLoadingOverlay();
 }
 
 /*
@@ -320,6 +336,7 @@ function addListeners() {
         xoff = (e.clientX - start.x);
         yoff = (e.clientY - start.y);
         setTransform();
+        
     }
 
     treeChart.onwheel = function(e) {
@@ -329,8 +346,12 @@ function addListeners() {
             ys = (e.clientY - yoff) / scale,
             delta = (e.wheelDelta ? e.wheelDelta : -e.deltaY);
 
-        // get scroll direction & set zoom level
-        (delta > 0) ? (scale *= 1.2) : (scale /= 1.2);
+        // get scroll direction & set zoom level (with limits on zooming)
+        if (delta > 0) {
+            (scale < 1.6) ? (scale *= 1.2) : (scale *= 1);
+        } else {
+            (scale > 0.6) ? (scale /= 1.2) : (scale *= 1);
+        }
 
         // reverse the offset amount with the new scale
         xoff = e.clientX - xs * scale;
@@ -358,114 +379,4 @@ function addListeners() {
             deleteDiv.style.display = "block";
         }
     }
-}
-
-/*
- * Deletes an existing OU given its path.
-*/
-function deleteOU() {
-    const ouPath = document.getElementById('delete-path').value;
-    
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath), {
-    headers: {
-        'authorization': `Bearer ` + token,
-    },
-    method: 'DELETE'
-    })
-    .then(response => {
-        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
-        location.reload();
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
-}
-
-/*
- * Adds a new OU given a name, the parent's path, and (optionally) description / inheritance setting.
-*/
-function createOU() {
-    var parentPath = '/' + document.getElementById('create-path').value.trim();
-    var name = document.getElementById('create-name').value.trim();
-    var descript =  document.getElementById('create-descript').value.trim();
-    var blockInherit = document.getElementById('create-inherit').value.trim();
-
-    if (blockInherit == 'block') {
-        blockInherit = true;
-    } else {
-        blockInherit = false;
-    }
-
-    var newOU = {
-            "name": name,
-            "description": descript,
-            "parentOrgUnitPath": parentPath,
-            "blockInheritance": blockInherit
-        };
-
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits'), {
-    headers: {
-        'authorization': `Bearer ` + token,
-        'dataType': 'application/json',
-        'Content-Type': 'application/json'
-    },
-    method: 'POST',
-    body: JSON.stringify(newOU)
-    })
-    .then(response => {
-        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
-        location.reload();
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
-}
-
-/*
- * Updates an OU with a new name, parent path, description, or inheritance setting.
-*/
-function updateOU() {
-
-    var updateOU = {};
-
-    var ouPath = document.getElementById('update-path').value.trim();
-
-    var parentPath = document.getElementById('update-parent-path').value.trim();
-    var name = document.getElementById('update-name').value.trim();
-    var descript =  document.getElementById('update-descript').value.trim();
-    var blockInherit = document.getElementById('update-inherit').value.trim();
-
-    // update fields if non-empty
-    if (parentPath != '') {
-        updateOU.parentOrgUnitPath = '/' + parentPath;
-    }
-    if (name != '') {
-        updateOU.name = name;
-    }
-    if (descript != '') {
-        updateOU.description = descript;
-    }
-    if (blockInherit == 'block') {
-        updateOU.blockInheritance = true;
-    }
-    if (blockInherit == 'unblock') {
-        updateOU.blockInheritance = false;
-    }
-
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath), {
-    headers: {
-        'authorization': `Bearer ` + token,
-        'dataType': 'application/json',
-        'Content-Type': 'application/json'
-    },
-    method: 'PUT',
-    body: JSON.stringify(updateOU)
-    })
-    .then(response => {
-        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
-        // location.reload();
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
 }

@@ -153,5 +153,15 @@ function getDomain(){
             console.error(error);
         })
     }
-  
 }
+
+function setLoadingOverlay() {
+    var overlay = document.getElementsByClassName("overlay");
+    var overlayArray = Array.from(overlay);
+    if (isLoading) {
+        overlayArray.map(elem => elem.classList.remove("hidden"))
+    } else {
+        overlayArray.map(elem => elem.classList.add("hidden"))
+    }
+}
+
