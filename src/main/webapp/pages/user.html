@@ -103,9 +103,24 @@
             </div>
             <div class="main" id="users">
                 <!-- Your main page content goes here -->
-                <div id="instruction">Click the darker blue rectangles to <span class="heighlight">zoom in</span> to its child orgUnits<br>
-                    Click the top white rectangle to <span class="heighlight">zoom out</span> levels<br>
-                    Click user name to <span class="heighlight">view details</span> of single user
+                <div class="accordion">
+                    <div class="card">
+                        <div class="card-header" id="">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#instruction-collapse" aria-expanded="true" aria-controls="collapseOne">
+                                    <i class="fa fa-plus"></i>Instruction
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="instruction-collapse" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                            <div class="card-body">
+                                <text id="instruction">Click darker blue rectangles to <span class="heighlight">zoom in</span> to child orgUnits<br>
+                                    Click the top white rectangle to <span class="heighlight">zoom out</span> levels<br>
+                                    Click user name to <span class="heighlight">view details</span> of single user
+                                </text>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="user-chart"></div>
             </div>

@@ -13,8 +13,22 @@ var isLoading;
 // the function called onload for user.html
 function userOnload(){
     pagesLoginStatus(); 
+    loadInstruction();
     sidebar();
     fetchOUs();
+}
+
+function loadInstruction(){
+    var collapse = document.getElementsByClassName("collapse")[0];
+    var icon = document.getElementsByClassName("card-header")[0].getElementsByClassName("fa")[0];
+    if(collapse.classList.contains("show")){
+        icon.classList.remove("fa-plus");
+        icon.classList.add("fa-minus");
+    }
+    else{
+        icon.classList.remove("fa-minus");
+        icon.classList.add("fa-plus");
+    }
 }
 
 // retrieve all OrgUnits from the API (the API returns all OrgUnits except the root OrgUnit)
