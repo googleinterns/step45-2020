@@ -67,17 +67,19 @@
                                 Edit
                             </button>
                         </div>
-                        <div class="section-title">Email</div>
-                        <p id="group-email"></p>
-                        <div class="section-title">Name</div>
+                        <div class="section-title">Group information</div>
+                        <div class="section-subtitle">Name</div>
                         <p id="group-name"></p>
-                        <div class="section-title">Description</div>
-                        <p id="group-description"></p>
+                        <div class="section-subtitle">Email</div>
+                        <p id="group-email"></p>
+                        <div class="section-subtitle">Description</div>
+                        <p id="group-description"><i>Add a group description</i></p>
                     </div>
                     <div class="sidenav-section blue">
-                        <div class="section-title">Number of unique groups</div>
+                        <div class="section-title">Members</div>
+                        <div class="section-subtitle">Number of unique groups</div>
                         <p id="num-groups"></p>
-                        <div class="section-title">Number of unique users</div>
+                        <div class="section-subtitle">Number of unique users</div>
                         <p id="num-users"></p>
                     </div>
                     <div class="sidenav-section">
@@ -88,6 +90,13 @@
                             </button>
                         </div>
                         <div class="section-title">Settings</div>
+                        <div class="section-subtitle">Access type</div>
+                        <p id="access-type"></p>
+                        <div class="section-link">View access and membership settings <i class="fa fa-caret-down"></i></div>
+                        <div class="section-subtitle">Who can join the group</div>
+                        <p id="join-group"></p>
+                        <div class="section-subtitle">Allow members outside your organization</div>
+                        <p id="members-outside-org"></p>
                     </div>
                     <div class="sidenav-section">
                         <div class="section-title">Danger zone</div>
@@ -96,6 +105,15 @@
                             Delete group
                         </button>
                         <p class="light">This action is irreversible.</p>
+                    </div>
+                    <div class="sidenav-section blue">
+                        <div class="section-title">Key</div>
+                        <ul>
+                            <li>White circles = Users</li>
+                            <li>Blue-shaded circles = Groups
+                                <p class="light">Click on the hover card for more details</p>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>

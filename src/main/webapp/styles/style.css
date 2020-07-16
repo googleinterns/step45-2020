@@ -118,6 +118,12 @@ body {
 
 .sidenav .sidenav-section .section-title {
     font-size: 1.25rem;
+    color: #888;
+    margin-top: 10px;
+    font-weight: 400;
+}
+
+.sidenav .sidenav-section .section-subtitle {
     color: black;
     margin-top: 10px;
     font-weight: 400;
@@ -125,7 +131,14 @@ body {
 
 .sidenav .sidenav-section p {
     margin: 0;
-  color: #888;
+    color: #888;
+}
+
+.sidenav .sidenav-section .section-link {
+    margin: 0;
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 @media screen and (max-height: 450px) {

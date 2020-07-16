@@ -79,11 +79,18 @@ function oauth2SignIn() {
     var form = document.createElement('form');
     form.setAttribute('method', 'GET'); // Send as a GET request.
     form.setAttribute('action', oauth2Endpoint);
-
+    // http scopes
+    var scopeArray = [
+        'https://www.googleapis.com/auth/admin.directory.orgunit',
+        'https://www.googleapis.com/auth/admin.directory.group',
+        'https://www.googleapis.com/auth/admin.directory.user', 
+        'https://www.googleapis.com/auth/admin.directory.customer.readonly', 
+        'https://www.googleapis.com/auth/apps.groups.settings',
+    ];
     // Parameters to pass to OAuth 2.0 endpoint.
     var params = {'client_id': CLIENT_ID,
                     'redirect_uri': REDIRECT_URI,
-                    'scope': 'https://www.googleapis.com/auth/admin.directory.orgunit https://www.googleapis.com/auth/admin.directory.group https://www.googleapis.com/auth/admin.directory.user https://www.googleapis.com/auth/admin.directory.customer.readonly', 
+                    'scope': scopeArray.join(' '), // join all urls in scopeArray with space inbetween them
                     'state': 'pass-through value',
                     'include_granted_scopes': 'true',
                     'response_type': 'token'};
@@ -164,4 +171,3 @@ function setLoadingOverlay() {
         overlayArray.map(elem => elem.classList.add("hidden"))
     }
 }
-
