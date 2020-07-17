@@ -274,7 +274,7 @@ function visualize() {
         .on("mouseover", function(d) { 
             d3.select(this).attr("stroke", "#000");
             if (d.data.type == "USER") {
-                makeUserTooltip(d)
+                makeUserTooltip(d, d.parent.data.id)
             } else {
                 makeGroupTooltip(d);
             }
@@ -391,11 +391,19 @@ async function loadGroups() {
     loadSidebar();
 }
 
-async function loadGroupsDFS(currGroup) {
+async function loadGroupsDFS(currGroup, parentGroup) {
     if (currGroup.type == "USER") {
-        var userData = await getUser(currGroup.id);
-        userData.role = currGroup.role;
-        users.push(userData);
+        var userData;
+        // a user can have different roles depending on which group
+        var userIndex = users.findIndex(elem => elem.id == currGroup.id)
+        if (userIndex < 0) {
+            userData = await getUser(currGroup.id);
+            userData.roles = {};
+            users.push(userData);
+        } else {
+            userData = users[userIndex];
+        }
+        userData.roles[parentGroup.id] = currGroup.role;
         return {
             name: userData.name.fullName,
             value: 1,
@@ -448,7 +456,7 @@ async function loadGroupsDFS(currGroup) {
                     if (member.type == "GROUP") {
                         member = await getGroup(member.id);
                     }
-                    var newData = await loadGroupsDFS(member);
+                    var newData = await loadGroupsDFS(member, currGroup);
 
                     // if flatten groups, then don't add this group to children
                     if (!flattenGroups) {
@@ -521,12 +529,12 @@ function makeGroupTooltip(d) {
 }
 
 /** Creates the components of the hovering <div> element for each user */
-function makeUserTooltip(d) {
+function makeUserTooltip(d, parentId) {
     // find user with this id
     var user = users[users.findIndex(elem => elem.id == d.data.id)]
     tooltipName.text(user.name.fullName)
     tooltipEmail.text(user.emails[0].address)
-    tooltipDescription.text(user.role[0].toUpperCase() + user.role.slice(1).toLowerCase())
+    tooltipDescription.text(user.roles[parentId][0].toUpperCase() + user.roles[parentId].slice(1).toLowerCase())
     tooltip.attr("href", "/pages/userdetails.html?user=" + d.data.id)
 }
 
