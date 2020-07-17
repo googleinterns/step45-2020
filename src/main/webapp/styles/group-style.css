@@ -32,3 +32,11 @@
 #search, .form-group {
     margin: 5px 10px 5px 0;
 }
+
+#group-settings-chart {
+    overflow-x: scroll;
+}
+
+.table-checkbox-input {
+    
+}

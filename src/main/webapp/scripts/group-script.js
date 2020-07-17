@@ -29,6 +29,10 @@ var viewTotal = 200;
 var showOnlyParentGroups = true;
 var flattenGroups = false;
 
+/* Access and membership settings checkbox table */
+var accessSettingsChecked;
+var membershipSettingsChecked;
+
 function onloadGroupsPage() {
     var searchButton = document.getElementById("search-enter-btn");
     searchButton.addEventListener("click", function(event) {
@@ -135,11 +139,14 @@ function clearSidebar() {
     orderBy = null;
     viewTotal = 200;
     showOnlyParentGroups = true;
+    flattenGroups = false;
 
     document.getElementById("search").value = "";
     document.getElementById("user-sel").value = searchMemberKey;
     document.getElementById("order-by-sel").value = orderBy;
     document.getElementById("view-total-groups-sel").value = viewTotal;
+    document.getElementById("parent-groups-check").checked = showOnlyParentGroups;
+    document.getElementById("flatten-groups-check").checked = flattenGroups;
 
     getAllGroups();
 }
@@ -483,6 +490,22 @@ async function getGroup(id) {
     }
 }
 
+/* Returns the corresponding user with the id */
+async function getUser(id) {
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/users/'
+    + id, {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    })
+    const json = await response.json();
+    console.log(json)
+
+    if (response.status == 200) {
+        return json;
+    }
+}
+
 /** Creates the components of the hovering <div> element for each group */
 function makeDivElement(d) {
     // find group with this id
@@ -570,6 +593,8 @@ async function setGroupSettings(group) {
 
         const membersOutsideOrg = document.getElementById("members-outside-org");
         membersOutsideOrg.innerHTML = json.allowExternalMembers == "true" ? "Yes" : "No";
+
+        setAccessMembershipSettingsTable(json);
     }
 }
 
@@ -659,6 +684,126 @@ function diff(obj1, obj2) {
         }
     }
     return diffs;
+}
+
+/** Function called when user clicks to view access and membership settings */
+function viewSettings() {
+    var settingsChart = document.getElementById("group-settings-chart");
+    if (settingsChart.classList.contains("hidden")) {
+        settingsChart.classList.remove("hidden")
+    } else {
+        settingsChart.classList.add("hidden")
+    }
+}
+
+/** Fills in the checkbox table for access and membership settings */
+function setAccessMembershipSettingsTable(json) {
+    // create the access and membership settings table chart
+    var accessSettingsCheckboxes = [
+            [document.getElementById("contact-owners-group-owners"),
+            document.getElementById("contact-owners-group-managers"),
+            document.getElementById("contact-owners-group-members"),
+            document.getElementById("contact-owners-entire-organization"),
+            document.getElementById("contact-owners-external"),],
+            [document.getElementById("view-members-group-owners"),
+            document.getElementById("view-members-group-managers"),
+            document.getElementById("view-members-group-members"),
+            document.getElementById("view-members-entire-organization"),],
+            [document.getElementById("view-topics-group-owners"),
+            document.getElementById("view-topics-group-managers"),
+            document.getElementById("view-topics-group-members"),
+            document.getElementById("view-topics-entire-organization"),
+            document.getElementById("view-topics-external"),],
+            [document.getElementById("publish-posts-group-owners"),
+            document.getElementById("publish-posts-group-managers"),
+            document.getElementById("publish-posts-group-members"),
+            document.getElementById("publish-posts-entire-organization"),
+            document.getElementById("publish-posts-external"),],
+        ]
+    accessSettingsChecked = [
+            [true, false, false, false, false,],
+            [true, false, false, false,],
+            [true, false, false, false, false,],
+            [false, false, false, false, false,],
+        ]
+    var membershipSettingsCheckboxes = [
+            document.getElementById("manage-members-group-owners"),
+            document.getElementById("manage-members-group-managers"),
+            document.getElementById("manage-members-group-members"),
+        ]
+    membershipSettingsChecked = [
+            false, false, false,
+        ]
+
+    // contact owners
+    if (json.whoCanContactOwner == "ANYONE_CAN_CONTACT") {
+        accessSettingsChecked[0] = [true, true, true, true, true];
+    } else if (json.whoCanContactOwner == "ALL_IN_DOMAIN_CAN_CONTACT") {
+        accessSettingsChecked[0] = [true, true, true, true, false];
+    } else if (json.whoCanContactOwner == "ALL_MEMBERS_CAN_CONTACT") {
+        accessSettingsChecked[0] = [true, true, true, false, false];
+    } else if (json.whoCanContactOwner == "ALL_MANAGERS_CONTACT") {
+        accessSettingsChecked[0] = [true, true, false, false, false];
+    } else if (json.whoCanContactOwner == "ALL_OWNERS_CAN_CONTACT") {
+        accessSettingsChecked[0] = [true, false, false, false, false];
+    }
+    // view members
+    if (json.whoCanViewMembership == "ALL_IN_DOMAIN_CAN_VIEW") {
+        accessSettingsChecked[1] = [true, true, true, true];
+    } else if (json.whoCanViewMembership == "ALL_MEMBERS_CAN_VIEW") {
+        accessSettingsChecked[1] = [true, true, true, false];
+    } else if (json.whoCanViewMembership == "ALL_MANAGERS_CAN_VIEW") {
+        accessSettingsChecked[1] = [true, true, false, false];
+    } else if (json.whoCanViewMembership == "ALL_OWNERS_CAN_VIEW") {
+        accessSettingsChecked[1] = [true, false, false, false];
+    }
+    // view topics
+    if (json.whoCanViewGroup == "ANYONE_CAN_VIEW") {
+        accessSettingsChecked[2] = [true, true, true, true, true];
+    } else if (json.whoCanViewGroup == "ALL_IN_DOMAIN_CAN_VIEW") {
+        accessSettingsChecked[2] = [true, true, true, true, false];
+    } else if (json.whoCanViewGroup == "ALL_MEMBERS_CAN_VIEW") {
+        accessSettingsChecked[2] = [true, true, true, false, false];
+    } else if (json.whoCanViewGroup == "ALL_MANAGERS_CAN_VIEW") {
+        accessSettingsChecked[2] = [true, true, false, false, false];
+    } else if (json.whoCanViewGroup == "ALL_OWNERS_CAN_VIEW") {
+        accessSettingsChecked[2] = [true, false, false, false, false];
+    }
+    // publish posts
+    if (json.whoCanPostMessage == "ANYONE_CAN_POST") {
+        accessSettingsChecked[3] = [true, true, true, true, true];
+    } else if (json.whoCanPostMessage == "ALL_IN_DOMAIN_CAN_POST") {
+        accessSettingsChecked[3] = [true, true, true, true, false];
+    } else if (json.whoCanPostMessage == "ALL_MEMBERS_CAN_POST") {
+        accessSettingsChecked[3] = [true, true, true, false, false];
+    } else if (json.whoCanPostMessage == "ALL_MANAGERS_CAN_POST") {
+        accessSettingsChecked[3] = [true, true, false, false, false];
+    } else if (json.whoCanPostMessage == "ALL_OWNERS_CAN_POST") {
+        accessSettingsChecked[3] = [true, false, false, false, false];
+    } else if (json.whoCanPostMessage == "NONE_CAN_POST") {
+        accessSettingsChecked[3] = [false, false, false, false, false];
+    }
+
+    // manage members
+    if (json.whoCanModifyMembers == "ALL_MEMBERS") {
+        membershipSettingsChecked = [true, true, true];
+    } else if (json.whoCanModifyMembers == "OWNERS_AND_MANAGERS") {
+        membershipSettingsChecked = [true, true, false];
+    } else if (json.whoCanModifyMembers == "OWNERS_ONLY") {
+        membershipSettingsChecked = [true, false, false];
+    } else if (json.whoCanModifyMembers == "NONE") {
+        membershipSettingsChecked = [false, false, false];
+    }
+
+    // iterate through each checkbox input and toggle checked
+    for (var i = 0; i < accessSettingsCheckboxes.length; i++) {
+        for (var j = 0; j < accessSettingsCheckboxes[i].length; j++) {
+            accessSettingsCheckboxes[i][j].checked = accessSettingsChecked[i][j];
+        }
+    }
+    for (var i = 0; i < membershipSettingsCheckboxes.length; i++) {
+        membershipSettingsCheckboxes[i].checked = membershipSettingsChecked[i];
+    }
 }
 
 function setLoadingOverlay() {
