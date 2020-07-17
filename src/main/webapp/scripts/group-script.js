@@ -16,10 +16,10 @@ var visited;
 /* Tooltip hover card */
 var displayTooltip;
 var tooltip;
-var groupName;
-var description;
-var email;
-var directMembers;
+var tooltipName;
+var tooltipDescription;
+var tooltipEmail;
+var tooltipLink;
 
 /* Search and filters */
 var searchName;
@@ -236,21 +236,22 @@ function visualize() {
         return tooltip.style("visibility", "visible");
     })
 
-    groupName = tooltip
+    tooltipName = tooltip
     .append("h5")
     .classed("name", true)
 
-    email = tooltip
+    tooltipEmail = tooltip
     .append("div")
     .classed("email", true)
 
-    description = tooltip
+    tooltipDescription = tooltip
     .append("div")
     .classed("description", true)
 
-    directMembers = tooltip
+    tooltipLink = tooltip
     .append("span")
     .classed("direct-members", true)
+    .text("Click to view more")
 
     const root = pack(data);
     let focus = root;
@@ -269,28 +270,29 @@ function visualize() {
         .selectAll("circle")
         .data(root.descendants().splice(1))
         .join("circle")
-        .attr("fill", d => d.data.type == "user" ? "white" : (d.data.children ? color(d.depth) : "rgb(116, 215, 202)"))
-        .attr("pointer-events", d => d.data.type == "user" ? "none" : null)
+        .attr("fill", d => d.data.type == "USER" ? "white" : (d.data.children ? color(d.depth) : "rgb(116, 215, 202)"))
         .on("mouseover", function(d) { 
-            if (d.type == "user") return;
             d3.select(this).attr("stroke", "#000");
+            if (d.data.type == "USER") {
+                makeUserTooltip(d)
+            } else {
+                makeGroupTooltip(d);
+            }
             var pageY = event.pageY;
             var pageX = event.pageX;
-            makeDivElement(d)
             displayTooltip = true;
             tooltip.style("top", (pageY-10)+"px").style("left",(pageX+10)+"px")
+            // show hover card after 500 ms if cursor is still on the same circle
             setTimeout(function() {
                 if (displayTooltip == true) return tooltip.style("visibility", "visible");
             }, 500)
         })
         .on("mouseout", function(d) { 
-            if (d.data.type == "user") return;
+            d3.select(this).attr("stroke", null);
             displayTooltip = false;
-            d3.select(this).attr("stroke", null); 
             return tooltip.style("visibility", "hidden");
         })
         .on("click", function(d) {
-            if (d.data.type == "user") return;
             focus !== d && (zoom(d), d3.event.stopPropagation())
         });
 
@@ -391,12 +393,14 @@ async function loadGroups() {
 
 async function loadGroupsDFS(currGroup) {
     if (currGroup.type == "USER") {
-        users.push(currGroup);
+        var userData = await getUser(currGroup.id);
+        userData.role = currGroup.role;
+        users.push(userData);
         return {
-            name: currGroup.email,
+            name: userData.name.fullName,
             value: 1,
-            type: 'user',
-            id: currGroup.id
+            id: userData.id,
+            type: currGroup.type
         }
     }
     // create a new circle for this current group with an initial empty children list
@@ -507,14 +511,23 @@ async function getUser(id) {
 }
 
 /** Creates the components of the hovering <div> element for each group */
-function makeDivElement(d) {
+function makeGroupTooltip(d) {
     // find group with this id
     var group = groups[groups.findIndex(elem => elem.id == d.data.id)]
-    groupName.text(group.name)
-    description.text(group.description)
-    email.text(group.email)
-    directMembers.text(group.directMembersCount + " direct members")
+    tooltipName.text(group.name)
+    tooltipEmail.text(group.email)
+    tooltipDescription.text(group.description)
     tooltip.attr("href", "/pages/group.html?group=" + d.data.id)
+}
+
+/** Creates the components of the hovering <div> element for each user */
+function makeUserTooltip(d) {
+    // find user with this id
+    var user = users[users.findIndex(elem => elem.id == d.data.id)]
+    tooltipName.text(user.name.fullName)
+    tooltipEmail.text(user.emails[0].address)
+    tooltipDescription.text(user.role[0].toUpperCase() + user.role.slice(1).toLowerCase())
+    tooltip.attr("href", "/pages/userdetails.html?user=" + d.data.id)
 }
 
 async function onloadGroupDetails() {
