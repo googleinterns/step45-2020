@@ -293,7 +293,7 @@ function visualize() {
             return tooltip.style("visibility", "hidden");
         })
         .on("click", function(d) {
-            focus !== d && (zoom(d), d3.event.stopPropagation())
+            if (d.data.type != "USER") focus !== d && (zoom(d), d3.event.stopPropagation())
         });
 
     const label = svg.append("g")
