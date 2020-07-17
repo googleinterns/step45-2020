@@ -107,7 +107,7 @@ function loadSidebar() {
     var userOptions = [];
     userOptions.push("<option value=null selected='selected'>Select user...</option>");
     for (var i = 0; i < users.length; i++) {
-        userOptions.push("<option value='" + users[i].email + "' id='" + users[i].email + "'>" + users[i].email + " </option>");
+        userOptions.push("<option value='" + users[i].emails[0].address + "' id='" + users[i].emails[0].address + "'>" + users[i].emails[0].address + " </option>");
     }
     document.getElementById("user-sel").innerHTML = userOptions.join();
 
