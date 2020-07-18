@@ -43,6 +43,10 @@ body {
     margin: 5px 10px 5px 0;
 }
 
+th {
+    font-weight: normal;
+}
+
 /* NAVBAR */
 
 .navbar {

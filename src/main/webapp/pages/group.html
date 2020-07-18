@@ -92,7 +92,151 @@
                         <div class="section-title">Settings</div>
                         <div class="section-subtitle">Access type</div>
                         <p id="access-type"></p>
-                        <div class="section-link">View access and membership settings <i class="fa fa-caret-down"></i></div>
+                        <div class="section-link" onclick="viewSettings()">View access and membership settings <i class="fa fa-caret-down"></i></div>
+                        <div id="group-settings-chart" class="hidden">
+                            <div class="section-subtitle">Access settings</div>
+                            <!-- Table  -->
+                            <table class="table table-bordered">
+                            <!-- Table head -->
+                            <thead>
+                                <tr>
+                                <th>
+                                </th>
+                                <th>Group Owners</th>
+                                <th>Group Managers</th>
+                                <th>Group Members</th>
+                                <th>Entire Organization</th>
+                                <th>External</th>
+                                </tr>
+                            </thead>
+                            <!-- Table head -->
+
+                            <!-- Table body -->
+                            <tbody>
+                                <tr>
+                                <th scope="row">
+                                    Contact owners
+                                </th>
+                                <td>
+                                    <input disabled checked type="checkbox" class="table-checkbox-input" id="contact-owners-group-owners">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="contact-owners-group-managers">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="contact-owners-group-members">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="contact-owners-entire-organization">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="contact-owners-external">
+                                </td>
+                                </tr>
+
+                                <tr>
+                                <th scope="row">
+                                    View members
+                                </th>
+                                <td>
+                                    <input disabled checked type="checkbox" class="table-checkbox-input" id="view-members-group-owners">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="view-members-group-managers">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="view-members-group-members">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="view-members-entire-organization">
+                                </td>
+                                </tr>
+
+                                <tr>
+                                <th scope="row">
+                                    View topics
+                                </th>
+                                <td>
+                                    <input disabled checked type="checkbox" class="table-checkbox-input" id="view-topics-group-owners">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="view-topics-group-managers">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="view-topics-group-members">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="view-topics-entire-organization">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="view-topics-external">
+                                </td>
+                                </tr>
+
+                                <tr>
+                                <th scope="row">
+                                    Publish posts
+                                </th>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="publish-posts-group-owners">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="publish-posts-group-managers">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="publish-posts-group-members">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="publish-posts-entire-organization">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="publish-posts-external">
+                                </td>
+                                </tr>
+
+                            </tbody>
+                            <!-- Table body -->
+                            </table>
+                            <!-- Table  -->
+
+                            <div class="section-subtitle">Membership settings</div>
+                            <!-- Table  -->
+                            <table class="table table-bordered">
+                            <!-- Table head -->
+                            <thead>
+                                <tr>
+                                <th>
+                                </th>
+                                <th>Group Owners</th>
+                                <th>Group Managers</th>
+                                <th>Group Members</th>
+                                </tr>
+                            </thead>
+                            <!-- Table head -->
+
+                            <!-- Table body -->
+                            <tbody>
+                                <tr>
+                                <th scope="row">
+                                    Manage members
+                                    <p class="light">Add, invite, approve</p>
+                                </th>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="manage-members-group-owners">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="manage-members-group-managers">
+                                </td>
+                                <td>
+                                    <input disabled type="checkbox" class="table-checkbox-input" id="manage-members-group-members">
+                                </td>
+                                </tr>
+
+                            </tbody>
+                            <!-- Table body -->
+                            </table>
+                            <!-- Table  -->
+                        </div>
                         <div class="section-subtitle">Who can join the group</div>
                         <p id="join-group"></p>
                         <div class="section-subtitle">Allow members outside your organization</div>
@@ -100,19 +244,18 @@
                     </div>
                     <div class="sidenav-section">
                         <div class="section-title">Danger zone</div>
+                        <div class="section-subtitle">This action is irreversible.</div>
                         <button type="button" class="btn btn-danger" onclick="deleteGroup()">
                             <i class="fa fa-trash"></i>
                             Delete group
                         </button>
-                        <p class="light">This action is irreversible.</p>
                     </div>
                     <div class="sidenav-section blue">
                         <div class="section-title">Key</div>
+                        <div class="section-subtitle">Click on the hover card for more details</div>
                         <ul>
                             <li>White circles = Users</li>
-                            <li>Blue-shaded circles = Groups
-                                <p class="light">Click on the hover card for more details</p>
-                            </li>
+                            <li>Blue-shaded circles = Groups</li>
                         </ul>
                     </div>
                 </div>
