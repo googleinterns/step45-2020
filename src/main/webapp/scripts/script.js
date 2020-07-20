@@ -35,6 +35,7 @@ function loginStatus() {
         isLoggedIn = false;
     }  
     updateIndexPage();
+    getUserProfile();
     checkSessionExpired();
     getDomain();
 }
@@ -44,6 +45,7 @@ function pagesLoginStatus(){
     if (params && params['access_token']) {
         // user is logged in
         isLoggedIn = true;
+        getUserProfile();
         checkSessionExpired();
     } else {
         // user is not logged 
@@ -86,6 +88,8 @@ function oauth2SignIn() {
         'https://www.googleapis.com/auth/admin.directory.user', 
         'https://www.googleapis.com/auth/admin.directory.customer.readonly', 
         'https://www.googleapis.com/auth/apps.groups.settings',
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email',
     ];
     // Parameters to pass to OAuth 2.0 endpoint.
     var params = {'client_id': CLIENT_ID,
@@ -115,6 +119,35 @@ function logout() {
     isLoggedIn = false;
     window.location.href='/index.html';
     updateIndexPage();
+}
+
+// get the profile of the currently signed in user
+function getUserProfile(){
+    if(isLoggedIn){
+        var params2 = JSON.parse(localStorage.getItem('oauth2-test-params'));
+        var token = params2['access_token'];
+        fetch('https://www.googleapis.com/oauth2/v1/userinfo?access_token=' + token).
+        then(response => response.json())
+        .then((user_info) => {
+            console.log(user_info);
+            if(user_info.error){
+                console.log("user info error");
+                logout();
+            } else {
+                const userItem = document.getElementById("dropdown-user-item");
+                const userPicture = document.getElementById("dropdown-user-picture");
+                const userName = document.getElementById("dropdown-user-name");
+                const userEmail = document.getElementById("dropdown-user-email");
+                userItem.href = "/pages/userdetails.html?user=" + user_info.id;
+                userPicture.src = user_info.picture;
+                userName.innerHTML = user_info.name;
+                userEmail.innerHTML = user_info.email;
+            }
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+    }
 }
 
 // if the user's oauth session is expired, force logout and prompt to log in again

@@ -66,6 +66,11 @@ th {
     color: #fff;
 }
 
+.navbar .dropdown-item {
+    cursor: pointer;
+    text-align: center;
+}
+
 .navbar-collapse {
     flex-direction: row;
     justify-content: space-between;
@@ -78,6 +83,12 @@ th {
 
 .navbar-toggler-icon {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+#dropdown-user-picture {
+    border-radius: 50%;
+    height: 80px;
+    width: 80px;
 }
 
 .page-title {
@@ -120,25 +131,26 @@ th {
   background-color: #f3faffff;
 }
 
-.sidenav .sidenav-section .section-title {
+.section-title {
     font-size: 1.25rem;
     color: #888;
     margin-top: 10px;
     font-weight: 400;
 }
 
-.sidenav .sidenav-section .section-subtitle {
+.section-subtitle {
     color: black;
     margin-top: 10px;
     font-weight: 400;
 }
 
-.sidenav .sidenav-section p {
+.sidenav .sidenav-section p,
+.section-text {
     margin: 0;
     color: #888;
 }
 
-.sidenav .sidenav-section .section-link {
+.section-link {
     margin: 0;
     color: #007bff;
     text-decoration: none;

@@ -20,37 +20,40 @@
   </head>
   <body onload="userOnload();">
     <nav class="navbar navbar-expand-lg" id="header-navbar">
-        <a class="navbar-brand" href="/">gRoot</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-            <ul class="navbar-nav left">
-                <li class="nav-item">
-                    <a class="nav-link" href="ou.html">Organizational Units</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="groups.html">Groups</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="user.html">Users</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav right">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Profile
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <a class="dropdown-item" href="#">Action</a>
-                    <a class="dropdown-item" href="#">Another action</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item"><button class="btn btn-error" onclick="logout()">Logout</button></a>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </nav>
+            <a class="navbar-brand" href="/">gRoot</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav left">
+                    <li class="nav-item">
+                        <a class="nav-link" href="ou.html">Organizational Units</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="groups.html">Groups</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user.html">Users</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav right">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Profile
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" id="dropdown-user-item" href="#">
+                            <img id="dropdown-user-picture"/>
+                            <div class="section-subtitle" id="dropdown-user-name"></div>
+                            <div class="section-text" id="dropdown-user-email"></div>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" onclick="logout()">Logout</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
     <div class="page-title card">Users</div>
     <div class="container flex wrap between">
         <!-- Page sidebar -->
