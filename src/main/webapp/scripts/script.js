@@ -59,15 +59,21 @@ function pagesLoginStatus(){
 // Otherwise, show the login form page
 function updateIndexPage() {
     var headerNavbar = document.getElementById("header-navbar");
+    var pageTitle = document.getElementsByClassName("page-title");
+    var loginNavbar = document.getElementById("login-navbar");
     var loginFormContainer = document.getElementById("login-form-container");
     var homeContainer = document.getElementById("home-container");
     if (isLoggedIn) {
         headerNavbar.classList.remove("hidden")
+        pageTitle[0].classList.remove("hidden")
         homeContainer.classList.remove("hidden")
+        loginNavbar.classList.add("hidden")
         loginFormContainer.classList.add("hidden")
     } else {
         headerNavbar.classList.add("hidden")
+        pageTitle[0].classList.add("hidden")
         homeContainer.classList.add("hidden")
+        loginNavbar.classList.remove("hidden")
         loginFormContainer.classList.remove("hidden")
     }
 }

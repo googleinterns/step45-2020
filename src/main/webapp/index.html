@@ -15,7 +15,23 @@
     </head>
 
     <body onload="loginStatus();">
-        <nav class="navbar navbar-expand-lg" id="header-navbar">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow fixed-top" id="login-navbar">
+            <a class="navbar-brand" href="/">gRoot</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://github.com/googleinterns/step45-2020">
+                            <i class="fa fa-github" aria-hidden="true"></i>
+                            <span>See Github</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <nav class="navbar navbar-expand-lg hidden" id="header-navbar">
             <a class="navbar-brand" href="/">gRoot</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -50,13 +66,22 @@
                 </ul>
             </div>
         </nav>
-        <div class="container">
-            <div id="login-form-container">
-                <h2>Hello!</h2>
-                <p>I am Groot. Who are you?</p>
-                <button type="submit" class="btn btn-primary" onclick="oauth2SignIn()">Log in</button>
+        <div class="page-title card hidden">Welcome to gRoot visualization console!</div>
+        <div id="login-form-container">
+            <!-- Full Page Image Header with Vertically Centered Content -->
+            <header class="masthead">
+            <div class="container h-100">
+                <div class="row h-100 align-items-center">
+                <div class="col-12 text-center">
+                    <h1 class="font-weight-light">Hello!</h1>
+                    <p class="lead">I am Groot. Who are you?</p>
+                    <button type="submit" class="btn btn-primary" onclick="oauth2SignIn()">Log in</button>
+                </div>
+                </div>
             </div>
-            <div id="home-container">
+            </header>
+        </div>
+        <div class="container" id="home-container">
                 <ul class="home-buttons-list">
                     <li class="home-button-item">
                         <a href="pages/ou.html" class="home-button card">
@@ -86,7 +111,6 @@
                         </a>
                     </li>
                 </ul>
-            </div>
         </div>
     </body>
 </html>
