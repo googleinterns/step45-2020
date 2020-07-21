@@ -771,6 +771,18 @@ async function userdetailOnload(){
     }
     });
     var user = await response.json();
+    var relations = user.relations ? user.relations : null;
+    var manager;
+    if(relations){
+        for(var i = 0; i < relations.length; i++){
+            if(relations[i].type === "manager"){
+                manager = relations[i].value;
+            }
+        }
+    }
+    var managerElement = document.getElementById("manager");
+    managerElement.innerText = manager ? manager : "No manager";
+
     var userNameElement = document.getElementById("user-name");
     userNameElement.innerText = user.name.fullName;
     var userEmailElement = document.getElementById("user-email");

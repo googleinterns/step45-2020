@@ -106,6 +106,11 @@ describe("Test add user to data", function(){
             {data: {name: "East-coast", path: "/East-coast", parentPath: "/", users: [], numUsers: 3}}
         ]
     }
+
+    var body = document.getElementsByTagName("body")[0];
+    it("dumb", function(){
+        expect(body).toBeDefined();
+    })
     
     it("add user to root", function(done) {
         expect(data.data.users.length).toEqual(0);
