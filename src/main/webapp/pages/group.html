@@ -39,20 +39,25 @@
                 </ul>
                 <ul class="navbar-nav right">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Profile
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                        <a class="dropdown-item" href="#">Action</a>
-                        <a class="dropdown-item" href="#">Another action</a>
+                        <a class="dropdown-item" id="dropdown-user-item" href="#">
+                            <img id="dropdown-user-picture"/>
+                            <div class="section-subtitle" id="dropdown-user-name"></div>
+                            <div class="section-text" id="dropdown-user-email"></div>
+                        </a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item"><button class="btn btn-error" onclick="logout()">Logout</button></a>
+                        <a class="dropdown-item" onclick="logout()">Logout</a>
                         </div>
                     </li>
                 </ul>
             </div>
         </nav>
-        <div class="page-title card"><a href="groups.html">Groups</a> > <span id="group-name-title"></span></div>
+        <div class="page-title card">
+            <a href="groups.html">Groups</a> <i class="fa fa-xs fa-chevron-right" aria-hidden="true"></i> <span id="group-name-title"></span>
+        </div>
         <div class="container flex wrap between">
             <!-- Page sidebar -->
             <div class="sidenav-container">
