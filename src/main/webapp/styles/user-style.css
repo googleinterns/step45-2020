@@ -60,14 +60,15 @@ ul{
     padding: 2px;
 }
 
-#clear {
+.filter-btn {
     border: none;
     background: none;
     color: blue;
     font-size: 1.00rem;
+    margin: 1px;
 }
 
-#clear:hover {
+#filter-btn:hover {
     text-decoration: underline;
 }
 
@@ -127,10 +128,6 @@ img {
 #rename-span {
     background-color: #ffe680;
     padding: 3px;
-}
-
-.filter-btn {
-    margin: 1px;
 }
 
 .accordion {
