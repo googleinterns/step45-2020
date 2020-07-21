@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <title>Group!</title>
+        <title>Group</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -15,11 +15,12 @@
         <link rel="stylesheet" href="../styles/style.css">
         <link rel="stylesheet" href="../styles/group-style.css">
         <script src="../scripts/script.js"></script>
-        <script src="../scripts/group-script.js"></script>
+        <script src="../scripts/groups-script.js"></script>
+        <script src="../scripts/group-details-script.js"></script>
 
     </head>
 
-    <body onload="pagesLoginStatus(); onloadGroupDetails();">
+    <body onload="onloadGroupDetails();">
         <nav class="navbar navbar-expand-lg" id="header-navbar">
             <a class="navbar-brand" href="/">gRoot</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,7 +29,7 @@
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav left">
                     <li class="nav-item">
-                        <a class="nav-link" href="ou.html">Organizational Units</a>
+                        <a class="nav-link" href="ou.html">Org Units</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="groups.html">Groups</a>
@@ -39,20 +40,25 @@
                 </ul>
                 <ul class="navbar-nav right">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Profile
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                        <a class="dropdown-item" href="#">Action</a>
-                        <a class="dropdown-item" href="#">Another action</a>
+                        <a class="dropdown-item" id="dropdown-user-item" href="#">
+                            <img id="dropdown-user-picture"/>
+                            <div class="section-subtitle" id="dropdown-user-name"></div>
+                            <div class="section-text" id="dropdown-user-email"></div>
+                        </a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item"><button class="btn btn-error" onclick="logout()">Logout</button></a>
+                        <a class="dropdown-item" onclick="logout()">Logout</a>
                         </div>
                     </li>
                 </ul>
             </div>
         </nav>
-        <div class="page-title card"><a href="groups.html">Groups</a> > <span id="group-name-title"></span></div>
+        <div class="page-title card">
+            <a href="groups.html">Groups</a> <i class="fa fa-xs fa-chevron-right" aria-hidden="true"></i> <span id="group-name-title"></span>
+        </div>
         <div class="container flex wrap between">
             <!-- Page sidebar -->
             <div class="sidenav-container">
@@ -62,7 +68,7 @@
                 <div class="sidenav card">
                     <div class="sidenav-section">
                         <div class="section-right">
-                            <button type="button" class="btn btn-light" onclick="showEditForm()">
+                            <button type="button" class="btn btn-light" onclick="showEditInformationForm()">
                                 <i class="fa fa-edit"></i>
                                 Edit
                             </button>
@@ -84,7 +90,7 @@
                     </div>
                     <div class="sidenav-section">
                         <div class="section-right">
-                            <button type="button" class="btn btn-light" onclick="showEditForm()">
+                            <button type="button" class="btn btn-light" onclick="showEditSettingsForm()">
                                 <i class="fa fa-edit"></i>
                                 Edit
                             </button>
