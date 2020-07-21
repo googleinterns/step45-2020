@@ -38,7 +38,7 @@ var UIFramework = (function() {
 //     });
 // });
 
-describe("Test checkboxes", function() {
+// describe("Test checkboxes", function() {
 //     // create checkboxes
 //     // var checkbox1 = UIFramework.input("checkbox", "checkbox-value1");
 //     // var checkbox2 = UIFramework.input("checkbox", "checkbox-value2");

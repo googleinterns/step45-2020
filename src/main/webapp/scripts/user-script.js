@@ -1,6 +1,6 @@
-var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
-var token = params['access_token'];
-var domain = localStorage.getItem('domain');
+// var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
+// var token = params['access_token'];
+// var domain = localStorage.getItem('domain');
 var flatdata = [] // flatdata to contain all orgUnits, will be converted to hierarchical data 
 var data = {} // data to contail all orgUnits and users 
 var searchInput; // input for searchbar
@@ -12,7 +12,7 @@ var isLoading;
 
 // the function called onload for user.html
 function userOnload(){
-    pagesLoginStatus(); 
+    loginStatus(); 
     loadInstruction();
     sidebar();
     fetchOUs();
@@ -572,7 +572,7 @@ async function sidebar(){
         $(':checkbox:enabled').prop('checked', false);
         var numFilterElement = document.getElementById('num-filter-users');
         numFilterElement.innerText = 0;
-        pagesLoginStatus();
+        loginStatus();
         fetchOUs();
     })
     searchField.addEventListener("search", function(event) {
@@ -614,7 +614,7 @@ async function sidebar(){
         var checkbox = checkboxElems[i];
         checkboxElems[i].addEventListener("click", function(e) {
             updateOrgUnitInput(e);
-            pagesLoginStatus();
+            loginStatus();
             fetchOUs();
         });
     }
@@ -636,7 +636,7 @@ async function sidebar(){
     for (var i = 0; i < checkboxElems.length; i++) {
         checkboxElems[i].addEventListener("click", function(e) {
             updateGroupInput(e);
-            pagesLoginStatus();
+            loginStatus();
             fetchOUs;
         });
     }
@@ -711,7 +711,7 @@ function clearFilters(){
     $(':checkbox:enabled').prop('checked', false);
     var numFilterElement = document.getElementById('num-filter-users');
     numFilterElement.innerText = 0;
-    pagesLoginStatus();
+    loginStatus();
     fetchOUs();
 }
 
@@ -723,7 +723,7 @@ function checkAllOUFilters(){
         orgUnitInput.push(ouchecks[i].value);
     }  
     clearSearch();
-    pagesLoginStatus();
+    loginStatus();
     fetchOUs();
 }
 
@@ -735,7 +735,7 @@ function checkAllGroupFilters(){
         groupInput.push(groupchecks[i].value);
     }  
     clearSearch();
-    pagesLoginStatus();
+    loginStatus();
     fetchOUs();
 }
 
@@ -760,7 +760,7 @@ function orderBy(){
 /** User details page */
 // user detail onload
 async function userdetailOnload(){
-    pagesLoginStatus(); 
+    loginStatus(); 
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     var userid = urlParams.get('user');
