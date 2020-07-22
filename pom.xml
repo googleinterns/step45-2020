@@ -103,10 +103,11 @@
                    <source>${project.basedir}/src/test/javascript/jquery-min.js</source>
                    <source>${project.basedir}/src/third_party/sinon-2.4.1.js</source>
                    <source>${project.basedir}/src/test/javascript/test-setup.js</source>
+                   <!-- <source>${project.basedir}/src/main/webapp/scripts/user-script.js</source> -->
                </preloadSources>
                <sourceIncludes>
                   <include>${project.basedir}/src/test/javascript/test-setup.js</include>
-                  <include>${project.basedir}/src/main/webapp/scripts/ou-script.js</include>
+                  <include>${project.basedir}/src/main/webapp/scripts/user-script.js</include>
                </sourceIncludes>
            </configuration>
        </plugin>

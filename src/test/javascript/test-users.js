@@ -38,7 +38,7 @@ var UIFramework = (function() {
 //     });
 // });
 
-describe("Test checkboxes", function() {
+// describe("Test checkboxes", function() {
 //     // create checkboxes
 //     // var checkbox1 = UIFramework.input("checkbox", "checkbox-value1");
 //     // var checkbox2 = UIFramework.input("checkbox", "checkbox-value2");
@@ -48,7 +48,7 @@ describe("Test checkboxes", function() {
 //     var orgUnitInput = [];
 //     var groupInput = [];
 
-//     
+    
 //     it("test adding orgunits to filter", function(done) {
 //         var orgUnitInput = [];
 
@@ -95,10 +95,9 @@ describe("Test checkboxes", function() {
 //             expect(groupInput).toContain("checkbox-value1");
 //             expect(groupInput).not.toContain("checkbox-value2");
 //         });
-
 //     });
 // });
-  
+
 describe("Test add user to data", function(){
     var data = {
         data: {name: "GRoot Test", path: "/", parentPath: null, users: [], numUsers: 3},
@@ -112,7 +111,7 @@ describe("Test add user to data", function(){
         $.getScript('/src/main/webapp/scripts/user-script.js', function() {
             var orgUnitPath = "/";
             var userJSON = {"name": "test name", "id": "12345", "orgUnitPath": orgUnitPath};
-            addUserToOUByPath(data, orgUnitPath, userJSON);
+            window.addUserToOUByPath(data, orgUnitPath, userJSON);
             expect(data.data.users.length).toEqual(1);
             done();
         });
@@ -131,34 +130,35 @@ describe("Test add user to data", function(){
     
 });
 
-// describe("Test d3js", function() {
-//     var userGroups = [
-//             {
-//                 "id": "107619745798990508895",
-//                 "name": "wenyi guo",
-//                 "parent": null
-//             },
-//             {
-//                 "id": "01d96cc03ttea2i",
-//                 "name": "cornell-2022",
-//                 "parent": "wenyi guo"
-//             },
-//             {
-//                 "id": "02p2csry3w979pn",
-//                 "name": "test-group-exclude-dolde",
-//                 "parent": "wenyi guo"
-//             }
-//             ]
+describe("Test d3js", function() {
+    var userGroups = [
+            {
+                "id": "107619745798990508895",
+                "name": "wenyi guo",
+                "parent": null
+            },
+            {
+                "id": "01d96cc03ttea2i",
+                "name": "cornell-2022",
+                "parent": "wenyi guo"
+            },
+            {
+                "id": "02p2csry3w979pn",
+                "name": "test-group-exclude-dolde",
+                "parent": "wenyi guo"
+            }
+            ]
 
-//     $.getScript('/src/main/webapp/scripts/user-script.js', function() {   
-//         it("test visualize", function() {
-//             visualizeUser(userGroups, "user-groups");
+    $.getScript('/src/main/webapp/scripts/user-script.js', function() {   
+        it("test visualize", function() {
+            visualizeUser(userGroups, "user-groups");
 
-//             var svg = $('svg').first();
-//             expect(svg).not.toBe(null);
-//             expect(svg.children().first().length).toEqual(3);
-//         });
-//     });
-// });
+            var svg = $('svg').first();
+            expect(svg).not.toBe(null);
+            expect(svg.children().first().length).toEqual(3);
+            done();
+        });
+    });
+});
 
 

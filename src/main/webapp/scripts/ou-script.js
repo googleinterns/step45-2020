@@ -1,6 +1,18 @@
-var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
-var token = params['access_token'];
-var domain = localStorage.getItem('domain');
+var params;
+var token;
+var domain;
+// assign values in try catch statement to prevent them from breaking the tests
+try {
+    params = JSON.parse(localStorage.getItem('oauth2-test-params'));
+    token = params['access_token'];
+    domain = localStorage.getItem('domain');
+} catch(err) {
+    // print out issues?
+} finally {
+    // assign default values?
+}
+
+
 var isLoading;
 
 /*
