@@ -8,6 +8,7 @@ var data;
 var groups;
 var users;
 var visited;
+var members;
 
 /** Tooltip hover card */
 var displayTooltip;
@@ -377,6 +378,8 @@ async function loadGroups() {
     users = [];
     if (groups.length == 0) {
         data = {};
+        visualize();
+        loadGroupsSidebar();
     } else {
         data = {
             name: domain,
@@ -384,24 +387,34 @@ async function loadGroups() {
         };
         // create the visited hash set for groups already processed, containing group IDs
         visited = {};
-        
+        members = {};
+
+        // collect all the promises
+        var promises = [];
         for (var i = 0; i < groups.length; i++) {
-            // if already visited, then add the circle data
-            if (visited.hasOwnProperty(groups[i].id)) {
-                if (!showOnlyParentGroups) {
-                    var visitedGroup = visited[groups[i].id];
-                    data.children.push(visitedGroup)
-                }
-            } else {
-                // recursive DFS on the new group to get the new data
-                var newData = await loadGroupsDFS(groups[i]);
-                data.children.push(newData);
-            }
+            // iterate through all the groups and get their direct members
+            promises.push(getGroupMembers(groups[i].id));
         }
+
+        Promise.all(promises)
+        .then(async function(results) {
+            for (var i = 0; i < groups.length; i++) {
+                // if already visited, then add the circle data
+                if (visited.hasOwnProperty(groups[i].id)) {
+                    if (!showOnlyParentGroups) {
+                        var visitedGroup = visited[groups[i].id];
+                        data.children.push(visitedGroup)
+                    }
+                } else {
+                    // recursive DFS on the new group to get the new data
+                    var newData = await loadGroupsDFS(groups[i]);
+                    data.children.push(newData);
+                }
+            }
+            visualize();
+            loadGroupsSidebar();
+        })
     }
-    
-    visualize();
-    loadGroupsSidebar();
 }
 
 async function loadGroupsDFS(currGroup, parentGroup) {
@@ -431,61 +444,60 @@ async function loadGroupsDFS(currGroup, parentGroup) {
         value: parseInt(currGroup.directMembersCount == 0 ? 1 : currGroup.directMembersCount),
         id: currGroup.id
     }
-    // iterate through all the direct members of this current group
-    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'+ currGroup.id + '/members', {
-        headers: {
-            'authorization': `Bearer ` + token,
-        }
-    })
-    const json = await response.json();
+    // if members does not exist, a.k.a. you are on group details page
+    var currMembers
+    if (!members) {
+        currMembers = await getGroupMembers(currGroup.id);
+    } else {
+        currMembers = members[currGroup.id];
+    }
+    for (var j = 0; j < currMembers.length; j++) {
+        // if already visited, then add the circle into newCircle children list
+        if (visited.hasOwnProperty(currMembers[j].id)) {
+            var visitedGroup = visited[currMembers[j].id];
 
-    if (response.status == 200) {
-        var members = json.members;
-        if (members) {
-            for (var j = 0; j < members.length; j++) {
-                // if already visited, then add the circle into newCircle children list
-                if (visited.hasOwnProperty(members[j].id)) {
-                    var visitedGroup = visited[members[j].id];
+            // if flatten groups, then don't add this group to children
+            if (!flattenGroups) {
+                // find where the group is located in data
+                newCircle.children.push(visitedGroup);
+            }
 
-                    // if flatten groups, then don't add this group to children
-                    if (!flattenGroups) {
-                        // find where the group is located in data
-                        newCircle.children.push(visitedGroup);
-                    }
-
-                    // if only show parent groups, then devare this group from data
-                    if (showOnlyParentGroups) {
-                        var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
-                        if (indexOfGroupData >= 0) {
-                            data.children.splice(indexOfGroupData, 1);
-                        }
-                    }
+            // if only show parent groups, then devare this group from data
+            if (showOnlyParentGroups) {
+                var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
+                if (indexOfGroupData >= 0) {
+                    data.children.splice(indexOfGroupData, 1);
                 }
-                // otherwise, recurse on the member and push to newCircle children list
-                else {
-                    var member = members[j];
+            }
+        }
+        // otherwise, recurse on the member and push to newCircle children list
+        else {
+            var member = currMembers[j];
 
-                    // if group, get the group with the name
-                    if (member.type == "GROUP") {
-                        member = await getGroup(member.id);
-                    }
-                    var newData = await loadGroupsDFS(member, currGroup);
+            // if group, get the group with the name
+            if (member.type == "GROUP") {
+                var indexOfGroup = groups.findIndex(elem => elem.id == member.id);
+                if (indexOfGroup < 0) {
+                    member = await getGroup(member.id);
+                } else {
+                    member = groups[indexOfGroup];
+                }
+            }
+            var newData = await loadGroupsDFS(member, currGroup);
 
-                    // if flatten groups, then don't add this group to children
-                    if (!flattenGroups) {
-                        newCircle.children.push(newData);
-                    } else {
-                        if (member.type == "USER") {
-                            newCircle.children.push(newData);
-                        } else {
-                            newCircle.value += newData.value;
-                        }
-                    }
+            // if flatten groups, then don't add this group to children
+            if (!flattenGroups) {
+                newCircle.children.push(newData);
+            } else {
+                if (member.type == "USER") {
+                    newCircle.children.push(newData);
+                } else {
+                    newCircle.value += newData.value;
                 }
             }
         }
     }
-    // if no children, devare
+    // if no children, delete
     if (newCircle.children.length == 0) {
         delete newCircle.children
     }
@@ -497,6 +509,31 @@ async function loadGroupsDFS(currGroup, parentGroup) {
         groups.push(currGroup);
     }
     return newCircle;
+}
+
+async function getGroupMembers(id) {
+    var currId = id;
+    return fetch('https://www.googleapis.com/admin/directory/v1/groups/' + currId + '/members', {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        var currMembers;
+        // if data.members is undefined, return empty array
+        if (data.members) {
+            currMembers = data.members;
+        } else {
+            currMembers = [];
+        }
+        // if members does not exist, return instead of assigning to dict
+        if (members) {
+            members[currId] = currMembers;
+        } else {
+            return currMembers;
+        }
+    });
 }
 
 /** Returns the corresponding group with the id */
