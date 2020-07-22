@@ -1,22 +1,20 @@
-var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
-var token = params['access_token'];
-var domain = "groot-test.1bot2.info";
-
 /*
  * Deletes an existing OU given its path.
 */
 function deleteOU() {
-    const ouPath = document.getElementById('delete-path').value;
+    loginStatus();
+    const ouPath = document.getElementById('delete-path');
     
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath), {
+    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath.value.trim()), {
     headers: {
         'authorization': `Bearer ` + token,
     },
     method: 'DELETE'
     })
     .then(response => {
-        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
-        location.reload();
+        ouPath.value = '';
+        d3.select("svg").remove();
+        onloadOUPage();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -27,22 +25,24 @@ function deleteOU() {
  * Adds a new OU given a name, the parent's path, and (optionally) description / inheritance setting.
 */
 function createOU() {
-    var parentPath = '/' + document.getElementById('create-path').value.trim();
-    var name = document.getElementById('create-name').value.trim();
-    var descript =  document.getElementById('create-descript').value.trim();
-    var blockInherit = document.getElementById('create-inherit').value.trim();
+    loginStatus();
+    var parentPath = document.getElementById('create-path');
+    var name = document.getElementById('create-name');
+    var descript =  document.getElementById('create-descript');
+    var blockInherit = document.getElementById('create-inherit');
+    var boolInherit;
 
-    if (blockInherit == 'block') {
-        blockInherit = true;
+    if (blockInherit.value.trim() == 'block') {
+        boolInherit = true;
     } else {
-        blockInherit = false;
+        boolInherit = false;
     }
 
     var newOU = {
-            "name": name,
-            "description": descript,
-            "parentOrgUnitPath": parentPath,
-            "blockInheritance": blockInherit
+            "name": name.value.trim(),
+            "description": descript.value.trim(),
+            "parentOrgUnitPath": '/' + parentPath.value.trim(),
+            "blockInheritance": boolInherit
         };
 
     fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits'), {
@@ -55,8 +55,13 @@ function createOU() {
     body: JSON.stringify(newOU)
     })
     .then(response => {
-        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
-        location.reload();
+        parentPath.value = '';
+        name.value = '';
+        descript.value = '';
+        blockInherit.value = '';
+
+        d3.select("svg").remove();
+        onloadOUPage();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -67,34 +72,35 @@ function createOU() {
  * Updates an OU with a new name, parent path, description, or inheritance setting.
 */
 function updateOU() {
+    loginStatus();
 
     var updateOU = {};
 
-    var ouPath = document.getElementById('update-path').value.trim();
+    var ouPath = document.getElementById('update-path');
 
-    var parentPath = document.getElementById('update-parent-path').value.trim();
-    var name = document.getElementById('update-name').value.trim();
-    var descript =  document.getElementById('update-descript').value.trim();
-    var blockInherit = document.getElementById('update-inherit').value.trim();
+    var parentPath = document.getElementById('update-parent-path');
+    var name = document.getElementById('update-name');
+    var descript =  document.getElementById('update-descript');
+    var blockInherit = document.getElementById('update-inherit');
 
     // update fields if non-empty
-    if (parentPath != '') {
-        updateOU.parentOrgUnitPath = '/' + parentPath;
+    if (parentPath.value.trim() != '') {
+        updateOU.parentOrgUnitPath = '/' + parentPath.value.trim();
     }
-    if (name != '') {
-        updateOU.name = name;
+    if (name.value.trim() != '') {
+        updateOU.name = name.value.trim();
     }
-    if (descript != '') {
-        updateOU.description = descript;
+    if (descript.value.trim() != '') {
+        updateOU.description = descript.value.trim();
     }
-    if (blockInherit == 'block') {
+    if (blockInherit.value.trim() == 'block') {
         updateOU.blockInheritance = true;
     }
-    if (blockInherit == 'unblock') {
+    if (blockInherit.value.trim() == 'unblock') {
         updateOU.blockInheritance = false;
     }
 
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath), {
+    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath.value.trim()), {
     headers: {
         'authorization': `Bearer ` + token,
         'dataType': 'application/json',
@@ -104,8 +110,14 @@ function updateOU() {
     body: JSON.stringify(updateOU)
     })
     .then(response => {
-        // refresh the page (getAllOUs call alone doesn't work, as puts new visual directly above old)
-        // location.reload();
+        ouPath.value = '';
+        parentPath.value = '';
+        name.value = '';
+        descript.value = '';
+        blockInherit.value = '';
+
+        d3.select("svg").remove();
+        onloadOUPage();
     })
     .catch((error) => {
         console.error('Error:', error);
