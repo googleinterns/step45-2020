@@ -102,7 +102,7 @@ function getAccessType(group) {
         whoCanAssistContent: "NONE",	
         whoCanBanUsers: "OWNERS_AND_MANAGERS",	
         whoCanContactOwner: "ANYONE_CAN_CONTACT",	
-        whoCanDevareAnyPost: "OWNERS_AND_MANAGERS",	
+        whoCanDeleteAnyPost: "OWNERS_AND_MANAGERS",	
         whoCanDeleteTopics: "OWNERS_AND_MANAGERS",	
         whoCanDiscoverGroup: "ALL_IN_DOMAIN_CAN_DISCOVER",	
         whoCanEnterFreeFormTags: "NONE",	
