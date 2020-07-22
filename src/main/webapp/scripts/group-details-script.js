@@ -102,7 +102,7 @@ function getAccessType(group) {
         whoCanAssistContent: "NONE",	
         whoCanBanUsers: "OWNERS_AND_MANAGERS",	
         whoCanContactOwner: "ANYONE_CAN_CONTACT",	
-        whoCanDevareAnyPost: "OWNERS_AND_MANAGERS",	
+        whoCanDeleteAnyPost: "OWNERS_AND_MANAGERS",	
         whoCanDeleteTopics: "OWNERS_AND_MANAGERS",	
         whoCanDiscoverGroup: "ALL_IN_DOMAIN_CAN_DISCOVER",	
         whoCanEnterFreeFormTags: "NONE",	
@@ -190,111 +190,96 @@ function viewSettings() {
 
 /** Fills in the checkbox table for access and membership settings */
 function setAccessMembershipSettingsTable(json) {
-    // create the access and membership settings table chart
-    var accessSettingsCheckboxes = [
-            [document.getElementById("contact-owners-group-owners"),
+    // contact owners
+    var whoCanContactOwnerCheckboxMap = {
+        "ANYONE_CAN_CONTACT": [document.getElementById("contact-owners-group-owners"),
             document.getElementById("contact-owners-group-managers"),
             document.getElementById("contact-owners-group-members"),
             document.getElementById("contact-owners-entire-organization"),
             document.getElementById("contact-owners-external"),],
-            [document.getElementById("view-members-group-owners"),
+        "ALL_IN_DOMAIN_CAN_CONTACT": [document.getElementById("contact-owners-group-owners"),
+            document.getElementById("contact-owners-group-managers"),
+            document.getElementById("contact-owners-group-members"),
+            document.getElementById("contact-owners-entire-organization"),],
+        "ALL_MEMBERS_CAN_CONTACT": [document.getElementById("contact-owners-group-owners"),
+            document.getElementById("contact-owners-group-managers"),
+            document.getElementById("contact-owners-group-members"),],
+        "ALL_MANAGERS_CONTACT": [document.getElementById("contact-owners-group-owners"),
+            document.getElementById("contact-owners-group-managers"),],
+        "ALL_OWNERS_CAN_CONTACT": [document.getElementById("contact-owners-group-owners"),],
+    }
+    // view members
+    var whoCanViewMembershipCheckboxMap = {
+        "ALL_IN_DOMAIN_CAN_VIEW": [document.getElementById("view-members-group-owners"),
             document.getElementById("view-members-group-managers"),
             document.getElementById("view-members-group-members"),
             document.getElementById("view-members-entire-organization"),],
-            [document.getElementById("view-topics-group-owners"),
+        "ALL_MEMBERS_CAN_VIEW": [document.getElementById("view-members-group-owners"),
+            document.getElementById("view-members-group-managers"),
+            document.getElementById("view-members-group-members"),],
+        "ALL_MANAGERS_CAN_VIEW": [document.getElementById("view-members-group-owners"),
+            document.getElementById("view-members-group-managers"),],
+        "ALL_OWNERS_CAN_VIEW": [document.getElementById("view-members-group-owners"),],
+    }
+    // view topics
+    var whoCanViewGroupCheckboxMap = {
+        "ANYONE_CAN_VIEW": [document.getElementById("view-topics-group-owners"),
             document.getElementById("view-topics-group-managers"),
             document.getElementById("view-topics-group-members"),
             document.getElementById("view-topics-entire-organization"),
             document.getElementById("view-topics-external"),],
-            [document.getElementById("publish-posts-group-owners"),
+        "ALL_IN_DOMAIN_CAN_VIEW": [document.getElementById("view-topics-group-owners"),
+            document.getElementById("view-topics-group-managers"),
+            document.getElementById("view-topics-group-members"),
+            document.getElementById("view-topics-entire-organization"),],
+        "ALL_MEMBERS_CAN_VIEW": [document.getElementById("view-topics-group-owners"),
+            document.getElementById("view-topics-group-managers"),
+            document.getElementById("view-topics-group-members"),],
+        "ALL_MANAGERS_CAN_VIEW": [document.getElementById("view-topics-group-owners"),
+            document.getElementById("view-topics-group-managers"),],
+        "ALL_OWNERS_CAN_VIEW": [document.getElementById("view-topics-group-owners"),],
+    }
+    // publish posts
+    var whoCanPostMessageCheckboxMap = {
+        "ANYONE_CAN_POST": [document.getElementById("publish-posts-group-owners"),
             document.getElementById("publish-posts-group-managers"),
             document.getElementById("publish-posts-group-members"),
             document.getElementById("publish-posts-entire-organization"),
             document.getElementById("publish-posts-external"),],
-        ]
-    accessSettingsChecked = [
-            [true, false, false, false, false,],
-            [true, false, false, false,],
-            [true, false, false, false, false,],
-            [false, false, false, false, false,],
-        ]
-    var membershipSettingsCheckboxes = [
-            document.getElementById("manage-members-group-owners"),
-            document.getElementById("manage-members-group-managers"),
-            document.getElementById("manage-members-group-members"),
-        ]
-    membershipSettingsChecked = [
-            false, false, false,
-        ]
-
-    // contact owners
-    if (json.whoCanContactOwner == "ANYONE_CAN_CONTACT") {
-        accessSettingsChecked[0] = [true, true, true, true, true];
-    } else if (json.whoCanContactOwner == "ALL_IN_DOMAIN_CAN_CONTACT") {
-        accessSettingsChecked[0] = [true, true, true, true, false];
-    } else if (json.whoCanContactOwner == "ALL_MEMBERS_CAN_CONTACT") {
-        accessSettingsChecked[0] = [true, true, true, false, false];
-    } else if (json.whoCanContactOwner == "ALL_MANAGERS_CONTACT") {
-        accessSettingsChecked[0] = [true, true, false, false, false];
-    } else if (json.whoCanContactOwner == "ALL_OWNERS_CAN_CONTACT") {
-        accessSettingsChecked[0] = [true, false, false, false, false];
+        "ALL_IN_DOMAIN_CAN_POST": [document.getElementById("publish-posts-group-owners"),
+            document.getElementById("publish-posts-group-managers"),
+            document.getElementById("publish-posts-group-members"),
+            document.getElementById("publish-posts-entire-organization"),],
+        "ALL_MEMBERS_CAN_POST": [document.getElementById("publish-posts-group-owners"),
+            document.getElementById("publish-posts-group-managers"),
+            document.getElementById("publish-posts-group-members"),],
+        "ALL_MANAGERS_CAN_POST": [document.getElementById("publish-posts-group-owners"),
+            document.getElementById("publish-posts-group-managers"),],
+        "ALL_OWNERS_CAN_POST": [document.getElementById("publish-posts-group-owners"),],
+        "NONE_CAN_POST": [],
     }
-    // view members
-    if (json.whoCanViewMembership == "ALL_IN_DOMAIN_CAN_VIEW") {
-        accessSettingsChecked[1] = [true, true, true, true];
-    } else if (json.whoCanViewMembership == "ALL_MEMBERS_CAN_VIEW") {
-        accessSettingsChecked[1] = [true, true, true, false];
-    } else if (json.whoCanViewMembership == "ALL_MANAGERS_CAN_VIEW") {
-        accessSettingsChecked[1] = [true, true, false, false];
-    } else if (json.whoCanViewMembership == "ALL_OWNERS_CAN_VIEW") {
-        accessSettingsChecked[1] = [true, false, false, false];
-    }
-    // view topics
-    if (json.whoCanViewGroup == "ANYONE_CAN_VIEW") {
-        accessSettingsChecked[2] = [true, true, true, true, true];
-    } else if (json.whoCanViewGroup == "ALL_IN_DOMAIN_CAN_VIEW") {
-        accessSettingsChecked[2] = [true, true, true, true, false];
-    } else if (json.whoCanViewGroup == "ALL_MEMBERS_CAN_VIEW") {
-        accessSettingsChecked[2] = [true, true, true, false, false];
-    } else if (json.whoCanViewGroup == "ALL_MANAGERS_CAN_VIEW") {
-        accessSettingsChecked[2] = [true, true, false, false, false];
-    } else if (json.whoCanViewGroup == "ALL_OWNERS_CAN_VIEW") {
-        accessSettingsChecked[2] = [true, false, false, false, false];
-    }
-    // publish posts
-    if (json.whoCanPostMessage == "ANYONE_CAN_POST") {
-        accessSettingsChecked[3] = [true, true, true, true, true];
-    } else if (json.whoCanPostMessage == "ALL_IN_DOMAIN_CAN_POST") {
-        accessSettingsChecked[3] = [true, true, true, true, false];
-    } else if (json.whoCanPostMessage == "ALL_MEMBERS_CAN_POST") {
-        accessSettingsChecked[3] = [true, true, true, false, false];
-    } else if (json.whoCanPostMessage == "ALL_MANAGERS_CAN_POST") {
-        accessSettingsChecked[3] = [true, true, false, false, false];
-    } else if (json.whoCanPostMessage == "ALL_OWNERS_CAN_POST") {
-        accessSettingsChecked[3] = [true, false, false, false, false];
-    } else if (json.whoCanPostMessage == "NONE_CAN_POST") {
-        accessSettingsChecked[3] = [false, false, false, false, false];
-    }
-
     // manage members
-    if (json.whoCanModifyMembers == "ALL_MEMBERS") {
-        membershipSettingsChecked = [true, true, true];
-    } else if (json.whoCanModifyMembers == "OWNERS_AND_MANAGERS") {
-        membershipSettingsChecked = [true, true, false];
-    } else if (json.whoCanModifyMembers == "OWNERS_ONLY") {
-        membershipSettingsChecked = [true, false, false];
-    } else if (json.whoCanModifyMembers == "NONE") {
-        membershipSettingsChecked = [false, false, false];
+    var whoCanModifyMembersCheckboxMap = {
+        "ALL_MEMBERS": [document.getElementById("manage-members-group-owners"),
+            document.getElementById("manage-members-group-managers"),
+            document.getElementById("manage-members-group-members"),],
+        "OWNERS_AND_MANAGERS": [document.getElementById("manage-members-group-owners"),
+            document.getElementById("manage-members-group-managers"),],
+        "OWNERS_ONLY": [document.getElementById("manage-members-group-owners"),],
+        "NONE": [],
     }
+    var settingsCheckboxes = [];
+    settingsCheckboxes.push(whoCanContactOwnerCheckboxMap[json.whoCanContactOwner]);
+    settingsCheckboxes.push(whoCanViewMembershipCheckboxMap[json.whoCanViewMembership]);
+    settingsCheckboxes.push(whoCanViewGroupCheckboxMap[json.whoCanViewGroup]);
+    settingsCheckboxes.push(whoCanPostMessageCheckboxMap[json.whoCanPostMessage]);
+    settingsCheckboxes.push(whoCanModifyMembersCheckboxMap[json.whoCanModifyMembers]);
 
     // iterate through each checkbox input and toggle checked
-    for (var i = 0; i < accessSettingsCheckboxes.length; i++) {
-        for (var j = 0; j < accessSettingsCheckboxes[i].length; j++) {
-            accessSettingsCheckboxes[i][j].checked = accessSettingsChecked[i][j];
+    for (var i = 0; i < settingsCheckboxes.length; i++) {
+        for (var j = 0; j < settingsCheckboxes[i].length; j++) {
+            settingsCheckboxes[i][j].checked = true;
         }
-    }
-    for (var i = 0; i < membershipSettingsCheckboxes.length; i++) {
-        membershipSettingsCheckboxes[i].checked = membershipSettingsChecked[i];
     }
 }
 
