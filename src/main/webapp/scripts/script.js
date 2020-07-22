@@ -11,7 +11,10 @@ if(typeof windowstr === "undefined"){
 
 var fragmentString = location.hash.substring(1);
 
+/** Global variables */
 var isLoggedIn = false;
+var token;
+var domain;
 
 // Parse query string to see if page request is coming from OAuth 2.0 server.
 var params = {}
@@ -20,56 +23,74 @@ while (m = regex.exec(fragmentString)) {
     params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
 }
 if (Object.keys(params).length > 0) {
-    localStorage.setItem('oauth2-test-params', JSON.stringify(params) );
+    localStorage.setItem('oauth2-test-params', JSON.stringify(params));
 }
 
 // If there's an access token, try an API request.
 // Otherwise, start OAuth 2.0 flow.
 function loginStatus() {
-    var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
+    params = JSON.parse(localStorage.getItem('oauth2-test-params'));
     if (params && params['access_token']) {
         // user is logged in
         isLoggedIn = true;
-    } else {
-        // user is not logged 
-        isLoggedIn = false;
-    }  
-    updateIndexPage();
-    checkSessionExpired();
-    getDomain();
-}
-
-function pagesLoginStatus(){
-    var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
-    if (params && params['access_token']) {
-        // user is logged in
-        isLoggedIn = true;
+        token = params['access_token'];
+        getDomain();
+        updateIndexPage();
+        getUserProfile();
         checkSessionExpired();
     } else {
-        // user is not logged 
-        isLoggedIn = false;
-        window.location.href = "../index.html";
-        updateIndexPage();
+        // user is not logged in
+        logout();
     }
 }
 
-// If loginStatus is true, then show the 3 main pages and the navbar
+// If isLoggedIn is true, then show the 3 main pages and the navbar
 // Otherwise, show the login form page
 function updateIndexPage() {
     var headerNavbar = document.getElementById("header-navbar");
+    var pageTitle = document.getElementsByClassName("page-title");
+    var loginNavbar = document.getElementById("login-navbar");
     var loginFormContainer = document.getElementById("login-form-container");
     var homeContainer = document.getElementById("home-container");
     if (isLoggedIn) {
-        headerNavbar.classList.remove("hidden")
-        homeContainer.classList.remove("hidden")
-        loginFormContainer.classList.add("hidden")
+        if (headerNavbar) headerNavbar.classList.remove("hidden")
+        if (pageTitle) pageTitle[0].classList.remove("hidden")
+        if (homeContainer) homeContainer.classList.remove("hidden")
+        if (loginNavbar) loginNavbar.classList.add("hidden")
+        if (loginFormContainer) loginFormContainer.classList.add("hidden")
     } else {
         headerNavbar.classList.add("hidden")
+        pageTitle[0].classList.add("hidden")
         homeContainer.classList.add("hidden")
+        loginNavbar.classList.remove("hidden")
         loginFormContainer.classList.remove("hidden")
     }
 }
 
+/** Get the profile of the currently signed in user */
+function getUserProfile() {
+    fetch('https://www.googleapis.com/oauth2/v1/userinfo?access_token=' + token)
+    .then(response => response.json())
+    .then((user_info) => {
+        console.log(user_info);
+        if(user_info.error){
+            console.log("user info error");
+            logout();
+        } else {
+            const userItem = document.getElementById("dropdown-user-item");
+            const userPicture = document.getElementById("dropdown-user-picture");
+            const userName = document.getElementById("dropdown-user-name");
+            const userEmail = document.getElementById("dropdown-user-email");
+            userItem.href = "/pages/userdetails.html?user=" + user_info.id;
+            userPicture.src = user_info.picture;
+            userName.innerHTML = user_info.name;
+            userEmail.innerHTML = user_info.email;
+        }
+    })
+    .catch((error) => {
+        console.error(error);
+    });
+}
 
 function oauth2SignIn() {
     // Google's OAuth 2.0 endpoint for requesting an access token
@@ -86,6 +107,8 @@ function oauth2SignIn() {
         'https://www.googleapis.com/auth/admin.directory.user', 
         'https://www.googleapis.com/auth/admin.directory.customer.readonly', 
         'https://www.googleapis.com/auth/apps.groups.settings',
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email',
     ];
     // Parameters to pass to OAuth 2.0 endpoint.
     var params = {'client_id': CLIENT_ID,
@@ -113,48 +136,45 @@ function oauth2SignIn() {
 function logout() {
     localStorage.clear();
     isLoggedIn = false;
-    window.location.href='/index.html';
+    // if user is not on index page, redirect
+    if (window.location.href.substr(window.location.href.length - 10) != "index.html") {
+        window.location.href = "../index.html";
+    }
     updateIndexPage();
 }
 
 // if the user's oauth session is expired, force logout and prompt to log in again
-function checkSessionExpired(){
-    if(isLoggedIn){
-        var params2 = JSON.parse(localStorage.getItem('oauth2-test-params'));
-        var token = params2['access_token'];
-        fetch('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=' + token).
-        then(response => response.json())
-            .then((token_info) => {
-                console.log(token_info);
-                if(token_info.error){
-                    console.log("token expires");
-                    logout();
-                }
-                else{
-                    console.log("token still valid");
-                }
-        })
-        .catch((error) => {
-            console.error(error);
-        });
-    }
+function checkSessionExpired() {
+    fetch('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=' + token)
+    .then(response => response.json())
+    .then((token_info) => {
+        console.log(token_info);
+        if (token_info.error) {
+            console.log("token expires");
+            logout();
+        } else {
+            console.log("token still valid");
+        }
+    })
+    .catch((error) => {
+        console.error(error);
+    });
 }
 
 // store current domain of customer into local storage
-function getDomain(){
-    var domainParam = localStorage.getItem('domain');
-    if (!domainParam){
-        var params2 = JSON.parse(localStorage.getItem('oauth2-test-params'));
-        var token = params2['access_token'];
+function getDomain() {
+    domain = localStorage.getItem('domain');
+    if (!domain) {
         fetch('https://www.googleapis.com/admin/directory/v1/customers/my_customer', {
-        headers: {
-            'authorization': `Bearer ` + token,
-        }
-        }).
-        then(response => response.json())
+            headers: {
+                'authorization': `Bearer ` + token,
+            }
+        })
+        .then(response => response.json())
         .then((customer) => {
             console.log(customer);
             localStorage.setItem('domain', customer.customerDomain);
+            domain = localStorage.getItem('domain');
         })
         .catch((error) => {
             console.error(error);
