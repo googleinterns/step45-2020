@@ -73,20 +73,20 @@ async function setGroupSettings(group) {
             'authorization': `Bearer ` + token,
         }
     })
-    const json = await response.json();
-    console.log(json)
+    const accessSettingsJson = await response.json();
+    console.log(accessSettingsJson)
 
     if (response.status == 200) {
         var accessType = document.getElementById("access-type");
-        accessType.innerHTML = getAccessType(json);
+        accessType.innerHTML = getAccessType(accessSettingsJson);
 
         var joinGroup = document.getElementById("join-group");
-        joinGroup.innerHTML = json.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone in the organization can join" : json.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "Anyone in the organization can ask" : "Only invited users";
+        joinGroup.innerHTML = accessSettingsJson.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone in the organization can join" : accessSettingsJson.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "Anyone in the organization can ask" : "Only invited users";
 
         var membersOutsideOrg = document.getElementById("members-outside-org");
-        membersOutsideOrg.innerHTML = json.allowExternalMembers == "true" ? "Yes" : "No";
+        membersOutsideOrg.innerHTML = accessSettingsJson.allowExternalMembers == "true" ? "Yes" : "No";
 
-        setAccessMembershipSettingsTable(json);
+        setAccessMembershipSettingsTable(accessSettingsJson);
     }
 }
 
@@ -189,97 +189,134 @@ function viewSettings() {
 }
 
 /** Fills in the checkbox table for access and membership settings */
-function setAccessMembershipSettingsTable(json) {
+function setAccessMembershipSettingsTable(accessSettingsJson) {
     // contact owners
     var whoCanContactOwnerCheckboxMap = {
-        "ANYONE_CAN_CONTACT": [document.getElementById("contact-owners-group-owners"),
-            document.getElementById("contact-owners-group-managers"),
-            document.getElementById("contact-owners-group-members"),
-            document.getElementById("contact-owners-entire-organization"),
-            document.getElementById("contact-owners-external"),],
-        "ALL_IN_DOMAIN_CAN_CONTACT": [document.getElementById("contact-owners-group-owners"),
-            document.getElementById("contact-owners-group-managers"),
-            document.getElementById("contact-owners-group-members"),
-            document.getElementById("contact-owners-entire-organization"),],
-        "ALL_MEMBERS_CAN_CONTACT": [document.getElementById("contact-owners-group-owners"),
-            document.getElementById("contact-owners-group-managers"),
-            document.getElementById("contact-owners-group-members"),],
-        "ALL_MANAGERS_CONTACT": [document.getElementById("contact-owners-group-owners"),
-            document.getElementById("contact-owners-group-managers"),],
-        "ALL_OWNERS_CAN_CONTACT": [document.getElementById("contact-owners-group-owners"),],
+        "ANYONE_CAN_CONTACT": [
+            "contact-owners-group-owners",
+            "contact-owners-group-managers",
+            "contact-owners-group-members",
+            "contact-owners-entire-organization",
+            "contact-owners-external",
+            ],
+        "ALL_IN_DOMAIN_CAN_CONTACT": [
+            "contact-owners-group-owners",
+            "contact-owners-group-managers",
+            "contact-owners-group-members",
+            "contact-owners-entire-organization",
+            ],
+        "ALL_MEMBERS_CAN_CONTACT": [
+            "contact-owners-group-owners",
+            "contact-owners-group-managers",
+            "contact-owners-group-members",],
+        "ALL_MANAGERS_CONTACT": [
+            "contact-owners-group-owners",
+            "contact-owners-group-managers",],
+        "ALL_OWNERS_CAN_CONTACT": ["contact-owners-group-owners",],
     }
     // view members
     var whoCanViewMembershipCheckboxMap = {
-        "ALL_IN_DOMAIN_CAN_VIEW": [document.getElementById("view-members-group-owners"),
-            document.getElementById("view-members-group-managers"),
-            document.getElementById("view-members-group-members"),
-            document.getElementById("view-members-entire-organization"),],
-        "ALL_MEMBERS_CAN_VIEW": [document.getElementById("view-members-group-owners"),
-            document.getElementById("view-members-group-managers"),
-            document.getElementById("view-members-group-members"),],
-        "ALL_MANAGERS_CAN_VIEW": [document.getElementById("view-members-group-owners"),
-            document.getElementById("view-members-group-managers"),],
-        "ALL_OWNERS_CAN_VIEW": [document.getElementById("view-members-group-owners"),],
+        "ALL_IN_DOMAIN_CAN_VIEW": [
+            "view-members-group-owners",
+            "view-members-group-managers",
+            "view-members-group-members",
+            "view-members-entire-organization",
+            ],
+        "ALL_MEMBERS_CAN_VIEW": [
+            "view-members-group-owners",
+            "view-members-group-managers",
+            "view-members-group-members",
+            ],
+        "ALL_MANAGERS_CAN_VIEW": [
+            "view-members-group-owners",
+            "view-members-group-managers",
+            ],
+        "ALL_OWNERS_CAN_VIEW": ["view-members-group-owners",],
     }
     // view topics
     var whoCanViewGroupCheckboxMap = {
-        "ANYONE_CAN_VIEW": [document.getElementById("view-topics-group-owners"),
-            document.getElementById("view-topics-group-managers"),
-            document.getElementById("view-topics-group-members"),
-            document.getElementById("view-topics-entire-organization"),
-            document.getElementById("view-topics-external"),],
-        "ALL_IN_DOMAIN_CAN_VIEW": [document.getElementById("view-topics-group-owners"),
-            document.getElementById("view-topics-group-managers"),
-            document.getElementById("view-topics-group-members"),
-            document.getElementById("view-topics-entire-organization"),],
-        "ALL_MEMBERS_CAN_VIEW": [document.getElementById("view-topics-group-owners"),
-            document.getElementById("view-topics-group-managers"),
-            document.getElementById("view-topics-group-members"),],
-        "ALL_MANAGERS_CAN_VIEW": [document.getElementById("view-topics-group-owners"),
-            document.getElementById("view-topics-group-managers"),],
-        "ALL_OWNERS_CAN_VIEW": [document.getElementById("view-topics-group-owners"),],
+        "ANYONE_CAN_VIEW": ["view-topics-group-owners",
+            "view-topics-group-managers",
+            "view-topics-group-members",
+            "view-topics-entire-organization",
+            "view-topics-external",],
+        "ALL_IN_DOMAIN_CAN_VIEW": [
+            "view-topics-group-owners",
+            "view-topics-group-managers",
+            "view-topics-group-members",
+            "view-topics-entire-organization",
+            ],
+        "ALL_MEMBERS_CAN_VIEW": [
+            "view-topics-group-owners",
+            "view-topics-group-managers",
+            "view-topics-group-members",
+            ],
+        "ALL_MANAGERS_CAN_VIEW": ["view-topics-group-owners",
+            "view-topics-group-managers",],
+        "ALL_OWNERS_CAN_VIEW": ["view-topics-group-owners",],
     }
     // publish posts
     var whoCanPostMessageCheckboxMap = {
-        "ANYONE_CAN_POST": [document.getElementById("publish-posts-group-owners"),
-            document.getElementById("publish-posts-group-managers"),
-            document.getElementById("publish-posts-group-members"),
-            document.getElementById("publish-posts-entire-organization"),
-            document.getElementById("publish-posts-external"),],
-        "ALL_IN_DOMAIN_CAN_POST": [document.getElementById("publish-posts-group-owners"),
-            document.getElementById("publish-posts-group-managers"),
-            document.getElementById("publish-posts-group-members"),
-            document.getElementById("publish-posts-entire-organization"),],
-        "ALL_MEMBERS_CAN_POST": [document.getElementById("publish-posts-group-owners"),
-            document.getElementById("publish-posts-group-managers"),
-            document.getElementById("publish-posts-group-members"),],
-        "ALL_MANAGERS_CAN_POST": [document.getElementById("publish-posts-group-owners"),
-            document.getElementById("publish-posts-group-managers"),],
-        "ALL_OWNERS_CAN_POST": [document.getElementById("publish-posts-group-owners"),],
+        "ANYONE_CAN_POST": [
+            "publish-posts-group-owners",
+            "publish-posts-group-managers",
+            "publish-posts-group-members",
+            "publish-posts-entire-organization",
+            "publish-posts-external",
+            ],
+        "ALL_IN_DOMAIN_CAN_POST": [
+            "publish-posts-group-owners",
+            "publish-posts-group-managers",
+            "publish-posts-group-members",
+            "publish-posts-entire-organization",
+            ],
+        "ALL_MEMBERS_CAN_POST": [
+            "publish-posts-group-owners",
+            "publish-posts-group-managers",
+            "publish-posts-group-members",
+            ],
+        "ALL_MANAGERS_CAN_POST": [
+            "publish-posts-group-owners",
+            "publish-posts-group-managers",
+            ],
+        "ALL_OWNERS_CAN_POST": ["publish-posts-group-owners",],
         "NONE_CAN_POST": [],
     }
     // manage members
     var whoCanModifyMembersCheckboxMap = {
-        "ALL_MEMBERS": [document.getElementById("manage-members-group-owners"),
-            document.getElementById("manage-members-group-managers"),
-            document.getElementById("manage-members-group-members"),],
-        "OWNERS_AND_MANAGERS": [document.getElementById("manage-members-group-owners"),
-            document.getElementById("manage-members-group-managers"),],
-        "OWNERS_ONLY": [document.getElementById("manage-members-group-owners"),],
+        "ALL_MEMBERS": [
+            "manage-members-group-owners",
+            "manage-members-group-managers",
+            "manage-members-group-members",
+            ],
+        "OWNERS_AND_MANAGERS": [
+            "manage-members-group-owners",
+            "manage-members-group-managers",
+            ],
+        "OWNERS_ONLY": ["manage-members-group-owners",],
         "NONE": [],
     }
-    var settingsCheckboxes = [];
-    settingsCheckboxes.push(whoCanContactOwnerCheckboxMap[json.whoCanContactOwner]);
-    settingsCheckboxes.push(whoCanViewMembershipCheckboxMap[json.whoCanViewMembership]);
-    settingsCheckboxes.push(whoCanViewGroupCheckboxMap[json.whoCanViewGroup]);
-    settingsCheckboxes.push(whoCanPostMessageCheckboxMap[json.whoCanPostMessage]);
-    settingsCheckboxes.push(whoCanModifyMembersCheckboxMap[json.whoCanModifyMembers]);
+    
+    setAllCheckBoxesFalse(); // assume that all check box values should be overriden
+    setCheckBoxesTrue(whoCanContactOwnerCheckboxMap[accessSettingsJson.whoCanContactOwner]);
+    setCheckBoxesTrue(whoCanViewMembershipCheckboxMap[accessSettingsJson.whoCanViewMembership]);
+    setCheckBoxesTrue(whoCanViewGroupCheckboxMap[accessSettingsJson.whoCanViewGroup]);
+    setCheckBoxesTrue(whoCanPostMessageCheckboxMap[accessSettingsJson.whoCanPostMessage]);
+    setCheckBoxesTrue(whoCanModifyMembersCheckboxMap[accessSettingsJson.whoCanModifyMembers]);
 
-    // iterate through each checkbox input and toggle checked
-    for (var i = 0; i < settingsCheckboxes.length; i++) {
-        for (var j = 0; j < settingsCheckboxes[i].length; j++) {
-            settingsCheckboxes[i][j].checked = true;
-        }
+}
+
+/** sets all check boxes for groups settings to false */
+function setAllCheckBoxesFalse() {
+    for (checkBox in document.getElementsByClassName("table-checkbox-input")) {
+        checkBox.checked = false;
+    }
+}
+
+/** sets check boxes true */
+function setCheckBoxesTrue(checkBoxes) {
+    for (checkBoxId of checkBoxes) {
+        document.getElementById(checkBoxId).checked = true;
     }
 }
 

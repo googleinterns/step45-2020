@@ -63,9 +63,15 @@
                 <i class="fa fa-refresh fa-spin"></i>
             </div>
             <div class="sidenav card">
-                <div class="sidenav-section">
+                <div class="sidenav-section blue">
                     <div class="section-title">Domain</div>
                     <p id="domain-name">@</p>
+                </div>
+                <div class="sidenav-section blue">
+                    <div class="section-title">Number of users from search</div>
+                    <p id="num-search-users"></p>
+                    <div class="section-title">Number of users from filter</div>
+                    <p id="num-filter-users"></p>
                 </div>
                 <div class="sidenav-section">
                     <div class="section-title">Search</div>
@@ -75,8 +81,7 @@
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
-                    <p class="section-subtitle"> Number of users from search: <span id="num-search-users"></span></p>
-                    <div class="section-title">Filters 
+                    <div class="section-title">Filters
                         <div class="btn filter-btn" id="clear" onclick="clearFilters()">Clear filters</div>
                         <div class="btn filter-btn" onclick="checkAllOUFilters()">Check All OrgUnits</div>
                         <div class="btn filter-btn" onclick="checkAllGroupFilters()">Check All Groups</div>
@@ -88,7 +93,6 @@
                     <div class="form-check" id="orgunit-sel" style="max-height: 300px; overflow: auto; margin-bottom: 10px"></div>
                     <div class="section-subtitle">Group(s): </div>
                     <div class="form-check" id="group-sel" style="max-height: 300px; overflow: auto; margin-bottom: 9px"></div>
-                    <p class="section-subtitle"> Number of users from filter: <span id="num-filter-users"></span></p>
                     <div class="section-title">Order By</div>
                     <div class="form-group">
                         <select class="form-control" id="order-by-sel" onchange="orderBy()">
