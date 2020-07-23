@@ -1,6 +1,3 @@
-// var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
-// var token = params['access_token'];
-// var domain = localStorage.getItem('domain');
 var flatdata = [] // flatdata to contain all orgUnits, will be converted to hierarchical data 
 var data = {} // data to contail all orgUnits and users 
 var searchInput; // input for searchbar
@@ -8,7 +5,7 @@ var orgUnitInput = []; // input for filter by orgUnit
 var groupInput = []; // input for filter by group
 var oulength = 0; // length of all ous
 var rootID;
-var isLoading;
+var isLo3ding;
 
 // the function called onload for user.html
 function userOnload(){
@@ -613,9 +610,7 @@ async function sidebar(){
     for (var i = 0; i < checkboxElems.length; i++) {
         var checkbox = checkboxElems[i];
         checkboxElems[i].addEventListener("click", function(e) {
-            updateOrgUnitInput(e);
-            loginStatus();
-            fetchOUs();
+            updateOrgUnitInput(e.target);
         });
     }
 
@@ -635,9 +630,7 @@ async function sidebar(){
     var checkboxElems = document.querySelectorAll("#group-sel input[type='checkbox']");
     for (var i = 0; i < checkboxElems.length; i++) {
         checkboxElems[i].addEventListener("click", function(e) {
-            updateGroupInput(e);
-            loginStatus();
-            fetchOUs;
+            updateGroupInput(e.target);
         });
     }
 
@@ -673,35 +666,37 @@ function clearSearch(){
 }
 
 // update variable orgUnitInput based on checkbox
-function updateOrgUnitInput(e){
-    console.log(e);
-    console.log(e.target);
-    console.log(orgUnitInput);
-    if(e.target.checked){
-        orgUnitInput.push(e.target.value);
+function updateOrgUnitInput(input){
+    if(input.checked){
+        orgUnitInput.push(input.value);
     }
     else{
-        var index = orgUnitInput.indexOf(e.target.value);
+        var index = orgUnitInput.indexOf(input.value);
         if(index > -1){
             orgUnitInput.splice(index, 1);
         }
     }
-    console.log(orgUnitInput);
     clearSearch();
+    loginStatus();
+    fetchOUs();
+    return orgUnitInput;
 }
 
 // update variable groupInput based on checkbox
-function updateGroupInput(e) {
-    if(e.target.checked){
-        groupInput.push(e.target.id);
+function updateGroupInput(input) {
+    if(input.checked){
+        groupInput.push(input.id);
     }
     else{
-        var index = groupInput.indexOf(e.target.id);
+        var index = groupInput.indexOf(input.id);
         if(index > -1){
             groupInput.splice(index, 1);
         }
     }
     clearSearch();
+    loginStatus();
+    fetchOUs();
+    return groupInput;
 }
 
 // clear all filters, display all users
@@ -745,15 +740,6 @@ function orderBy(){
     chartElement.innerHTML = "";
     visualize(order);
 }
-
-// function sortByName(a, b){
-//     if(a.innerText.toLowerCase() < b.innerText.toLowerCase())
-//         return -1;
-//     if(a.innerText.toLowerCase() < b.innerText.toLowerCase())
-//         return 1;
-//     return 0;
-// }
-
 /** End of sidebar functionality */
 
 
@@ -1010,6 +996,7 @@ function visualizeUser(userData, htmlid){
     .style("text-anchor", function(d) { 
         return d.children ? "end" : "start"; })
     .text(function(d) { return d.data.name; });
+
 }
 
 async function renameUser(){

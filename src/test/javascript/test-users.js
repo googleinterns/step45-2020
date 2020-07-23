@@ -22,83 +22,48 @@ var UIFramework = (function() {
     }
 })();
 
-// describe("Test clearFilters", function() {
-//     var orgUnitInput = ['OU1', 'OU2']; 
-//     var groupInput = ['group1', 'group2'];
-//     var checkbox1 = UIFramework.input("checkbox", "checkbox-value1");
-//     var checkbox2 = UIFramework.input("checkbox", "checkbox-value2");
-//     body.append(checkbox1);
-//     body.append(checkbox2);
+describe("Test checkboxes", function() {
+    var checkbox1 = UIFramework.input("checkbox", "checkbox-value1");
+   
+    it("test adding and removing orgunits to filter", function(done) {
+        var orgUnitInput = ["checkbox-value1"];
 
-//     $("#num-filter-users").val(4);
-//     it("clearFilters function uncheck all checkboxes", function() {
-//         $.getScript('/src/main/webapp/scripts/user-script.js', function() {   
-            
-//         });
-//     });
-// });
+        $.getScript('/src/main/webapp/scripts/user-script.js', function() { 
+            spyOn(window, "clearSearch");
+            spyOn(window, "loginStatus");
+            spyOn(window, "fetchOUs");
 
-// describe("Test checkboxes", function() {
-//     // create checkboxes
-//     // var checkbox1 = UIFramework.input("checkbox", "checkbox-value1");
-//     // var checkbox2 = UIFramework.input("checkbox", "checkbox-value2");
-//     // body.append(checkbox1);
-//     // body.append(checkbox2);
-//     var checkbox1 = $("#checkbox1");
-//     var orgUnitInput = [];
-//     var groupInput = [];
+            // uncheck to remove input from orgUnitInput
+            checkbox1.checked = false;
+            expect(orgUnitInput).toEqual(["checkbox-value1"]);
+            orgUnitInput = updateOrgUnitInput(checkbox1);
+            expect(orgUnitInput).toEqual([]);
 
-//     
-//     it("test adding orgunits to filter", function(done) {
-//         var orgUnitInput = [];
+            // check to add input to orgUnitInput
+            checkbox1.checked = true;
+            orgUnitInput = updateOrgUnitInput(checkbox1);
+            expect(orgUnitInput).toEqual(["checkbox-value1"]);
+            done();
+        });
+    });
 
-//         $.getScript('/src/main/webapp/scripts/user-script.js', function() { 
-//             var checkbox1 = $("#checkbox1");  
-//             updateOrgUnitInput(checkbox1);
-//             expect(orgUnitInput).toEqual(["value1"]);
-//             done();
-//         });
-//     });
-// });
-//             // checkbox1.click(updateOrgUnitInput);
-//             // // checkbox2.click(updateOrgUnitInput);
-//             // checkbox1.trigger("click");
-//             // checkbox2.trigger("click");
+    it("test adding and removing groups to filter", function(done) {
+        var groupInput = [];
 
-//             // add clicked checkbox
-//             expect(orgUnitInput).toEqual(["checkbox-value1", "checkbox-value2"]);
-//             expect(orgUnitInput).toContain("checkbox-value1");
-//             expect(orgUnitInput).toContain("checkbox-value2");
-//         });
+        $.getScript('/src/main/webapp/scripts/user-script.js', function() { 
+            spyOn(window, "clearSearch");
+            spyOn(window, "loginStatus");
+            spyOn(window, "fetchOUs");
 
-//         it("test removing orgunits from filter", function() {
-//             // remove clicked checkbox
-//             checkbox2.trigger("click");
-//             expect(orgUnitInput).toContain("checkbox-value1");
-//             expect(orgUnitInput).not.toContain("checkbox-value2");
-//         });
+            checkbox1.id = checkbox1.value;
+            checkbox1.checked = true;
+            groupInput = updateGroupInput(checkbox1);
+            expect(groupInput).toEqual(["checkbox-value1"]);
+            done();
+        });
+    });
+});
 
-//         it("test adding groups to filter", function() {
-//             checkbox1.click(updateGroupInput);
-//             checkbox2.click(updateGroupInput);
-//             checkbox1.trigger("click");
-//             checkbox2.trigger("click");
-
-//             // add clicked checkbox
-//             expect(groupInput).toContain("checkbox-value1");
-//             expect(groupInput).toContain("checkbox-value2");
-//         });
-
-//         it("test removing groups from filter", function() {
-//             // remove clicked checkbox
-//             checkbox2.trigger("click");
-//             expect(groupInput).toContain("checkbox-value1");
-//             expect(groupInput).not.toContain("checkbox-value2");
-//         });
-
-//     });
-// });
-  
 describe("Test add user to data", function(){
     var data = {
         data: {name: "GRoot Test", path: "/", parentPath: null, users: [], numUsers: 3},
@@ -107,17 +72,12 @@ describe("Test add user to data", function(){
         ]
     }
 
-    var body = document.getElementsByTagName("body")[0];
-    it("dumb", function(){
-        expect(body).not.toBeDefined();
-    })
-    
     it("add user to root", function(done) {
         expect(data.data.users.length).toEqual(0);
         $.getScript('/src/main/webapp/scripts/user-script.js', function() {
             var orgUnitPath = "/";
             var userJSON = {"name": "test name", "id": "12345", "orgUnitPath": orgUnitPath};
-            addUserToOUByPath(data, orgUnitPath, userJSON);
+            window.addUserToOUByPath(data, orgUnitPath, userJSON);
             expect(data.data.users.length).toEqual(1);
             done();
         });
@@ -136,34 +96,48 @@ describe("Test add user to data", function(){
     
 });
 
-// describe("Test d3js", function() {
-//     var userGroups = [
-//             {
-//                 "id": "107619745798990508895",
-//                 "name": "wenyi guo",
-//                 "parent": null
-//             },
-//             {
-//                 "id": "01d96cc03ttea2i",
-//                 "name": "cornell-2022",
-//                 "parent": "wenyi guo"
-//             },
-//             {
-//                 "id": "02p2csry3w979pn",
-//                 "name": "test-group-exclude-dolde",
-//                 "parent": "wenyi guo"
-//             }
-//             ]
+describe("Test d3js", function() {
+    var userOrgUnits = [
+        {name: "wenyi guo", path: "wenyi guo", parent: "/East-coast"},
+        {name: "East-coast", path: "/East-coast", parent: "/"},
+        {name: "GRoot Test", path: "/", parent: null}
+    ]
 
-//     $.getScript('/src/main/webapp/scripts/user-script.js', function() {   
-//         it("test visualize", function() {
-//             visualizeUser(userGroups, "user-groups");
+    var userGroups = [
+        {
+            "id": "107619745798990508895",
+            "name": "wenyi guo",
+            "parent": null
+        },
+        {
+            "id": "01d96cc03ttea2i",
+            "name": "cornell-2022",
+            "parent": "wenyi guo"
+        },
+        {
+            "id": "02p2csry3w979pn",
+            "name": "test-group-exclude-dolde",
+            "parent": "wenyi guo"
+        }
+    ]
 
-//             var svg = $('svg').first();
-//             expect(svg).not.toBe(null);
-//             expect(svg.children().first().length).toEqual(3);
-//         });
-//     });
-// });
+    it("test visualize single user with org units", function(done) {
+        $.getScript('/src/main/webapp/scripts/user-script.js', function() {   
+            visualizeUser(userOrgUnits, "single-user-OU-branch");
+            var svgNodes = $("#single-user-OU-branch svg g g");
+            expect(svgNodes.length).toBe(3);
+            done();
+        });
+    });
 
-
+    it("test visualize single user with groups", function(done) {
+        $.getScript('/src/main/webapp/scripts/user-script.js', function() {   
+            visualizeUser(userGroups, "user-groups");
+            var svgNodes = $("#user-groups svg g g");
+            expect(svgNodes.length).toBe(3);
+            expect((svgNodes.first()).find("text").first().text()).toEqual("wenyi guo");
+            done();
+        });
+    });
+});
+        

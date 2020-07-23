@@ -9,4 +9,6 @@ beforeEach(function () {
     spyOn(localStorage, 'getItem').and.callFake(function (key) {
         return store[key];
     });
+
+    loadFixtures('test-user.html');
 });
