@@ -92,31 +92,10 @@
                             </button>
                         </div>
                         <div class="section-subtitle">Filters</div>
-                        <!-- <p>Email(s): </p>
-                        <button type="button" class="btn btn-outline-primary">
-                            Filter
-                            <i class="fa fa-times"></i>
-                        </button>
-                        <div class="flex wrap">
-                            <div class="form-group">
-                                <select class="form-control" id="group-email-sel" onchange="selectGroup()">
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-primary" onclick="selectGroup()">+ Add</button>
-                        </div> -->
-
-                        <p>User: </p>
-                        <!-- <button type="button" class="btn btn-outline-primary">
-                            Filter
-                            <i class="fa fa-times"></i>
-                        </button> -->
-                        <!-- <div class="flex wrap"> -->
-                            <div class="form-group">
-                                <select class="form-control" id="user-sel" onchange="selectUser()">
-                                </select>
-                            </div>
-                            <!-- <button type="button" class="btn btn-primary" onclick="selectUser()">+ Add</button> -->
-                        <!-- </div> -->
+                        <div class="form-group">
+                            <select class="form-control" id="user-sel" onchange="selectUser()">
+                            </select>
+                        </div>
 
                         <div class="section-subtitle">Order By</div>
                         <div class="form-group">
@@ -154,14 +133,6 @@
                             <p class="light">Hide all children groups and show only direct user members</p>
                         </div>
                     </div>
-                    <div class="sidenav-section blue">
-                        <div class="section-title">Key</div>
-                        <div class="section-subtitle">Click on the hover card for more details</div>
-                        <ul>
-                            <li>White circles = Users</li>
-                            <li>Blue-shaded circles = Groups</li>
-                        </ul>
-                    </div>
                 </div>
             </div>
             <!-- Page sidebar end -->
@@ -171,6 +142,25 @@
                 </div>
                 <div class="main">
                     <!-- Your main page content goes here -->
+                    <div class="accordion">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#instruction-collapse" aria-expanded="true" aria-controls="collapseOne">
+                                        <i class="fa fa-plus"></i>Instruction
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="instruction-collapse" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                <div class="card-body">
+                                    <text id="instruction">Click on the blue-shaded circle groups to <span class="highlight">zoom in</span> to child groups<br>
+                                        Hover over the circles to <span class="highlight">preview</span> the groups and users<br>
+                                        Click on the hover card to <span class="highlight">view details</span> of a particular group or user
+                                    </text>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div id="chart"></div>
                 </div>
             </div>
