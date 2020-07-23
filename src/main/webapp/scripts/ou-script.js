@@ -6,25 +6,12 @@ var orgUnits;
 var parentChildOUs;
 
 // Search and Display criteria
-// var searchName;
 var layerLimitNum;
 var totalLayers;
 
 /* Adds listeners to search elements, loads all OUs. */
 async function onloadOUPage() {
     loginStatus();
-
-    // var searchButton = document.getElementById("search-enter-btn");
-    // searchButton.addEventListener("click", function(event) {
-    //     searchName = searchBar.value;
-    //     getAllOUs();
-    // })
-
-    // var searchBar = document.getElementById("search");
-    // // Execute a function when the user presses enter or erases the input
-    // searchBar.addEventListener("search", function(event) {
-    //     searchButton.click();
-    // });
 
     orgUnits = await fetchOUs();
     layerLimitNum = parseInt(document.getElementById("limit-layer-num").value);
