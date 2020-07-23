@@ -1,72 +1,122 @@
-var params;
-var token;
-var domain;
-// assign values in try catch statement to prevent them from breaking the tests
-try {
-    params = JSON.parse(localStorage.getItem('oauth2-test-params'));
-    token = params['access_token'];
-    domain = localStorage.getItem('domain');
-} catch(err) {
-    // print out issues?
-} finally {
-    // assign default values?
-}
-
-
+// Show refresh button and overlay
 var isLoading;
 
-/*
- * Onload: fetches all OUs, constructs parent-child hierarchy JSON, creates tree visualization.
-*/
-function getAllOUs() {
-    // fetch all OUs from API
-    fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?orgUnitPath=/&type=all', {
-    headers: {
-        'authorization': `Bearer ` + token,
-    }
-    })
-    .then(response => response.json())
-    .then(directoryOUs => directoryOUs['organizationUnits'])
-    .then((orgUnits) => {
-        isLoading = true; // or false
-        setLoadingOverlay();
-        loadSidebar(orgUnits);
-        orgUnits.sort(ouDepthSort); // sort by OU depth
-        var orgUnitsTree = constructD3JSON(orgUnits); // transform into parent-child JSON
-        visualize(orgUnitsTree); // visualize with D3
-        addListeners();
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+// Org Units data in JSON forms
+var orgUnits;
+var parentChildOUs;
+
+// Search and Display criteria
+var layerLimitNum;
+var totalLayers;
+
+/* Adds listeners to search elements, loads all OUs. */
+async function onloadOUPage() {
+    loginStatus();
+
+    orgUnits = await fetchOUs();
+    layerLimitNum = parseInt(document.getElementById("limit-layer-num").value);
+
+    getAllOUs();
 }
 
-function setLoadingOverlay() {
-    var overlay = document.getElementsByClassName("overlay");
-    var overlayArray = Array.from(overlay);
-    if (isLoading) {
-        overlayArray.map(elem => elem.classList.remove("hidden"))
+/*
+ * Fetches all OUs from Admin SDK.
+*/
+async function fetchOUs() {
+    // fetch all OUs from API
+    try {
+        const response = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?orgUnitPath=/&type=all', {
+            headers: {
+                'authorization': `Bearer ` + token,
+            }
+        });
+        const directoryOUs = await response.json();
+        orgUnits = directoryOUs['organizationUnits'];
+        return orgUnits;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+/*
+ * Calls all the functions to manipulate OU data, and loads the sidebar and visualization.
+*/
+function getAllOUs() {
+    isLoading = true;
+    setLoadingOverlay();
+
+    // MVP 3: check if search criteria. for now, ignore layer limits for this
+    
+    orgUnits.sort(ouDepthSort); // sort by depth
+
+    // layer limiting
+    var limitedOUs = limitLayers();
+
+    loadSidebar(limitedOUs);
+    parentChildOUs = constructD3JSON(limitedOUs); // transform into parent-child JSON
+    visualize(parentChildOUs); // visualize with D3
+    addListeners();
+}
+
+/*
+ * Computes an org unit's depth using the number of slashes in its path.
+*/
+function computeDepth(orgUnit) {
+    // +1, as the root OU is considered layer 1
+    return (orgUnit['orgUnitPath'].match(/\//g) || []).length + 1;
+}
+
+/*
+ * Returns a list of OUs within the layer depth limit.
+*/
+function limitLayers() {
+    if (orgUnits.length == 0) {
+        return [];
+    }
+    var lastElementDepth = computeDepth(orgUnits[orgUnits.length - 1]);
+    // set the totalLayers global var
+    totalLayers = lastElementDepth;
+    if (totalLayers <= layerLimitNum) {
+        return orgUnits;
     } else {
-        overlayArray.map(elem => elem.classList.add("hidden"))
+        limitedOUList = [];
+        for (var i = 0; i < orgUnits.length; i++) {
+            currentOU = orgUnits[i];
+            if (computeDepth(currentOU) > layerLimitNum) {
+                break;
+            }
+            limitedOUList.push(currentOU);
+        }
+        return limitedOUList;
     }
 }
 
 /* Fill in informational fields on the sidebar of the page */
-function loadSidebar(orgUnits) {
+function loadSidebar(limitedOUs) {
     const domainName = document.getElementById("domain-name");
     domainName.innerHTML = "@" + domain;
 
-    const numOUs = document.getElementById("num-ous");
+    const displayOUs = document.getElementById("display-ous");
+    const displayLayers = document.getElementById("display-layers");
+    const totalOUs = document.getElementById("total-ous");
+    const totalLayerCount = document.getElementById("total-layers");
+
+    var displayLimit = document.getElementById("limit-layer-num");
+    displayLimit.setAttribute("max", totalLayers);
+    
     // root OU also counts
-    numOUs.innerHTML = orgUnits.length + 1;
+    displayOUs.innerHTML = limitedOUs.length + 1;
+    displayLayers.innerHTML = layerLimitNum;
+    totalOUs.innerHTML = orgUnits.length + 1;
+    totalLayerCount.innerHTML = computeDepth(orgUnits[orgUnits.length - 1]);
 }
 
 /*
  * Compare function; sorts by by file depth, with parents first.
 */
 function ouDepthSort(ou1, ou2) {
-    ouDepth1 = (ou1['orgUnitPath'].match(/\//g) || []).length;
-    ouDepth2 = (ou2['orgUnitPath'].match(/\//g) || []).length;
+    ouDepth1 = computeDepth(ou1);
+    ouDepth2 = computeDepth(ou2);
     return ouDepth1 - ouDepth2;
 }
 
@@ -194,7 +244,7 @@ function visualize(orgUnitsTree) {
             .attr("transform", function(d) {
                 return "translate(" + source.x0 + "," + source.y0 + ")";
             })
-            .on('click', click);
+            .on('click', nodeClick);
 
         // Add Circle for the nodes
         nodeEnter.append('circle')
@@ -297,7 +347,7 @@ function visualize(orgUnitsTree) {
         }
 
         // Toggle children on click.
-        function click(d) {
+        function nodeClick(d) {
             if (d.children) {
                 d._children = d.children;
                 d.children = null;
@@ -391,4 +441,20 @@ function addListeners() {
             deleteDiv.style.display = "block";
         }
     }
+}
+
+/*
+ * Rerenders visualization with new layer limit criteria.
+*/
+function renderLayers() {
+    layerLimitNum = parseInt(document.getElementById("limit-layer-num").value);
+    if (Number.isNaN(layerLimitNum) || layerLimitNum < 2) {
+        layerLimitNum = 3;
+    }
+    // ensures we never display more than the available number of layers
+    if (layerLimitNum > totalLayers) {
+        layerLimitNum = totalLayers;
+    }
+    d3.select("svg").remove();
+    getAllOUs();
 }
