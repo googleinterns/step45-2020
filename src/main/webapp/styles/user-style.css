@@ -38,13 +38,6 @@ foreignObject ul{
     margin: 5px 10px 5px 0;
 }
 
-.sidenav .sidenav-section .section-subtitle{
-    font-size: 1.05rem;
-    margin-top: 3px;
-    padding: 3px;
-    font-weight: 400;
-}
-
 .icon {
     color: #888;
     float: right;
@@ -66,6 +59,8 @@ foreignObject ul{
     color: blue;
     font-size: 1.00rem;
     margin: 1px;
+    margin-left: 15px;
+    padding: 3px;
 }
 
 #filter-btn:hover {
