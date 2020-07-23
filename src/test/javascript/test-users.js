@@ -71,7 +71,7 @@ describe("Test add user to data", function(){
             {data: {name: "East-coast", path: "/East-coast", parentPath: "/", users: [], numUsers: 3}}
         ]
     }
-    
+
     it("add user to root", function(done) {
         expect(data.data.users.length).toEqual(0);
         $.getScript('/src/main/webapp/scripts/user-script.js', function() {
