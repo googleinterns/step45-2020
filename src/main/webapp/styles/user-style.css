@@ -16,7 +16,7 @@
     background: rgba(0,0,0,0); 
 }
  
-ul{
+foreignObject ul{
     list-style-type: none;
     margin: 5px;
     padding: 0;
@@ -41,7 +41,7 @@ ul{
 .sidenav .sidenav-section .section-subtitle{
     font-size: 1.05rem;
     margin-top: 3px;
-    padding: 2px;
+    padding: 3px;
     font-weight: 400;
 }
 
@@ -60,14 +60,15 @@ ul{
     padding: 2px;
 }
 
-#clear {
+.filter-btn {
     border: none;
     background: none;
     color: blue;
     font-size: 1.00rem;
+    margin: 1px;
 }
 
-#clear:hover {
+#filter-btn:hover {
     text-decoration: underline;
 }
 
@@ -129,10 +130,6 @@ img {
     padding: 3px;
 }
 
-.filter-btn {
-    margin: 1px;
-}
-
 .accordion {
     margin-bottom: 12px;
     padding-bottom: 12px;
@@ -142,7 +139,7 @@ img {
 }
 
 .accordion .card .card-header {
-    padding: 3px;
+    padding-bottom: 5px;
 }
 
 .accordion .fa {
