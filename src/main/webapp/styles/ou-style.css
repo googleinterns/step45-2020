@@ -19,7 +19,7 @@
 }
 
 #chart-container {
-    height: 90%;
+    height: 70%;
     background-color: white;
     display: flex;
     overflow: hidden;
@@ -31,10 +31,16 @@
     transform: scale(1) translate(0px, 0px);
 }
 
+#search, .form-group {
+    margin: 5px 10px 5px 0;
+}
+
+.spacing-top {
+    margin-top: 15px;
+}
+
 .console {
     background: #fff;
-    border-radius: 2px;
-    border-top: 15px solid #f3f3f3ff;
     box-shadow: 0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12), 0 1px 3px 0 rgba(0,0,0,0.2);
 }
 
@@ -63,4 +69,37 @@
 
 #edit-choice {
     background-color: aliceblue;
+}
+
+.accordion {
+    font: 18px sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+}
+
+.accordion .card .card-header {
+    padding: 3px;
+}
+
+.accordion .fa {
+    margin-right: 0.5rem;
+}
+
+.highlight {
+    font-size: 21px;
+    color: rgba(51,103,214,1);
+}
+
+.in-sentence {
+    width: 25%;
+    display: inline;
+}
+
+.display-num {
+    color: black;
+    font-size: 25px;
+}
+
+.total-num {
+    font-size: 25px;
 }
