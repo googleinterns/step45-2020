@@ -109,7 +109,7 @@ describe("Test add user to data", function(){
 
     var body = document.getElementsByTagName("body")[0];
     it("dumb", function(){
-        expect(body).toBeDefined();
+        expect(body).not.toBeDefined();
     })
     
     it("add user to root", function(done) {
