@@ -3,24 +3,25 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Organizational Units</title>
+    <title>Org Units</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    
+    <script src="https://kit.fontawesome.com/87ecaf717c.js" crossorigin="anonymous"></script>
+
     <link rel="stylesheet" href="../styles/style.css">
     <link rel="stylesheet" href="../styles/ou-style.css">
+    <script src="../scripts/script.js"></script>
     <script src="../scripts/ou-script.js"></script>
     <script src="../scripts/ou-edits.js"></script>
-    <script src="../scripts/script.js"></script>
 
     <!-- load the d3.js library -->	
     <script src="https://d3js.org/d3.v5.min.js"></script>
         
   </head>
 
-  <body onload="loginStatus(); getAllOUs()">
+  <body onload="onloadOUPage();">
         <nav class="navbar navbar-expand-lg" id="header-navbar">
             <a class="navbar-brand" href="/">gRoot</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,7 +58,7 @@
             </div>
         </nav>
 
-        <div class="page-title card">Organizational Units</div>
+        <div class="page-title card">Org Units</div>
 
         <div class="container flex wrap between">
             <!-- Page sidebar -->
@@ -65,32 +66,43 @@
                 <div class="overlay">
                     <i class="fa fa-refresh fa-spin"></i>
                 </div>
-                <!-- info card -->
+                <!-- Info Card -->
                 <div class="sidenav card">
-                    <div class="sidenav-section">
+                    <div class="sidenav-section blue">
                         <div class="section-title">Domain</div>
+                        <div class="section-subtitle">Email</div>
                         <p id="domain-name">@</p>
                     </div>
                     <div class="sidenav-section blue">
-                        <div class="section-title">Number of OUs</div>
-                        <p id="num-ous"></p>
-                        <div class="section-title">Number of total members</div>
-                        <p id="num-total-members"></p>
+                        <div class="section-title">Members</div>
+                        <div class="section-subtitle">Number of OUs being Displayed</div>
+                        <p><span id="display-ous" class="display-num"></span> out of <span id="total-ous" class="total-num"></span></p>
+                        <div class="section-subtitle">Number of Layers being Displayed</div>
+                        <p><span id="display-layers" class="display-num"></span> out of <span id="total-layers" class="total-num"></span></p>
                     </div>
                     <div class="sidenav-section">
-                        <div class="section-title">Search</div>
-                        <input type="search" class="form-control" id="search" placeholder="Enter search...">
-                        <div class="section-title">Filters</div>
-                        <p>+ Add a filter</p>
-                        <div class="section-title">View</div>
-                        <p>Nodes per row: </p>
-                        <p>Users per group: </p>
-                        <div class="section-title">Key</div>
-                        <p></p>
+                        <div class="section-title">Display</div>
+                        <div class="section-subtitle">Search</div>
+                        <div class="flex">
+                            <input type="search" class="form-control" id="search" placeholder="Search by OU name...">
+                            <button class="btn btn-primary" id="search-enter-btn">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="section-subtitle">Limit Depth</div>
+                        <div class="form-group row">
+                            <div>
+                                <p>Display the top 
+                                <input class="form-control in-sentence" type="number" min="2" step="1" value="3" id="limit-layer-num">
+                                 layers.<p>
+                            </div>
+                            <br>
+                        </div>
+                        <button type="button" onclick="renderLayers()" class="btn btn-secondary">Render</button>
                     </div>
                 </div>
-                <!-- ou edit console -->
-                 <div class="sidenav card">
+                <!-- OU Edit Console -->
+                 <div class="sidenav card spacing-top">
                     <div class="console">
                         <div class="console-banner">
                             <div class="console-title">Edit OUs</div>
@@ -107,7 +119,7 @@
                                 </select>
                             </div>
 
-                            <!-- Deletion -->
+                            <!-- Delete -->
                             <form style="display: none;" id="edit-delete" onSubmit="deleteOU();return false">
                                 <div class="subheader">Delete</div>
 
@@ -119,7 +131,7 @@
                                     <input type="text" class="form-control" placeholder="corp/eng/devops" id="delete-path">
                                 </div>
 
-                                <input type="submit" value="Delete" />
+                                <input type="submit" class="btn btn-danger" value="Delete" />
                             </form>
 
                             <!-- Create -->
@@ -147,7 +159,7 @@
                                 <input type="text" class="form-control" id="create-inherit">
                                 <br>
 
-                                <input type="submit" value="Create" />
+                                <input type="submit" class="btn btn-success" value="Create" />
                             </form>
 
                             <!-- Update -->
@@ -187,7 +199,7 @@
                                 <input type="text" class="form-control" id="update-inherit">
                                 <br>
 
-                                <input type="submit" value="Update" />
+                                <input type="submit" class="btn btn-primary" value="Update" />
                             </form>
 
                         </div>
@@ -196,19 +208,36 @@
             </div>
             <!-- Page sidebar end -->
             <div class="main-container">
+                <!-- Your main page content goes here -->
                 <div class="overlay">
                     <i class="fa fa-refresh fa-spin"></i>
                 </div>
                 <div class="main">
-                    <!-- Your main page content goes here -->
-                    <div id="chart-container">
-                        <div id="tree-chart"></div>
+                    <div class="accordion">
+                    <div class="card">
+                        <div class="card-header" id="">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#instruction-collapse" aria-expanded="true" aria-controls="collapseOne">
+                                    <i class="fa fa-plus"></i>Instructions
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="instruction-collapse" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                            <div class="card-body">
+                                <text id="instruction">Click on parent org units to <span class="highlight">reveal</span> or <span class="highlight">collapse</span> their children.<br>
+                                    Use your mouse wheel to <span class="highlight">zoom in & zoom out</span> on the visualization.<br>
+                                    Click and drag your mouse to <span class="highlight">reposition</span> the diagram.
+                                </text>
+                            </div>
+                        </div>
                     </div>
+                </div>
+                <div id="chart-container">
+                    <div id="tree-chart"></div>
+                </div>
                 </div>
             </div>
         </div>
         <!-- Outside of flex container -->
-
-       
     </body>
 </html>
