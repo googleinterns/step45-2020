@@ -117,8 +117,6 @@ async function addUserToData(){
     }
     // if there's filter, get users from filters
     else if((groupInput.length > 0 || orgUnitInput.length > 0) && orgUnitInput.length !== oulength + 1){
-        console.log("filter input");
-        console.log(orgUnitInput);
         var userIds = new Set();
         if(orgUnitInput.includes("/")){
             console.log("rootid");
@@ -164,11 +162,14 @@ async function addUserToData(){
                 });
             var json = await response.json();
             var members = json.members;
-            for(var i = 0; i < members.length; i++){
-                if(members[i].type === 'USER'){
-                    userIds.add(members[i].id);
-                }          
+            if(members){
+                for(var i = 0; i < members.length; i++){
+                    if(members[i].type === 'USER'){
+                        userIds.add(members[i].id);
+                    }          
+                }
             }
+            
         }));
         userIds = Array.from(userIds);
         var numElement = document.getElementById('num-filter-users');

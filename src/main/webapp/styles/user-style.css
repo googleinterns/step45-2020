@@ -124,24 +124,3 @@ img {
     background-color: #ffe680;
     padding: 3px;
 }
-
-.accordion {
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    font: 18px sans-serif;
-    font-weight: 400;
-    line-height: 1.7;
-}
-
-.accordion .card .card-header {
-    padding-bottom: 5px;
-}
-
-.accordion .fa {
-    margin-right: 0.5rem;
-}
-
-.heighlight {
-    font-size: 21px;
-    color: rgba(51,103,214,1);
-}
