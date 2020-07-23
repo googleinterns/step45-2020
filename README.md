@@ -12,7 +12,7 @@ To get started run:
 ### To run locally:
 1. run `$ git add origin https://github.com/googleinterns/step45-2020.git`
 2. run `$ git pull origin master`
-3. run `$ mvn package appengine:run`
+3. run `$ mvn package appengine:run -DskipTests=true`
    * This runs your localhost:8080 cloudshell server
    * Copy the URL from the browser search bar, i.e. https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev
 5. Go to the Google APIs & Services console for the project, and paste the URL you copied under the list of URIs under Authorized javaScript origins and Authorized Redirect URIs

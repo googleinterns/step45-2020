@@ -1,6 +1,6 @@
-var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
-var token = params['access_token'];
-var domain = localStorage.getItem('domain');
+// var params = JSON.parse(localStorage.getItem('oauth2-test-params'));
+// var token = params['access_token'];
+// var domain = localStorage.getItem('domain');
 var flatdata = [] // flatdata to contain all orgUnits, will be converted to hierarchical data 
 var data = {} // data to contail all orgUnits and users 
 var searchInput; // input for searchbar
@@ -12,7 +12,7 @@ var isLoading;
 
 // the function called onload for user.html
 function userOnload(){
-    pagesLoginStatus(); 
+    loginStatus(); 
     loadInstruction();
     sidebar();
     fetchOUs();
@@ -211,6 +211,7 @@ async function addUserToData(){
             addUserToOUByPath(data, orgUnitPath, userJSON);
         }
         incrementUserCount(data);
+        console.log(data);
         visualize(null);
     }
     isLoading = false; 
@@ -571,7 +572,7 @@ async function sidebar(){
         $(':checkbox:enabled').prop('checked', false);
         var numFilterElement = document.getElementById('num-filter-users');
         numFilterElement.innerText = 0;
-        pagesLoginStatus();
+        loginStatus();
         fetchOUs();
     })
     searchField.addEventListener("search", function(event) {
@@ -610,7 +611,12 @@ async function sidebar(){
     document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
     var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
     for (var i = 0; i < checkboxElems.length; i++) {
-        checkboxElems[i].addEventListener("click", updateOrgUnitInput);
+        var checkbox = checkboxElems[i];
+        checkboxElems[i].addEventListener("click", function(e) {
+            updateOrgUnitInput(e);
+            loginStatus();
+            fetchOUs();
+        });
     }
 
     // filter by group(s)
@@ -628,14 +634,17 @@ async function sidebar(){
     document.getElementById("group-sel").innerHTML = groupOptions.join('');
     var checkboxElems = document.querySelectorAll("#group-sel input[type='checkbox']");
     for (var i = 0; i < checkboxElems.length; i++) {
-        checkboxElems[i].addEventListener("click", updateGroupInput);
+        checkboxElems[i].addEventListener("click", function(e) {
+            updateGroupInput(e);
+            loginStatus();
+            fetchOUs;
+        });
     }
 
     // search filter-checkboxes
     searchCheckboxField = document.getElementById("search-checkbox-input")
     searchCheckboxField.addEventListener("keyup", function(event){
-
-        searchCheckboxInput = searchCheckboxField.value.toLowerCase();
+    searchCheckboxInput = searchCheckboxField.value.toLowerCase();
         var checkboxes = document.getElementsByClassName("checkboxes");
         for(var k = 0; k < checkboxes.length; k++){
             var checkbox = checkboxes[k];
@@ -654,7 +663,7 @@ async function sidebar(){
     })
 }
 
-// clear search inputs
+// clear search inputs 
 function clearSearch(){
     searchInput = "";
     var searchField = document.getElementById("user-search-input");
@@ -665,6 +674,7 @@ function clearSearch(){
 
 // update variable orgUnitInput based on checkbox
 function updateOrgUnitInput(e){
+    console.log(e);
     console.log(e.target);
     console.log(orgUnitInput);
     if(e.target.checked){
@@ -678,8 +688,6 @@ function updateOrgUnitInput(e){
     }
     console.log(orgUnitInput);
     clearSearch();
-    pagesLoginStatus();
-    fetchOUs();
 }
 
 // update variable groupInput based on checkbox
@@ -694,8 +702,6 @@ function updateGroupInput(e) {
         }
     }
     clearSearch();
-    pagesLoginStatus();
-    fetchOUs();
 }
 
 // clear all filters, display all users
@@ -705,7 +711,7 @@ function clearFilters(){
     $(':checkbox:enabled').prop('checked', false);
     var numFilterElement = document.getElementById('num-filter-users');
     numFilterElement.innerText = 0;
-    pagesLoginStatus();
+    loginStatus();
     fetchOUs();
 }
 
@@ -717,7 +723,7 @@ function checkAllOUFilters(){
         orgUnitInput.push(ouchecks[i].value);
     }  
     clearSearch();
-    pagesLoginStatus();
+    loginStatus();
     fetchOUs();
 }
 
@@ -729,7 +735,7 @@ function checkAllGroupFilters(){
         groupInput.push(groupchecks[i].value);
     }  
     clearSearch();
-    pagesLoginStatus();
+    loginStatus();
     fetchOUs();
 }
 
@@ -740,13 +746,13 @@ function orderBy(){
     visualize(order);
 }
 
-function sortByName(a, b){
-    if(a.innerText.toLowerCase() < b.innerText.toLowerCase())
-        return -1;
-    if(a.innerText.toLowerCase() < b.innerText.toLowerCase())
-        return 1;
-    return 0;
-}
+// function sortByName(a, b){
+//     if(a.innerText.toLowerCase() < b.innerText.toLowerCase())
+//         return -1;
+//     if(a.innerText.toLowerCase() < b.innerText.toLowerCase())
+//         return 1;
+//     return 0;
+// }
 
 /** End of sidebar functionality */
 
@@ -754,7 +760,7 @@ function sortByName(a, b){
 /** User details page */
 // user detail onload
 async function userdetailOnload(){
-    pagesLoginStatus(); 
+    loginStatus(); 
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     var userid = urlParams.get('user');
@@ -765,6 +771,18 @@ async function userdetailOnload(){
     }
     });
     var user = await response.json();
+    var relations = user.relations ? user.relations : null;
+    var manager;
+    if(relations){
+        for(var i = 0; i < relations.length; i++){
+            if(relations[i].type === "manager"){
+                manager = relations[i].value;
+            }
+        }
+    }
+    var managerElement = document.getElementById("manager");
+    managerElement.innerText = manager ? manager : "No manager";
+
     var userNameElement = document.getElementById("user-name");
     userNameElement.innerText = user.name.fullName;
     var userEmailElement = document.getElementById("user-email");
@@ -876,7 +894,7 @@ function getSingleBranchOfOU(user){
         }
     }
 }
-       
+
 // visualize the direct groups a user is in
 function getGroups(userid, username){
     fetch("https://www.googleapis.com/admin/directory/v1/groups?userKey=" + userid,{
@@ -935,7 +953,7 @@ function visualizeUser(userData, htmlid){
     // set the dimensions and margins of the diagram
     var margin = {top: 20, right: 160, bottom: 30, left: 160},
         width = 800 - margin.left - margin.right,
-        height = 360 - margin.top - margin.bottom;
+        height = 560 - margin.top - margin.bottom;
 
     // declares a tree layout and assigns the size
     var treemap = d3.tree()
@@ -965,10 +983,10 @@ function visualizeUser(userData, htmlid){
     .enter().append("path")
         .attr("class", "link")
         .attr("d", function(d) {
-        return "M" + d.y + "," + d.x
-            + "C" + (d.y + d.parent.y) / 2.2 + "," + d.x
-            + " " + (d.y + d.parent.y) / 2.2 + "," + d.parent.x
-            + " " + d.parent.y + "," + d.parent.x;
+        return "M" + d.x + "," + d.y
+            + "C" + (d.x + d.parent.x) / 2.2 + "," + d.y
+            + " " + (d.x + d.parent.x) / 2.2 + "," + d.parent.y
+            + " " + d.parent.x + "," + d.parent.y;
         });
 
     // adds each node as a group
@@ -979,7 +997,7 @@ function visualizeUser(userData, htmlid){
         return "node" + 
             (d.children ? " node--internal" : " node--leaf"); })
         .attr("transform", function(d) { 
-        return "translate(" + d.y + "," + d.x + ")"; });
+        return "translate(" + d.x + "," + d.y + ")"; });
 
     // adds the circle to the node
     node.append("circle")
