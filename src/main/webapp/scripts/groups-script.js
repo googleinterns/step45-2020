@@ -446,7 +446,7 @@ async function loadGroupsDFS(currGroup, parentGroup) {
     }
     // if members does not exist, a.k.a. you are on group details page
     var currMembers
-    if (!members) {
+    if (!members || !members[currGroup.id]) {
         currMembers = await getGroupMembers(currGroup.id);
     } else {
         currMembers = members[currGroup.id];
@@ -530,9 +530,8 @@ async function getGroupMembers(id) {
         // if members does not exist, return instead of assigning to dict
         if (members) {
             members[currId] = currMembers;
-        } else {
-            return currMembers;
         }
+        return currMembers;
     });
 }
 
