@@ -1,11 +1,13 @@
 var flatdata = [] // flatdata to contain all orgUnits, will be converted to hierarchical data 
 var data = {} // data to contail all orgUnits and users 
+var allOrgUnits = [];
+var allUsers; 
 var searchInput; // input for searchbar
 var orgUnitInput = []; // input for filter by orgUnit
 var groupInput = []; // input for filter by group
 var oulength = 0; // length of all ous
 var rootID;
-var isLo3ding;
+var isLoading;
 
 // the function called onload for user.html
 function userOnload(){
@@ -50,12 +52,34 @@ function fetchOUs(){
     });
 }
 
+async function fetchUsers(){
+    var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    });
+    var userJSON = await response.json();
+    var users = userJSON['users'];
+    allUsers = [];
+    for(var i = 0; i < users.length; i++){
+        let user = users[i];
+        var fullname = user['name']['fullName'];
+        var id = user['id'];
+        var orgUnitPath = user['orgUnitPath'];
+        var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
+        allUsers.push(userJSON);
+    }
+    return allUsers;
+}
+
 // Add all OrgUnits (including the root OrgUnit) to data
 function addOrgUnitsToData(ous){
     for(var i = 0; i < ous.length; i++){
         var eachOU = ous[i];
         var childElement = {"name": eachOU["name"], "path": eachOU["orgUnitPath"], "parentPath": eachOU["parentOrgUnitPath"], "users": []};
         flatdata.push(childElement);
+        var orgUnit = {"id": eachOU["id"], "name": eachOU["name"], "path": eachOU["orgUnitPath"]};
+        allOrgUnits.push(orgUnit);
     }
     // add root OrgUnit to data
     for(var i = 0; i < ous.length; i++){
@@ -71,6 +95,19 @@ function addOrgUnitsToData(ous){
                     var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
                     rootOUName = root["name"];
                     flatdata.push(rootElement);
+                    var orgUnitOptions = [];
+                    orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + root["name"] + "</label></div>");
+                    for (var i = 0; i < allOrgUnits.length; i++) {
+                        orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + allOrgUnits[i].id + "' value='" + allOrgUnits[i].path + "'><label class='form-check-label' for='" + allOrgUnits[i].path + "'> " + allOrgUnits[i].name + "</label></div>");
+                    }
+                    document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
+                    var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
+                    for (var i = 0; i < checkboxElems.length; i++) {
+                        var checkbox = checkboxElems[i];
+                        checkboxElems[i].addEventListener("click", function(e) {
+                            updateOrgUnitInput(e.target);
+                        });
+                    }
                     // convert flat data to nested json with hierachy
                     data = d3.stratify()
                                 .id(function(d) {return d.path})
@@ -90,6 +127,7 @@ function addOrgUnitsToData(ous){
 async function addUserToData(){
     isLoading = true; 
     setLoadingOverlay();
+    var allUsers = await fetchUsers();
     // if there's input in the search bar, only add users from search result
     // query users match the query input, query can be any prefix of name and email
     if(searchInput){
@@ -118,47 +156,15 @@ async function addUserToData(){
         incrementUserCount(data);
         visualize(null);
     }
-    // if there's filter, get users from filters
-    else if((groupInput.length > 0 || orgUnitInput.length > 0) && orgUnitInput.length !== oulength + 1){
+    // if there's input for filering, get users match both orgUnit filters and group filters
+    else if((groupInput.length > 0 || orgUnitInput.length > 0)){
         var userIds = new Set();
-        if(orgUnitInput.includes("/")){
-            console.log("rootid");
-            var allUsersResponse = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
-                headers: {
-                    'authorization': `Bearer ` + token,
-                }
-            });
-            var allUsersJSON = await allUsersResponse.json();
-            var allUsers = allUsersJSON['users'];
-            if(allUsers){
-                for(var i = 0; i < allUsers.length; i++){
-                    let user = allUsers[i];
-                    // fetch with orgunit will return all users, but we only want direct users in the root orgUnits.
-                    if(user.orgUnitPath === "/")
-                        userIds.add(user.id);
-                }
-            }
-            
-        }
         // for each orgUnit id, get users of the orgUnit
-        await Promise.all(orgUnitInput.map(async (orgUnit) => {
-            // fetch with orgunit will return all users, but we only want direct users in the root orgUnits.
-            if(orgUnit !== "/"){
-                 var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&query=orgUnitPath=' + orgUnit, {
-                        headers: {
-                            'authorization': `Bearer ` + token,
-                        }
-                    });
-                var json = await response.json();
-                var users = json.users;
-                if(users){
-                    for(var i = 0; i < users.length; i++){
-                        userIds.add(users[i].id);
-                    }
-                }
-            }
-           
-        }));
+        for(var i = 0; i < allUsers.length; i++){
+            let user = allUsers[i];
+            if(orgUnitInput.includes(user.orgUnitPath))
+                userIds.add(user.id);
+        }
         // for each group id, get members of the group
         await Promise.all(groupInput.map(async (group) => {
             var response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' + group + '/members', {
@@ -177,18 +183,15 @@ async function addUserToData(){
             }
             
         }));
+        // for each user id, find and add the user
         userIds = Array.from(userIds);
         var numElement = document.getElementById('num-filter-users');
         numElement.innerText = userIds.length;
-        for(var i = 0; i < userIds.length; i++){
-            var response = await fetch('https://www.googleapis.com/admin/directory/v1/users/' + userIds[i], {
-                    headers: {
-                        'authorization': `Bearer ` + token,
-                    }
-                });
-            var json = await response.json();
-            var userJSON = {"name": json.name.fullName, "id": json.id, "orgUnitPath": json.orgUnitPath};
-            addUserToOUByPath(data, json.orgUnitPath, userJSON);
+        for(var i = 0; i < allUsers.length; i++){
+            var user = allUsers[i];
+            if(userIds.includes(user.id)){
+                addUserToOUByPath(data, user["orgUnitPath"], user);
+            }
         }
         incrementUserCount(data);
         visualize(null);
@@ -199,23 +202,11 @@ async function addUserToData(){
         numSearchElement.innerText = 0;
         var numFilterElement = document.getElementById('num-filter-users');
         numFilterElement.innerText = 0;
-        var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
-            headers: {
-                'authorization': `Bearer ` + token,
-            }
-        });
-        var userJSON = await response.json();
-        var users = userJSON['users'];
-        for(var i = 0; i < users.length; i++){
-            let user = users[i];
-            var fullname = user['name']['fullName'];
-            var id = user['id'];
-            var orgUnitPath = user['orgUnitPath'];
-            var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
-            addUserToOUByPath(data, orgUnitPath, userJSON);
+        for(var i = 0; i < allUsers.length; i++){
+            var user = allUsers[i];
+            addUserToOUByPath(data, user["orgUnitPath"], user);
         }
         incrementUserCount(data);
-        console.log(data);
         visualize(null);
     }
     isLoading = false; 
@@ -591,12 +582,11 @@ async function sidebar(){
     });
     var json = await response.json();
     var orgUnits = json.organizationUnits;
-    var orgUnitOptions = [];
+    // var orgUnitOptions = [];
     // add root OU
     for(var i = 0; i < orgUnits.length; i++){
         if(orgUnits[i]['parentOrgUnitPath'] === "/"){
             rootID = orgUnits[i]['parentOrgUnitId'];
-            console.log(rootID);
             var rootresponse = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
             headers: {
                 'authorization': `Bearer ` + token,
@@ -607,19 +597,19 @@ async function sidebar(){
     }
     var rootobject = await rootresponse.json();
     var rootname = rootobject.name;
-    orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>");
+    // orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>");
     
-    for (var i = 0; i < orgUnits.length; i++) {
-        orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label></div>");
-    }
-    document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
-    var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
-    for (var i = 0; i < checkboxElems.length; i++) {
-        var checkbox = checkboxElems[i];
-        checkboxElems[i].addEventListener("click", function(e) {
-            updateOrgUnitInput(e.target);
-        });
-    }
+    // for (var i = 0; i < orgUnits.length; i++) {
+    //     orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label></div>");
+    // }
+    // document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
+    // var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
+    // for (var i = 0; i < checkboxElems.length; i++) {
+    //     var checkbox = checkboxElems[i];
+    //     checkboxElems[i].addEventListener("click", function(e) {
+    //         updateOrgUnitInput(e.target);
+    //     });
+    // }
 
     // filter by group(s)
     var response = await fetch('https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer', {
@@ -629,6 +619,7 @@ async function sidebar(){
     });
     var json = await response.json();
     var groups = json.groups;
+    console.log(groups);
     var groupOptions = [];
     for (var i = 0; i < groups.length; i++) {
         groupOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + groups[i].id + "' value='" + groups[i].id + "'><label class='form-check-label' for='" + groups[i].id + "'> " + groups[i].name + "</label></div>");
