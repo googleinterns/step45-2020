@@ -64,12 +64,14 @@
             <div class="sidenav card">
                 <div class="sidenav-section blue">
                     <div class="section-title">Domain</div>
+                    <div class="section-subtitle">Email</div>
                     <p id="domain-name">@</p>
                 </div>
                 <div class="sidenav-section blue">
-                    <div class="section-title">Number of users from search</div>
+                    <div class="section-title">Search / Filter Results</div>
+                    <div class="section-subtitle">Number of users from search</div>
                     <p id="num-search-users"></p>
-                    <div class="section-title">Number of users from filter</div>
+                    <div class="section-subtitle">Number of users from filter</div>
                     <p id="num-filter-users"></p>
                 </div>
                 <div class="sidenav-section">
@@ -81,12 +83,14 @@
                         </button>
                     </div>
                     <div class="section-title">Filters
-                        <div class="btn filter-btn" id="clear" onclick="clearFilters()">Clear filters</div>
-                        <div class="btn filter-btn" onclick="checkAllOUFilters()">Check All OrgUnits</div>
-                        <div class="btn filter-btn" onclick="checkAllGroupFilters()">Check All Groups</div>
+                        <div class="section-right">
+                            <div class="btn btn-light" onclick="clearFilters()">Clear filters <i class="fa fa-times"></i></div>
+                            <div class="btn btn-light" onclick="checkAllOUFilters()">Check All OrgUnits <i class="fa fa-check"></i></div>
+                            <div class="btn btn-light" onclick="checkAllGroupFilters()">Check All Groups <i class="fa fa-check"></i></div>
+                        </div>
                     </div>
                     <div class="flex">
-                        <input type="search" class="form-control" id="search-checkbox-input" placeholder="Search filters ...">
+                        <input type="search" class="form-control" id="search-checkbox-input" onkeyup="searchFilter()" placeholder="Search filters ...">
                     </div>
                     <div class="section-subtitle">Org Unit(s): </div>
                     <div class="form-check" id="orgunit-sel" style="max-height: 300px; overflow: auto; margin-bottom: 10px"></div>
