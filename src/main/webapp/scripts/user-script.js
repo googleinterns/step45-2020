@@ -1,6 +1,5 @@
 var flatdata = [] // flatdata to contain all orgUnits, will be converted to hierarchical data 
 var data = {} // data to contail all orgUnits and users 
-var allOrgUnits = [];
 var allUsers; 
 var searchInput; // input for searchbar
 var orgUnitInput = []; // input for filter by orgUnit
@@ -78,8 +77,6 @@ function addOrgUnitsToData(ous){
         var eachOU = ous[i];
         var childElement = {"name": eachOU["name"], "path": eachOU["orgUnitPath"], "parentPath": eachOU["parentOrgUnitPath"], "users": []};
         flatdata.push(childElement);
-        var orgUnit = {"id": eachOU["id"], "name": eachOU["name"], "path": eachOU["orgUnitPath"]};
-        allOrgUnits.push(orgUnit);
     }
     // add root OrgUnit to data
     for(var i = 0; i < ous.length; i++){
@@ -95,19 +92,6 @@ function addOrgUnitsToData(ous){
                     var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
                     rootOUName = root["name"];
                     flatdata.push(rootElement);
-                    var orgUnitOptions = [];
-                    orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + root["name"] + "</label></div>");
-                    for (var i = 0; i < allOrgUnits.length; i++) {
-                        orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + allOrgUnits[i].id + "' value='" + allOrgUnits[i].path + "'><label class='form-check-label' for='" + allOrgUnits[i].path + "'> " + allOrgUnits[i].name + "</label></div>");
-                    }
-                    document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
-                    var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
-                    for (var i = 0; i < checkboxElems.length; i++) {
-                        var checkbox = checkboxElems[i];
-                        checkboxElems[i].addEventListener("click", function(e) {
-                            updateOrgUnitInput(e.target);
-                        });
-                    }
                     // convert flat data to nested json with hierachy
                     data = d3.stratify()
                                 .id(function(d) {return d.path})
@@ -582,7 +566,7 @@ async function sidebar(){
     });
     var json = await response.json();
     var orgUnits = json.organizationUnits;
-    // var orgUnitOptions = [];
+    var orgUnitOptions = [];
     // add root OU
     for(var i = 0; i < orgUnits.length; i++){
         if(orgUnits[i]['parentOrgUnitPath'] === "/"){
@@ -597,19 +581,18 @@ async function sidebar(){
     }
     var rootobject = await rootresponse.json();
     var rootname = rootobject.name;
-    // orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>");
-    
-    // for (var i = 0; i < orgUnits.length; i++) {
-    //     orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label></div>");
-    // }
-    // document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
-    // var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
-    // for (var i = 0; i < checkboxElems.length; i++) {
-    //     var checkbox = checkboxElems[i];
-    //     checkboxElems[i].addEventListener("click", function(e) {
-    //         updateOrgUnitInput(e.target);
-    //     });
-    // }
+    orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>");
+    for (var i = 0; i < orgUnits.length; i++) {
+        orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label></div>");
+    }
+    document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
+    var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
+    for (var i = 0; i < checkboxElems.length; i++) {
+        var checkbox = checkboxElems[i];
+        checkboxElems[i].addEventListener("click", function(e) {
+            updateOrgUnitInput(e.target);
+        });
+    }
 
     // filter by group(s)
     var response = await fetch('https://www.googleapis.com/admin/directory/v1/groups?domain=' + domain + '&customer=my_customer', {
