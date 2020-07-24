@@ -255,3 +255,24 @@ th {
     justify-content: center;
     align-items: center;
 }
+
+.accordion {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.7;
+}
+
+.accordion .card .card-header {
+    padding-bottom: 5px;
+    background: rgb(243, 250, 255);
+}
+
+.accordion .fa {
+    margin-right: 0.5rem;
+}
+
+.highlight {
+    color: rgba(51,103,214,1);
+}

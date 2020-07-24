@@ -71,25 +71,6 @@
     background-color: aliceblue;
 }
 
-.accordion {
-    font: 18px sans-serif;
-    font-weight: 400;
-    line-height: 1.7;
-}
-
-.accordion .card .card-header {
-    padding: 3px;
-}
-
-.accordion .fa {
-    margin-right: 0.5rem;
-}
-
-.highlight {
-    font-size: 21px;
-    color: rgba(51,103,214,1);
-}
-
 .in-sentence {
     width: 25%;
     display: inline;

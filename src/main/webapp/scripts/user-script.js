@@ -102,23 +102,24 @@ async function addUserToData(){
                 });
         var json = await response.json();
         var numElement = document.getElementById('num-search-users');
-        numElement.innerText = json.users.length;
+        numElement.innerText = json.users ? json.users.length : 0;
         var users = json.users;
-        for(var i = 0; i < users.length; i++){
-            let user = users[i];
-            var fullname = user['name']['fullName'];
-            var id = user['id'];
-            var orgUnitPath = user['orgUnitPath'];
-            var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
-            addUserToOUByPath(data, orgUnitPath, userJSON);
+        if(json.users){
+            for(var i = 0; i < users.length; i++){
+                let user = users[i];
+                var fullname = user['name']['fullName'];
+                var id = user['id'];
+                var orgUnitPath = user['orgUnitPath'];
+                var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
+                addUserToOUByPath(data, orgUnitPath, userJSON);
+            }
         }
+        
         incrementUserCount(data);
         visualize(null);
     }
     // if there's filter, get users from filters
     else if((groupInput.length > 0 || orgUnitInput.length > 0) && orgUnitInput.length !== oulength + 1){
-        console.log("filter input");
-        console.log(orgUnitInput);
         var userIds = new Set();
         if(orgUnitInput.includes("/")){
             console.log("rootid");
@@ -129,12 +130,15 @@ async function addUserToData(){
             });
             var allUsersJSON = await allUsersResponse.json();
             var allUsers = allUsersJSON['users'];
-            for(var i = 0; i < allUsers.length; i++){
-                let user = allUsers[i];
-                // fetch with orgunit will return all users, but we only want direct users in the root orgUnits.
-                if(user.orgUnitPath === "/")
-                    userIds.add(user.id);
+            if(allUsers){
+                for(var i = 0; i < allUsers.length; i++){
+                    let user = allUsers[i];
+                    // fetch with orgunit will return all users, but we only want direct users in the root orgUnits.
+                    if(user.orgUnitPath === "/")
+                        userIds.add(user.id);
+                }
             }
+            
         }
         // for each orgUnit id, get users of the orgUnit
         await Promise.all(orgUnitInput.map(async (orgUnit) => {
@@ -164,11 +168,14 @@ async function addUserToData(){
                 });
             var json = await response.json();
             var members = json.members;
-            for(var i = 0; i < members.length; i++){
-                if(members[i].type === 'USER'){
-                    userIds.add(members[i].id);
-                }          
+            if(members){
+                for(var i = 0; i < members.length; i++){
+                    if(members[i].type === 'USER'){
+                        userIds.add(members[i].id);
+                    }          
+                }
             }
+            
         }));
         userIds = Array.from(userIds);
         var numElement = document.getElementById('num-filter-users');
@@ -633,27 +640,24 @@ async function sidebar(){
             updateGroupInput(e.target);
         });
     }
+}
 
-    // search filter-checkboxes
-    searchCheckboxField = document.getElementById("search-checkbox-input")
-    searchCheckboxField.addEventListener("keyup", function(event){
-    searchCheckboxInput = searchCheckboxField.value.toLowerCase();
-        var checkboxes = document.getElementsByClassName("checkboxes");
-        for(var k = 0; k < checkboxes.length; k++){
-            var checkbox = checkboxes[k];
-            var checkboxName = checkbox.getElementsByTagName("label")[0].innerText;
-            console.log(checkboxName);
-            console.log(searchCheckboxInput);
-            console.log(checkboxName.toLowerCase().indexOf(searchCheckboxInput));
-            if(checkboxName.toLowerCase().indexOf(searchCheckboxInput) > -1){
-                console.log("find", checkboxName);
-                checkbox.style.display = "";
-            }
-            else{
-                checkbox.style.display = "none";
-            }
+// search filter-checkboxes
+function searchFilter(){
+    console.log("searchfilter");
+    searchCheckboxInput = document.getElementById("search-checkbox-input").value.toLowerCase();
+    var checkboxes = document.getElementsByClassName("checkboxes");
+    for(var k = 0; k < checkboxes.length; k++){
+        var checkbox = checkboxes[k];
+        var checkboxName = checkbox.getElementsByTagName("label")[0].innerText;
+        if(checkboxName.toLowerCase().indexOf(searchCheckboxInput) > -1){
+            console.log("find", checkboxName);
+            checkbox.style.display = "";
         }
-    })
+        else{
+            checkbox.style.display = "none";
+        }
+    }
 }
 
 // clear search inputs 

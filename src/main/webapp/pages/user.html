@@ -3,13 +3,13 @@
  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Users!</title>
+    <title>Users</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.clouaddUsertoOUByPathaddUsertoOUByPathaddUsertoOUByPathaddUsertoOUBy are.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <script src="https://kit.fontawesome.com/87ecaf717c.js" crossorigin="anonymous"></script>
+    <script src="../scripts/font-awesome.js"></script>
  
     <link rel="stylesheet" href="../styles/style.css">
     <link rel="stylesheet" href="../styles/user-style.css">
@@ -17,7 +17,6 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="../scripts/script.js"></script>
     <script src="../scripts/user-script.js"></script>
-    <!-- <script src="../../../test/javascript/test-users.js"></script> -->
   </head>
   <body onload="userOnload();">
     <nav class="navbar navbar-expand-lg" id="header-navbar">
@@ -65,12 +64,14 @@
             <div class="sidenav card">
                 <div class="sidenav-section blue">
                     <div class="section-title">Domain</div>
+                    <div class="section-subtitle">Email</div>
                     <p id="domain-name">@</p>
                 </div>
                 <div class="sidenav-section blue">
-                    <div class="section-title">Number of users from search</div>
+                    <div class="section-title">Search / Filter Results</div>
+                    <div class="section-subtitle">Number of users from search</div>
                     <p id="num-search-users"></p>
-                    <div class="section-title">Number of users from filter</div>
+                    <div class="section-subtitle">Number of users from filter</div>
                     <p id="num-filter-users"></p>
                 </div>
                 <div class="sidenav-section">
@@ -82,12 +83,14 @@
                         </button>
                     </div>
                     <div class="section-title">Filters
-                        <div class="btn filter-btn" id="clear" onclick="clearFilters()">Clear filters</div>
-                        <div class="btn filter-btn" onclick="checkAllOUFilters()">Check All OrgUnits</div>
-                        <div class="btn filter-btn" onclick="checkAllGroupFilters()">Check All Groups</div>
+                        <div class="section-right">
+                            <div class="btn btn-light" onclick="clearFilters()">Clear filters <i class="fa fa-times"></i></div>
+                            <div class="btn btn-light" onclick="checkAllOUFilters()">Check All OrgUnits <i class="fa fa-check"></i></div>
+                            <div class="btn btn-light" onclick="checkAllGroupFilters()">Check All Groups <i class="fa fa-check"></i></div>
+                        </div>
                     </div>
                     <div class="flex">
-                        <input type="search" class="form-control" id="search-checkbox-input" placeholder="Search filters ...">
+                        <input type="search" class="form-control" id="search-checkbox-input" onkeyup="searchFilter()" placeholder="Search filters ...">
                     </div>
                     <div class="section-subtitle">Org Unit(s): </div>
                     <div class="form-check" id="orgunit-sel" style="max-height: 300px; overflow: auto; margin-bottom: 10px"></div>
@@ -122,9 +125,9 @@
                         </div>
                         <div id="instruction-collapse" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
                             <div class="card-body">
-                                <text id="instruction">Click darker blue rectangles to <span class="heighlight">zoom in</span> to child orgUnits<br>
-                                    Click the top white rectangle to <span class="heighlight">zoom out</span> levels<br>
-                                    Click user name to <span class="heighlight">view details</span> of single user
+                                <text id="instruction">Click darker blue rectangles to <span class="highlight">zoom in</span> to child orgUnits<br>
+                                    Click the top white rectangle to <span class="highlight">zoom out</span> levels<br>
+                                    Click user name to <span class="highlight">view details</span> of single user
                                 </text>
                             </div>
                         </div>

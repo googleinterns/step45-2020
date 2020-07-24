@@ -3,12 +3,12 @@
  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>User!</title>
+    <title>User</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <script src="https://kit.fontawesome.com/87ecaf717c.js" crossorigin="anonymous"></script>
+    <script src="../scripts/font-awesome.js"></script>
 
     <link rel="stylesheet" href="../styles/style.css">
     <link rel="stylesheet" href="../styles/user-style.css">
@@ -69,30 +69,31 @@
                 <div class="sidenav-section blue">
                     <div class="row">
                         <div class="col-10">
-                            <span class="section-title">User</span>
+                            <span class="section-title">User Information</span>
+                            <div class="section-subtitle">Name</div>
                             <p id="user-name"></p>
                         </div>
                         <div class="col-auto">
                             <img style="float: right; display: inline-block;" id="profile" src="" class="avatar"></img>
                         </div>
                     </div>
-                </div>          
-                <div class="sidenav-section blue">
-                    <div class="section-title">Email</div>
+                    <div class="section-subtitle">Email</div>
                     <p id="user-email"></p>
-                    <div class="section-title">Org Unit</div>
+                    <div class="section-subtitle">Org Unit</div>
                     <p id="user-orgUnit"></p>
-                    <div class="section-title">Manager</div>
+                    <div class="section-subtitle">Manager</div>
                     <p id="manager"></p>
-                </div>
+                </div>          
+                    
                 <div class="sidenav-section">
+                    <div class="section-title">Change User</div>
                     <div type="button" id="open-edit" data-toggle="modal" data-target="#renameModal">
-                        <div class="section-subtitle"><i class="fa fa-pencil" aria-hidden="true"></i> Rename User</div>
+                        <div class="section-subtitle"><i class="fa fa-edit" aria-hidden="true"></i> Rename User</div>
                     </div>
                     <div type="button" data-toggle="modal" data-target="#deleteModal">
-                        <div class="section-subtitle"><i class="fa fa-trash" aria-hidden="true"></i> Delete User</div>
+                        <div class="section-subtitle"><i class="fa fa-trash" aria-hidden="true"></i>&nbsp Delete User</div>
                     </div>
-                </div>
+                </div>         
             </div>
         </div>
         <!-- Page sidebar end -->
