@@ -462,7 +462,7 @@ async function loadGroupsDFS(currGroup, parentGroup) {
                 newCircle.children.push(visitedGroup);
             }
 
-            // if only show parent groups, then devare this group from data
+            // if only show parent groups, then delete this group from data
             if (showOnlyParentGroups) {
                 var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
                 if (indexOfGroupData >= 0) {
