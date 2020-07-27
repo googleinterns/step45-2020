@@ -581,6 +581,8 @@ async function sidebar(){
     }
     var rootobject = await rootresponse.json();
     var rootname = rootobject.name;
+    var newdiv = document.createElement("div");
+    newdiv.innerHTML = "<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>"
     orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>");
     for (var i = 0; i < orgUnits.length; i++) {
         orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label></div>");
@@ -642,6 +644,20 @@ function clearSearch(){
     var numSearchElement = document.getElementById('num-search-users');
     numSearchElement.innerText = 0;
 }
+
+$(document).ready(function(){
+    // Add minus icon for collapse element which is open by default
+    $(".collapse.show").each(function(){
+        $(this).prev().prev(".section-right").find(".fa").addClass("fa-minus").removeClass("fa-plus");
+    });
+    
+    // Toggle plus minus icon on show hide of collapse element
+    $(".collapse").on('show.bs.collapse', function(){
+        $(this).prev().prev(".section-right").find(".fa").removeClass("fa-plus").addClass("fa-minus");
+    }).on('hide.bs.collapse', function(){
+        $(this).prev().prev(".section-right").find(".fa").removeClass("fa-minus").addClass("fa-plus");
+    });
+});
 
 // update variable orgUnitInput based on checkbox
 function updateOrgUnitInput(input){
