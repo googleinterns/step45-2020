@@ -7,6 +7,9 @@ var data;
 /** JSON lists and maps */
 var groups;
 var users;
+var usersDisplayed;
+
+/** JSON maps */
 var visited;
 var members;
 
@@ -43,10 +46,13 @@ function onloadGroupsPage() {
         searchButton.click();
     });
 
-    getAllGroups();
+    Promise.all([getAllGroups(true), getAllUsers()])
+    .then(async function(results) {
+        loadGroups();
+    })
 }
 
-function getAllGroups() {
+function getAllGroups(noLoadGroups) {
     isLoading = true;
     setLoadingOverlay();
 
@@ -68,7 +74,7 @@ function getAllGroups() {
     if (url.split("&").pop() == "query=") {
         url = url.substring(0, url.length - 7)
     }
-    fetch(url, {
+    return fetch(url, {
         headers: {
             'authorization': `Bearer ` + token,
         }
@@ -81,7 +87,28 @@ function getAllGroups() {
         } else {
             groups = [];
         }
-        loadGroups();
+        if (!noLoadGroups) loadGroups();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
+function getAllUsers() {
+    var url = 'https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&customer=my_customer'
+    return fetch(url, {
+        headers: {
+            'authorization': `Bearer ` + token,
+        }
+    })
+    .then(response => response.json())
+    .then((res) => {
+        console.log(res);
+        if (res.users) {
+            users = res.users;
+        } else {
+            users = [];
+        }
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -97,7 +124,7 @@ function loadGroupsSidebar() {
     numGroups.innerHTML = groups.length;
 
     var numUsers = document.getElementById("num-users");
-    numUsers.innerHTML = users.length;
+    numUsers.innerHTML = usersDisplayed.length;
 
     var userOptions = [];
     userOptions.push("<option value=null selected='selected'>Select user...</option>");
@@ -364,7 +391,7 @@ function makeGroupTooltip(d) {
 /** Creates the components of the hovering <div> element for each user */
 function makeUserTooltip(d, parentId) {
     // find user with this id
-    var user = users[users.findIndex(elem => elem.id == d.data.id)]
+    var user = usersDisplayed[usersDisplayed.findIndex(elem => elem.id == d.data.id)]
     tooltipName.text(user.name.fullName)
     tooltipEmail.text(user.emails[0].address)
     tooltipDescription.text(user.roles[parentId][0].toUpperCase() + user.roles[parentId].slice(1).toLowerCase())
@@ -375,7 +402,7 @@ function makeUserTooltip(d, parentId) {
 async function loadGroups() {
     // reset data and unique users
     // if empty groups, data should also be empty
-    users = [];
+    usersDisplayed = [];
     if (groups.length == 0) {
         data = {};
         visualize();
@@ -421,13 +448,19 @@ async function loadGroupsDFS(currGroup, parentGroup) {
     if (currGroup.type == "USER") {
         var userData;
         // a user can have different roles depending on which group
-        var userIndex = users.findIndex(elem => elem.id == currGroup.id)
+        var userIndex = usersDisplayed.findIndex(elem => elem.id == currGroup.id)
         if (userIndex < 0) {
-            userData = await getUser(currGroup.id);
+            // if not visited user yet, get user from users map
+            userIndex = users.findIndex(elem => elem.id == currGroup.id)
+            if (userIndex < 0) {
+                userData = await getUser(currGroup.id);
+            } else {
+                userData = users[userIndex];
+            }
             userData.roles = {};
-            users.push(userData);
+            usersDisplayed.push(userData);
         } else {
-            userData = users[userIndex];
+            userData = usersDisplayed[userIndex];
         }
         userData.roles[parentGroup.id] = currGroup.role;
         return {
@@ -511,6 +544,7 @@ async function loadGroupsDFS(currGroup, parentGroup) {
     return newCircle;
 }
 
+/** Returns the corresponding list of members for the group with the id */
 async function getGroupMembers(id) {
     var currId = id;
     return fetch('https://www.googleapis.com/admin/directory/v1/groups/' + currId + '/members', {
