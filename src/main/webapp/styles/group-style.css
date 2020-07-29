@@ -1,3 +1,7 @@
+#chart {
+    position: relative;
+}
+
 .group {
     max-width: 300px;
     margin: 0 40px 40px 0;
@@ -37,6 +41,13 @@
     overflow-x: scroll;
 }
 
-.table-checkbox-input {
-    
+.no-search-results {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
