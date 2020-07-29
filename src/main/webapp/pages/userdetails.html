@@ -15,7 +15,8 @@
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="../scripts/script.js"></script>
-    <script src="../scripts/user-script.js"></script>
+    <script src="../scripts/users-script.js"></script>
+    <script src="../scripts/user-details-script.js"></script>
   </head>
   <body onload="userdetailOnload()">
     <nav class="navbar navbar-expand-lg" id="header-navbar">
@@ -155,18 +156,86 @@
         </div>
         </div>
 
+        <!-- Add Group Modal -->
+        <div class="modal fade" id="addGroupModal" tabindex="-1" role="dialog" aria-labelledby="addGroupModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addGroupModalLabel">Add Group</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Select the group to be added:
+                <select name="groups" id="groups">
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="addGroup()">Add</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Delete Group Modal -->
+        <div class="modal fade" id="deleteGroupModal" tabindex="-1" role="dialog" aria-labelledby="deleteGroupModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteGroupModalLabel">Delete Group</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure to remove the user from the group? The user will lose all access to the group.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="delete-group">Delete</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Change Org Unit Path Modal -->
+        <div class="modal fade" id="editPathModal" tabindex="-1" role="dialog" aria-labelledby="editPathModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPathModalLabel">Edit Org Unit Path</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Select target org unit path: 
+                <select name="paths" id="paths">
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="changePath()">Change</button>
+            </div>
+            </div>
+        </div>
+        </div>
 
         <div class="main-container">
             <div id="users">
                 <!-- Your main page content goes here -->
                 <div class="card mb-3">  
                     <div class="card-body">
+                        <button class="card-right btn btn-light" data-toggle="modal" data-target="#editPathModal"><i class="fa fa-pencil" aria-hidden="true"></i> Edit Path</button>
                         <div class="userdetail-title">OrgUnit Path for <span class="username"></span></div>
                         <div id="single-user-OU-branch"></div>
                     </div>
                 </div>
                 <div class="card my-3">
                     <div class="card-body">
+                        <button class="card-right btn btn-light" data-toggle="modal" data-target="#addGroupModal"><i class="fa fa-plus" aria-hidden="true"></i> Add group</button>
                         <div class="userdetail-title">Groups for <span class="username"></span></div>
                         <div id="user-groups"></div>
                     </div>
