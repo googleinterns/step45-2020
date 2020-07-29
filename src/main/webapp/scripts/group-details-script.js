@@ -20,6 +20,7 @@ async function loadGroup(group) {
     setLoadingOverlay();
 
     // reset data and unique users
+    usersDisplayed = [];
     users = [];
     data = {
             name: domain,
@@ -62,7 +63,7 @@ function setGroupInformation(group) {
     numGroups.innerHTML = Object.keys(visited).length;
 
     var numUsers = document.getElementById("num-users");
-    numUsers.innerHTML = users.length;
+    numUsers.innerHTML = usersDisplayed.length;
 }
 
 /** Set group settings for specific group */
