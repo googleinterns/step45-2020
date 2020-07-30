@@ -68,18 +68,41 @@
                 <div class="sidenav card">
                     <div class="sidenav-section">
                         <div class="section-right">
-                            <button type="button" class="btn btn-light" onclick="showEditInformationForm()">
+                            <button type="button" class="btn btn-light" id="show-edit-information-form" onclick="showEditInformationForm()">
                                 <i class="fa fa-edit"></i>
                                 Edit
                             </button>
+                            <button type="button" class="btn btn-light hidden" id="close-edit-information-form" onclick="closeInformationForm()">
+                                <i class="fa fa-times"></i>
+                                Cancel
+                            </button>
                         </div>
                         <div class="section-title">Group information</div>
-                        <div class="section-subtitle">Name</div>
-                        <p id="group-name"></p>
-                        <div class="section-subtitle">Email</div>
-                        <p id="group-email"></p>
-                        <div class="section-subtitle">Description</div>
-                        <p id="group-description"><i>Add a group description</i></p>
+                        <section id="view-information-form">
+                            <div class="section-subtitle">Name</div>
+                            <p id="group-name"></p>
+                            <div class="section-subtitle">Email</div>
+                            <p id="group-email"></p>
+                            <div class="section-subtitle">Description</div>
+                            <p id="group-description"><i>Add a group description</i></p>
+                        </section>
+                        <section id="edit-information-form" class="hidden">
+                            <div class="section-subtitle">Name</div>
+                            <input type="text" class="form-control" id="group-name-field"></input>
+                            <div class="section-subtitle">Email</div>
+                            <div class="input-group">
+                                <input type="text" id="group-email-field" class="form-control" aria-describedby="group-email-domain">
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="group-email-domain"></span>
+                                </div>
+                            </div>
+                            <div class="section-subtitle">Description</div>
+                            <input type="text" class="form-control" id="group-description-field"></input>
+                            <button type="button" class="btn btn-success hidden mt-3" id="save-information-form" onclick="saveInformationForm()">
+                                <i class="fa fa-check"></i>
+                                Save
+                            </button>
+                        </section>
                     </div>
                     <div class="sidenav-section blue">
                         <div class="section-title">Members</div>
