@@ -2,9 +2,9 @@
  * Currently just returns the first OU matching the name search criterion.
 */
 function searchOU(searchName) {
-    for (var i = 0; i < orgUnits.length; i++) {
-        if (orgUnits[i]['name'].includes(searchName)) {
-            return orgUnits[i];
+    for (ouElem of orgUnits) {
+        if (ouElem['name'].includes(searchName)) {
+            return ouElem;
         }
     }
     return null;
