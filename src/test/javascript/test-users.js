@@ -28,7 +28,7 @@ describe("Test checkboxes", function() {
     it("test adding and removing orgunits to filter", function(done) {
         var orgUnitInput = ["checkbox-value1"];
 
-        $.getScript('/src/main/webapp/scripts/user-script.js', function() { 
+        $.getScript('/src/main/webapp/scripts/users-script.js', function() { 
             spyOn(window, "clearSearch");
             spyOn(window, "loginStatus");
             spyOn(window, "fetchOUs");
@@ -50,7 +50,7 @@ describe("Test checkboxes", function() {
     it("test adding and removing groups to filter", function(done) {
         var groupInput = [];
 
-        $.getScript('/src/main/webapp/scripts/user-script.js', function() { 
+        $.getScript('/src/main/webapp/scripts/users-script.js', function() { 
             spyOn(window, "clearSearch");
             spyOn(window, "loginStatus");
             spyOn(window, "fetchOUs");
@@ -74,7 +74,7 @@ describe("Test add user to data", function(){
 
     it("add user to root", function(done) {
         expect(data.data.users.length).toEqual(0);
-        $.getScript('/src/main/webapp/scripts/user-script.js', function() {
+        $.getScript('/src/main/webapp/scripts/users-script.js', function() {
             var orgUnitPath = "/";
             var userJSON = {"name": "test name", "id": "12345", "orgUnitPath": orgUnitPath};
             window.addUserToOUByPath(data, orgUnitPath, userJSON);
@@ -84,7 +84,7 @@ describe("Test add user to data", function(){
     });
 
     it("add user to childpath", function(done) {
-        $.getScript('/src/main/webapp/scripts/user-script.js', function() {
+        $.getScript('/src/main/webapp/scripts/users-script.js', function() {
             var orgUnitPath = "/East-coast";
             var userJSON = {"name": "test user", "id": "23456", "orgUnitPath": orgUnitPath};
             expect(data.children[0].data.users.length).toEqual(0);
@@ -96,48 +96,3 @@ describe("Test add user to data", function(){
     
 });
 
-describe("Test d3js", function() {
-    var userOrgUnits = [
-        {name: "wenyi guo", path: "wenyi guo", parent: "/East-coast"},
-        {name: "East-coast", path: "/East-coast", parent: "/"},
-        {name: "GRoot Test", path: "/", parent: null}
-    ]
-
-    var userGroups = [
-        {
-            "id": "107619745798990508895",
-            "name": "wenyi guo",
-            "parent": null
-        },
-        {
-            "id": "01d96cc03ttea2i",
-            "name": "cornell-2022",
-            "parent": "wenyi guo"
-        },
-        {
-            "id": "02p2csry3w979pn",
-            "name": "test-group-exclude-dolde",
-            "parent": "wenyi guo"
-        }
-    ]
-
-    it("test visualize single user with org units", function(done) {
-        $.getScript('/src/main/webapp/scripts/user-script.js', function() {   
-            visualizeUser(userOrgUnits, "single-user-OU-branch");
-            var svgNodes = $("#single-user-OU-branch svg g g");
-            expect(svgNodes.length).toBe(3);
-            done();
-        });
-    });
-
-    it("test visualize single user with groups", function(done) {
-        $.getScript('/src/main/webapp/scripts/user-script.js', function() {   
-            visualizeUser(userGroups, "user-groups");
-            var svgNodes = $("#user-groups svg g g");
-            expect(svgNodes.length).toBe(3);
-            expect((svgNodes.first()).find("text").first().text()).toEqual("wenyi guo");
-            done();
-        });
-    });
-});
-        
