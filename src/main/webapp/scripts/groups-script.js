@@ -328,8 +328,6 @@ function visualize() {
         .style("display", d => d.parent === root ? "inline" : "none")
         .text(d => d.data.name);
 
-    zoomTo([root.x, root.y, root.r * 2]);
-
     function zoomTo(v) {
         const k = width / v[2];
 
@@ -367,10 +365,28 @@ function visualize() {
     }
 
     var chartElement = document.getElementById("chart");
-    if (chartElement.lastChild) {
+    while (chartElement.lastChild) {
         chartElement.removeChild(chartElement.lastChild);
     }
     chartElement.appendChild(svg.node());
+
+    if (groups.length > 0) {
+        zoomTo([root.x, root.y, root.r * 2]);
+    } else {
+        var div = document.createElement("div");
+        div.classList.add("no-search-results")
+        var p = document.createElement("P");
+        p.innerHTML = "There were no results for your search."; 
+        var btn = document.createElement("BUTTON");
+        btn.innerHTML = "Reset all";
+        btn.classList.add("btn");
+        btn.classList.add("btn-light");
+        btn.onclick = clearFilters;
+
+        div.appendChild(p);
+        div.appendChild(btn);
+        chartElement.appendChild(div);
+    }
 
     isLoading = false;
     setLoadingOverlay();

@@ -1,3 +1,6 @@
+/** Group information */
+var group;
+
 /** Access and membership settings checkbox table */
 var accessSettingsChecked;
 var membershipSettingsChecked;
@@ -9,13 +12,13 @@ async function onloadGroupDetails() {
     const urlParams = new URLSearchParams(queryString);
     var groupId = urlParams.get('group');
     
-    var group = await getGroup(groupId);
+    group = await getGroup(groupId);
 
-    loadGroup(group);
+    loadGroup();
 }
 
 /** Load the group into data for d3 */
-async function loadGroup(group) {
+async function loadGroup() {
     isLoading = true;
     setLoadingOverlay();
 
@@ -36,17 +39,17 @@ async function loadGroup(group) {
     data.children.push(newData);
     
     visualize();
-    loadGroupDetailsSidebar(group);
+    loadGroupDetailsSidebar();
 }
 
 /** Fill in informational fields on the sidebar of the page */
-function loadGroupDetailsSidebar(group) {
-    setGroupInformation(group);
-    setGroupSettings(group);
+function loadGroupDetailsSidebar() {
+    setGroupInformation();
+    setGroupSettings();
 }
 
 /** Set group information for specific group */
-function setGroupInformation(group) {
+function setGroupInformation() {
     var groupNameTitle = document.getElementById("group-name-title");
     groupNameTitle.innerHTML = group.name;
 
@@ -67,7 +70,7 @@ function setGroupInformation(group) {
 }
 
 /** Set group settings for specific group */
-async function setGroupSettings(group) {
+async function setGroupSettings() {
     const response = await fetch('https://www.googleapis.com/groups/v1/groups/'
     + group.email + "?alt=json", {
         headers: {
@@ -92,7 +95,7 @@ async function setGroupSettings(group) {
 }
 
 /** Returns the access type based on this group's settings */
-function getAccessType(group) {
+function getAccessType() {
     // Default public settings object
     var publicSettings = {
         whoCanAdd: "ALL_MANAGERS_CAN_ADD",	
@@ -321,9 +324,74 @@ function setCheckBoxesTrue(checkBoxes) {
     }
 }
 
-/** Toggles showing the edit fields for the information section */
+/** Shows the edit fields for the information section */
 function showEditInformationForm() {
+    var viewInformation = document.getElementById("view-information-form");
+    viewInformation.classList.add("hidden");
+    var editInformation = document.getElementById("edit-information-form");
+    editInformation.classList.remove("hidden");
+    var showEditInformation = document.getElementById("show-edit-information-form");
+    showEditInformation.classList.add("hidden");
+    var saveInformation = document.getElementById("save-information-form");
+    saveInformation.classList.remove("hidden");
+    var closeEditInformation = document.getElementById("close-edit-information-form");
+    closeEditInformation.classList.remove("hidden");
 
+    var groupName = document.getElementById("group-name-field");
+    groupName.value = group.name;
+
+    var groupEmail = document.getElementById("group-email-field");
+    groupEmail.value = group.email.split("@")[0];
+
+    var groupEmailDomain = document.getElementById("group-email-domain");
+    groupEmailDomain.innerHTML = "@" + domain;
+
+    var groupDescription = document.getElementById("group-description-field");
+    if (group.description) groupDescription.value = group.description;
+}
+
+/** Saves the edit fields for the information section */
+async function saveInformationForm() {
+    isLoading = true;
+    setLoadingOverlay();
+
+    var groupName = document.getElementById("group-name-field").value;
+    var groupEmail = document.getElementById("group-email-field").value;
+    var groupDescription = document.getElementById("group-description-field").value;
+
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'
+    + group.id, {
+        headers: {
+            'authorization': `Bearer ` + token,
+            'Content-Type': 'application/json'
+        },
+        method: 'PUT',
+        body: JSON.stringify({"name": groupName, "email": groupEmail + "@" + domain, "description": groupDescription})
+    })
+    const groupJson = await response.json();
+    console.log(groupJson)
+
+    if (response.status == 200) {
+        group = groupJson;
+        setGroupInformation();
+        closeInformationForm();
+        isLoading = false;
+        setLoadingOverlay();
+    }
+}
+
+/** Hides the edit fields for the information section without saving */
+function closeInformationForm() {
+    var viewInformation = document.getElementById("view-information-form");
+    viewInformation.classList.remove("hidden");
+    var editInformation = document.getElementById("edit-information-form");
+    editInformation.classList.add("hidden");
+    var showEditInformation = document.getElementById("show-edit-information-form");
+    showEditInformation.classList.remove("hidden");
+    var saveInformation = document.getElementById("save-information-form");
+    saveInformation.classList.add("hidden");
+    var closeEditInformation = document.getElementById("close-edit-information-form");
+    closeEditInformation.classList.add("hidden");
 }
 
 /** Toggles showing the edit fields for the settings section */
@@ -333,5 +401,5 @@ function showEditSettingsForm() {
 
 /** Deletes the current group */
 function deleteGroup() {
-
+    
 }
