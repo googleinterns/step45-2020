@@ -1,32 +1,24 @@
+/** User main page data */
 var flatdata = [] // flatdata to contain all orgUnits, will be converted to hierarchical data 
 var data = {} // data to contail all orgUnits and users 
 var allUsers; 
+var rootID;
+
+/** Search and filter viarbles */
 var searchInput; // input for searchbar
 var orgUnitInput = []; // input for filter by orgUnit
 var groupInput = []; // input for filter by group
 var oulength = 0; // length of all ous
-var rootID;
+
+/** Show refresh button and overlay*/
 var isLoading;
 
 // the function called onload for user.html
 function userOnload(){
     checkLoginAndSetUp(); 
-    loadInstruction();
+    //loadInstruction();
     sidebar();
     fetchOUs();
-}
-
-function loadInstruction(){
-    var collapse = document.getElementsByClassName("collapse")[0];
-    var icon = document.getElementsByClassName("card-header")[0].getElementsByClassName("fa")[0];
-    if(collapse.classList.contains("show")){
-        icon.classList.remove("fa-plus");
-        icon.classList.add("fa-minus");
-    }
-    else{
-        icon.classList.remove("fa-minus");
-        icon.classList.add("fa-plus");
-    }
 }
 
 // retrieve all OrgUnits from the API (the API returns all OrgUnits except the root OrgUnit)
@@ -644,20 +636,6 @@ function clearSearch(){
     var numSearchElement = document.getElementById('num-search-users');
     numSearchElement.innerText = 0;
 }
-
-$(document).ready(function(){
-    // Add minus icon for collapse element which is open by default
-    $(".collapse.show").each(function(){
-        $(this).prev().prev(".section-right").find(".fa").addClass("fa-minus").removeClass("fa-plus");
-    });
-    
-    // Toggle plus minus icon on show hide of collapse element
-    $(".collapse").on('show.bs.collapse', function(){
-        $(this).prev().prev(".section-right").find(".fa").removeClass("fa-plus").addClass("fa-minus");
-    }).on('hide.bs.collapse', function(){
-        $(this).prev().prev(".section-right").find(".fa").removeClass("fa-minus").addClass("fa-plus");
-    });
-});
 
 // update variable orgUnitInput based on checkbox
 function updateOrgUnitInput(input){

@@ -182,6 +182,7 @@ function getDomain() {
     }
 }
 
+// set loading icon while waiting for async calls
 function setLoadingOverlay() {
     var overlay = document.getElementsByClassName("overlay");
     var overlayArray = Array.from(overlay);
@@ -192,6 +193,7 @@ function setLoadingOverlay() {
     }
 }
 
+// toggle instruction icon
 $(document).ready(function(){
     // Add minus icon for collapse element which is open by default
     $(".collapse.show").each(function(){
