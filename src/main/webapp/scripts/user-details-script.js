@@ -5,7 +5,7 @@ var userid = urlParams.get('user');
 /** User details page */
 // user detail onload
 async function userdetailOnload(){
-    loginStatus(); 
+    checkLoginAndSetUp(); 
     var response = await fetch("https://www.googleapis.com/admin/directory/v1/users/" + userid, {
     headers: {
         'authorization': `Bearer ` + token,

@@ -10,7 +10,7 @@ var isLoading;
 
 // the function called onload for user.html
 function userOnload(){
-    loginStatus(); 
+    checkLoginAndSetUp(); 
     loadInstruction();
     sidebar();
     fetchOUs();
@@ -551,7 +551,7 @@ async function sidebar(){
         $(':checkbox:enabled').prop('checked', false);
         var numFilterElement = document.getElementById('num-filter-users');
         numFilterElement.innerText = 0;
-        loginStatus();
+        checkLoginAndSetUp();
         fetchOUs();
     })
     searchField.addEventListener("search", function(event) {
@@ -671,7 +671,7 @@ function updateOrgUnitInput(input){
         }
     }
     clearSearch();
-    loginStatus();
+    checkLoginAndSetUp();
     fetchOUs();
     return orgUnitInput;
 }
@@ -688,7 +688,7 @@ function updateGroupInput(input) {
         }
     }
     clearSearch();
-    loginStatus();
+    checkLoginAndSetUp();
     fetchOUs();
     return groupInput;
 }
@@ -700,7 +700,7 @@ function clearFilters(){
     $(':checkbox:enabled').prop('checked', false);
     var numFilterElement = document.getElementById('num-filter-users');
     numFilterElement.innerText = 0;
-    loginStatus();
+    checkLoginAndSetUp();
     fetchOUs();
 }
 
@@ -712,7 +712,7 @@ function checkAllOUFilters(){
         orgUnitInput.push(ouchecks[i].value);
     }  
     clearSearch();
-    loginStatus();
+    checkLoginAndSetUp();
     fetchOUs();
 }
 
@@ -724,7 +724,7 @@ function checkAllGroupFilters(){
         groupInput.push(groupchecks[i].value);
     }  
     clearSearch();
-    loginStatus();
+    checkLoginAndSetUp();
     fetchOUs();
 }
 

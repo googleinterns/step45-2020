@@ -11,7 +11,7 @@ var totalLayers;
 
 /* Adds listeners to search elements, loads all OUs. */
 async function onloadOUPage() {
-    loginStatus();
+    checkLoginAndSetUp();
 
     orgUnits = await fetchOUs();
     layerLimitNum = parseInt(document.getElementById("limit-layer-num").value);

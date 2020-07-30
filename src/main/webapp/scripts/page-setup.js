@@ -6,7 +6,7 @@ if(typeof windowstr === "undefined"){
     windowstr = window.location.href;
     REDIRECT_URI = windowstr.substring(
         0, windowstr.lastIndexOf("/")
-);
+    );
 }
 
 var fragmentString = location.hash.substring(1);
@@ -28,7 +28,7 @@ if (Object.keys(params).length > 0) {
 
 // If there's an access token, try an API request.
 // Otherwise, start OAuth 2.0 flow.
-function loginStatus() {
+function checkLoginAndSetUp() {
     params = JSON.parse(localStorage.getItem('oauth2-test-params'));
     if (params && params['access_token']) {
         // user is logged in
@@ -45,7 +45,7 @@ function loginStatus() {
 }
 
 // If isLoggedIn is true, then show the 3 main pages and the navbar
-// Otherwise, show the login form page
+// Otherwise, show tcheckLoginAndSetUp form page
 function updateIndexPage() {
     var headerNavbar = document.getElementById("header-navbar");
     var pageTitle = document.getElementsByClassName("page-title");
