@@ -302,7 +302,7 @@ function visualize() {
             var pageY = event.pageY;
             var pageX = event.pageX;
             displayTooltip = true;
-            tooltip.style("top", (pageY-10)+"px").style("left",(pageX+10)+"px")
+            tooltip.style("top", (pageY)+"px").style("left",(pageX)+"px")
             // show hover card after 500 ms if cursor is still on the same circle
             setTimeout(function() {
                 if (displayTooltip == true) return tooltip.style("visibility", "visible");
@@ -365,7 +365,7 @@ function visualize() {
     }
 
     var chartElement = document.getElementById("chart");
-    while (chartElement.lastChild) {
+    while (chartElement.lastElementChild.id != "create-btn") {
         chartElement.removeChild(chartElement.lastChild);
     }
     chartElement.appendChild(svg.node());
@@ -373,6 +373,7 @@ function visualize() {
     if (groups.length > 0) {
         zoomTo([root.x, root.y, root.r * 2]);
     } else {
+        // Show no search results
         var div = document.createElement("div");
         div.classList.add("no-search-results")
         var p = document.createElement("P");
@@ -615,4 +616,48 @@ async function getUser(id) {
     if (response.status == 200) {
         return json;
     }
+}
+
+/** Creates a new group */
+async function createGroup() {
+    isLoading = true;
+    setLoadingOverlay();
+
+    var groupName = document.getElementById("group-name-field").value;
+    var groupEmail = document.getElementById("group-email-field").value;
+    var groupDescription = document.getElementById("group-description-field").value;
+
+    var form = document.getElementById('create-group-form');
+    form.classList.add('was-validated');
+    if (form.checkValidity() === false) {
+        isLoading = false;
+        setLoadingOverlay();
+        return;
+    }
+
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups',
+    {
+        headers: {
+            'authorization': `Bearer ` + token,
+            'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({"name": groupName, "email": groupEmail + "@" + domain, "description": groupDescription})
+    })
+    const json = await response.json();
+    console.log(json)
+
+    if (response.status == 200) {
+        $('#createModal').modal('hide');
+        isLoading = false;
+        setLoadingOverlay();
+        getAllGroups();
+    }
+}
+
+/** Shows the create form for making a new group */
+function createGroupModal() {
+    $('#createModal').modal('show');
+    var groupEmailDomain = document.getElementById("modal-group-email-domain");
+    groupEmailDomain.innerHTML = "@" + domain;
 }

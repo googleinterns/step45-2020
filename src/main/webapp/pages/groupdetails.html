@@ -92,7 +92,7 @@
                             <input type="text" class="form-control" id="group-name-field" placeholder="Group name"></input>
                             <div class="section-subtitle">Email</div>
                             <div class="input-group">
-                                <input type="text" id="group-email-field" class="form-control" aria-describedby="group-email-domain" placeholder="Main group email">
+                                <input type="text" id="group-email-field" class="form-control" aria-describedby="group-email-domain" placeholder="Group email">
                                 <div class="input-group-append">
                                     <span class="input-group-text" id="group-email-domain"></span>
                                 </div>
@@ -333,7 +333,7 @@
                             This action is irreversible. Deleting this group will permanently erase it from this domain.
                         </div>
                         <p>
-                            This is not the same as removing a group's membership from another group, as the group will still exist in the domain.
+                            This is not the same as removing a group's membership, as the group will still exist in the domain.
                         </p>
                         <button type="button" class="btn btn-danger" onclick="deleteGroupModal()">
                             <i class="fa fa-trash"></i>
@@ -368,16 +368,51 @@
                             </div>
                         </div>
                     </div>
-                    <div id="chart"></div>
+                    <div id="chart">
+                        <button class="btn btn-light" id="create-btn" onclick="createGroupModal()">
+                            <i class="fa fa-plus"></i> Create new group
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Delete User Modal -->
+            <!-- Create Group Modal -->
+            <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createModalLabel">Create Group</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="section-subtitle">Name</div>
+                        <input type="text" class="form-control" id="group-name-field" placeholder="Group name" required></input>
+                        <div class="section-subtitle">Email</div>
+                        <div class="input-group">
+                            <input type="text" id="group-email-field" class="form-control" aria-describedby="group-email-domain" placeholder="Group email" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text" id="modal-group-email-domain"></span>
+                            </div>
+                        </div>
+                        <div class="section-subtitle">Description</div>
+                        <input type="text" class="form-control" id="group-description-field" placeholder="Group description"></input>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" onclick="createGroup()">Create</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Group Modal -->
             <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="deleteModalLabel">Delete User</h5>
+                        <h5 class="modal-title" id="deleteModalLabel">Delete Group</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                         </button>
