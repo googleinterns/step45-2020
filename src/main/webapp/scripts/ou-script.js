@@ -104,9 +104,10 @@ function getAllOUs() {
 
             while (parentArr.length != 0) {
                 pathSoFar = pathSoFar + '/' + parentArr.shift();
-                for (var i = 0; i < orgUnits.length; i++) {
-                    if (orgUnits[i]['orgUnitPath'] == pathSoFar) {
-                        limitedOUs.push(orgUnits[i]);
+
+                for (unit of orgUnits) {
+                    if (unit['orgUnitPath'] == pathSoFar) {
+                        limitedOUs.push(unit);
                         break;
                     }
                 }
@@ -143,23 +144,23 @@ function noSearchResult() {
         return;
     }
     var div = document.createElement("div");
-        div.classList.add("no-search-results");
-        div.id = "no-search-result-elem";
-        var p = document.createElement("P");
-        p.innerHTML = "There were no results for your search."; 
-        var btn = document.createElement("BUTTON");
-        btn.innerHTML = "Reset all";
-        btn.classList.add("btn");
-        btn.classList.add("btn-primary");
-        btn.onclick = refreshOUPage;
+    div.classList.add("no-search-results");
+    div.id = "no-search-result-elem";
+    var p = document.createElement("P");
+    p.innerHTML = "There were no results for your search."; 
+    var refreshOUPageButton = document.createElement("BUTTON");
+    refreshOUPageButton.innerHTML = "Reset all";
+    refreshOUPageButton.classList.add("btn");
+    refreshOUPageButton.classList.add("btn-primary");
+    refreshOUPageButton.onclick = refreshOUPage;
 
-        div.appendChild(p);
-        div.appendChild(btn);
-        document.getElementById('chart-container').append(div);
+    div.appendChild(p);
+    div.appendChild(refreshOUPageButton);
+    document.getElementById('chart-container').append(div);
 
-        // loading is over
-        isLoading = false;
-        setLoadingOverlay();
+    // loading is over
+    isLoading = false;
+    setLoadingOverlay();
 }
 
 /*
@@ -176,13 +177,14 @@ function limitLayers(limitedOUs) {
         return limitedOUs;
     } else {
         limitedOUList = [];
-        for (var i = 0; i < limitedOUs.length; i++) {
-            currentOU = limitedOUs[i];
-            if (computeDepth(currentOU) > layerLimitNum) {
+
+        for (current of limitedOUs) {
+            if (computeDepth(current) > layerLimitNum) {
                 break;
             }
-            limitedOUList.push(currentOU);
+            limitedOUList.push(current);
         }
+
         return limitedOUList;
     }
 }
