@@ -493,9 +493,9 @@ async function loadGroupsDFS(currGroup, parentGroup) {
         value: parseInt(currGroup.directMembersCount == 0 ? 1 : currGroup.directMembersCount),
         id: currGroup.id
     }
-    // if members does not exist, a.k.a. you are on group details page
+    // if members for this group does not exist
     var currMembers
-    if (!members || !members[currGroup.id]) {
+    if (!members[currGroup.id]) {
         currMembers = await getGroupMembers(currGroup.id);
     } else {
         currMembers = members[currGroup.id];

@@ -41,6 +41,10 @@
     overflow-x: scroll;
 }
 
+#access-type-radio-group .form-check .form-check-label {
+    color: #444;
+}
+
 .no-search-results {
     position: absolute;
     top: 0;
