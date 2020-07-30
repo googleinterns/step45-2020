@@ -13,8 +13,7 @@ function deleteOU() {
     })
     .then(response => {
         ouPath.value = '';
-        d3.select("svg").remove();
-        onloadOUPage();
+        refreshOUPage();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -60,8 +59,7 @@ function createOU() {
         descript.value = '';
         blockInherit.value = '';
 
-        d3.select("svg").remove();
-        onloadOUPage();
+        refreshOUPage();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -116,8 +114,7 @@ function updateOU() {
         descript.value = '';
         blockInherit.value = '';
 
-        d3.select("svg").remove();
-        onloadOUPage();
+        refreshOUPage();
     })
     .catch((error) => {
         console.error('Error:', error);

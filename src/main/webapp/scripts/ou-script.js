@@ -5,13 +5,31 @@ var isLoading;
 var orgUnits;
 var parentChildOUs;
 
-// Search and Display criteria
+// Search criteria
+var searchName;
+
+// Display criteria
 var layerLimitNum;
 var totalLayers;
 
-/* Adds listeners to search elements, loads all OUs. */
+/*
+ * Initially loads the page, fetching all OUs and adding search events.
+ */
 async function onloadOUPage() {
     loginStatus();
+
+    var searchButton = document.getElementById("search-enter-btn");
+    searchButton.addEventListener("click", function(event) {
+        searchName = searchBar.value;
+        d3.select("svg").remove();
+        getAllOUs();
+    })
+
+    var searchBar = document.getElementById("search");
+    // Execute a function when the user presses enter or erases the input
+    searchBar.addEventListener("search", function(event) {
+        searchButton.click();
+    });
 
     orgUnits = await fetchOUs();
     layerLimitNum = parseInt(document.getElementById("limit-layer-num").value);
@@ -20,7 +38,30 @@ async function onloadOUPage() {
 }
 
 /*
- * Fetches all OUs from Admin SDK.
+ * Used to refresh the page upon deletion, creation, or update of OUs.
+ */
+async function refreshOUPage() {
+    loginStatus();
+
+    document.getElementById("search").value = '';
+    searchName = '';
+
+    // either remove the no-search-result-element or the visualization
+    noSearchResultScreen = document.getElementById('no-search-result-elem');
+    if (noSearchResultScreen) {
+        noSearchResultScreen.remove();
+    } else {
+        d3.select("svg").remove();
+    }
+
+    orgUnits = await fetchOUs();
+    layerLimitNum = parseInt(document.getElementById("limit-layer-num").value);
+
+    getAllOUs();
+}
+
+/*
+ * Fetches all OUs from the Admin SDK.
 */
 async function fetchOUs() {
     // fetch all OUs from API
@@ -44,13 +85,47 @@ async function fetchOUs() {
 function getAllOUs() {
     isLoading = true;
     setLoadingOverlay();
+    var limitedOUs = orgUnits;
 
-    // MVP 3: check if search criteria. for now, ignore layer limits for this
-    
-    orgUnits.sort(ouDepthSort); // sort by depth
+    // Limit Layers always runs unless no search match, Search runs only if a query has been made
+    if (searchName) {
+        var searchedOU = searchOU(searchName);
 
-    // layer limiting
-    var limitedOUs = limitLayers();
+        if (searchedOU) {
+            // compile all parents of the searched org unit
+            limitedOUs = [];
+            var parentOrgUnitPath = searchedOU['parentOrgUnitPath'];
+            parentArr = parentOrgUnitPath.split('/');
+            // first elem is always empty
+            parentArr.shift();
+
+            // need to match OUs by paths (which are unique) rather than by names
+            var pathSoFar = '';
+
+            while (parentArr.length != 0) {
+                pathSoFar = pathSoFar + '/' + parentArr.shift();
+                for (var i = 0; i < orgUnits.length; i++) {
+                    if (orgUnits[i]['orgUnitPath'] == pathSoFar) {
+                        limitedOUs.push(orgUnits[i]);
+                        break;
+                    }
+                }
+            }
+
+            // no sort needed, as OUs added in order of increasing depth
+            limitedOUs.push(searchedOU);
+        } else {
+            limitedOUs = []
+            loadSidebar(limitedOUs);
+            noSearchResult();
+            
+            return;
+        }
+    }
+
+    // limit layers code
+    limitedOUs.sort(ouDepthSort); // sort by depth
+    limitedOUs = limitLayers(limitedOUs);
 
     loadSidebar(limitedOUs);
     parentChildOUs = constructD3JSON(limitedOUs); // transform into parent-child JSON
@@ -59,29 +134,50 @@ function getAllOUs() {
 }
 
 /*
- * Computes an org unit's depth using the number of slashes in its path.
-*/
-function computeDepth(orgUnit) {
-    // +1, as the root OU is considered layer 1
-    return (orgUnit['orgUnitPath'].match(/\//g) || []).length + 1;
+ * Constructs the no matching search results screen.
+ */
+function noSearchResult() {
+    if (document.getElementById("no-search-result-elem")) {
+        isLoading = false;
+        setLoadingOverlay();
+        return;
+    }
+    var div = document.createElement("div");
+        div.classList.add("no-search-results");
+        div.id = "no-search-result-elem";
+        var p = document.createElement("P");
+        p.innerHTML = "There were no results for your search."; 
+        var btn = document.createElement("BUTTON");
+        btn.innerHTML = "Reset all";
+        btn.classList.add("btn");
+        btn.classList.add("btn-primary");
+        btn.onclick = refreshOUPage;
+
+        div.appendChild(p);
+        div.appendChild(btn);
+        document.getElementById('chart-container').append(div);
+
+        // loading is over
+        isLoading = false;
+        setLoadingOverlay();
 }
 
 /*
  * Returns a list of OUs within the layer depth limit.
 */
-function limitLayers() {
-    if (orgUnits.length == 0) {
+function limitLayers(limitedOUs) {
+    if (limitedOUs.length == 0) {
         return [];
     }
-    var lastElementDepth = computeDepth(orgUnits[orgUnits.length - 1]);
+    var lastElementDepth = computeDepth(limitedOUs[limitedOUs.length - 1]);
     // set the totalLayers global var
     totalLayers = lastElementDepth;
     if (totalLayers <= layerLimitNum) {
-        return orgUnits;
+        return limitedOUs;
     } else {
         limitedOUList = [];
-        for (var i = 0; i < orgUnits.length; i++) {
-            currentOU = orgUnits[i];
+        for (var i = 0; i < limitedOUs.length; i++) {
+            currentOU = limitedOUs[i];
             if (computeDepth(currentOU) > layerLimitNum) {
                 break;
             }
@@ -104,20 +200,20 @@ function loadSidebar(limitedOUs) {
     var displayLimit = document.getElementById("limit-layer-num");
     displayLimit.setAttribute("max", totalLayers);
     
-    // root OU also counts
-    displayOUs.innerHTML = limitedOUs.length + 1;
-    displayLayers.innerHTML = layerLimitNum;
-    totalOUs.innerHTML = orgUnits.length + 1;
-    totalLayerCount.innerHTML = computeDepth(orgUnits[orgUnits.length - 1]);
-}
+    if (limitedOUs.length == 0) {
+        displayLayers.innerHTML = 0;
+        displayOUs.innerHTML = 0;
+    } else {
+        displayLayers.innerHTML = computeDepth(limitedOUs[limitedOUs.length - 1]);
+        displayOUs.innerHTML = limitedOUs.length + 1;
+    }
 
-/*
- * Compare function; sorts by by file depth, with parents first.
-*/
-function ouDepthSort(ou1, ou2) {
-    ouDepth1 = computeDepth(ou1);
-    ouDepth2 = computeDepth(ou2);
-    return ouDepth1 - ouDepth2;
+    if (orgUnits.length == 0) {
+        totalLayerCount.innerHTML = 1;
+    } else {
+        totalLayerCount.innerHTML = computeDepth(orgUnits[orgUnits.length - 1]);
+    }
+    totalOUs.innerHTML = orgUnits.length + 1;
 }
 
 /*
