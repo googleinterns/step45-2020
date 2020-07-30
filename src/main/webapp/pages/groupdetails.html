@@ -387,17 +387,25 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="section-subtitle">Name</div>
-                        <input type="text" class="form-control" id="group-name-field" placeholder="Group name" required></input>
-                        <div class="section-subtitle">Email</div>
-                        <div class="input-group">
-                            <input type="text" id="group-email-field" class="form-control" aria-describedby="group-email-domain" placeholder="Group email" required>
-                            <div class="input-group-append">
-                                <span class="input-group-text" id="modal-group-email-domain"></span>
+                        <form id="create-group-form" novalidate>
+                            <div class="section-subtitle">Name</div>
+                            <input type="text" class="form-control" id="group-name-field" placeholder="Group name" required></input>
+                            <div class="invalid-feedback">
+                                Please provide a valid group name.
                             </div>
-                        </div>
-                        <div class="section-subtitle">Description</div>
-                        <input type="text" class="form-control" id="group-description-field" placeholder="Group description"></input>
+                            <div class="section-subtitle">Email</div>
+                            <div class="input-group">
+                                <input type="text" id="group-email-field" class="form-control" aria-describedby="group-email-domain" placeholder="Group email" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="modal-group-email-domain"></span>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Please provide a valid group email.
+                                </div>
+                            </div>
+                            <div class="section-subtitle">Description</div>
+                            <input type="text" class="form-control" id="group-description-field" placeholder="Group description"></input>
+                        </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
