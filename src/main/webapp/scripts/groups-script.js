@@ -808,7 +808,7 @@ function removeMemberModal(id, parentId) {
 
     var memberEmailSpan = document.getElementById("memberEmail");
     memberEmailSpan.innerHTML = memberEmail;
-    var parentGroupEmail = document.getElementById("parentGroupEmail");
+    var parentGroupEmail = document.getElementById("parentGroupEmailRemove");
     parentGroupEmail.innerHTML = groups[groups.findIndex(elem => elem.id == parentId)].email;
 
     displayTooltip = false;
@@ -860,7 +860,7 @@ function addMemberModal(id) {
     var addMemberButton = document.getElementById("addMemberButton");
     addMemberButton.onclick = () => addMember(id);
 
-    var parentGroupEmail = document.getElementById("parentGroupEmail");
+    var parentGroupEmail = document.getElementById("parentGroupEmailAdd");
     parentGroupEmail.innerHTML = groups[groups.findIndex(elem => elem.id == id)].email;
 
     // add all groups and users as options
