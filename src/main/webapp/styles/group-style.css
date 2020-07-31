@@ -5,21 +5,15 @@
 .group {
     max-width: 300px;
     margin: 0 40px 40px 0;
-    padding: 40px;
+    padding: 60px 40px 20px 40px;
     color: #333;
-}
-
-.group:hover {
-    text-decoration: none;
-    color: #333;
-    background: #f6f6f6;
 }
 
 .group .name {
     font-weight: 400;
 }
 
-.group .description {
+.group .description, .group .role {
     color: #888;
     font-weight: 300;
 }
@@ -28,7 +22,7 @@
     font-weight: 300;
 }
 
-.group .direct-members {
+.group .link {
     color: #4a86e8;
     font-weight: 300;
 }
@@ -41,13 +35,79 @@
     overflow-x: scroll;
 }
 
-.no-search-results {
+#access-type-radio-group .form-check .form-check-label {
+    color: #444;
+}
+
+#tooltip-role-sel {
+    margin: 10px 0;
+}
+
+#create-btn, #remove-btn {
     position: absolute;
     top: 0;
-    height: 100%;
+    right: 0;
+}
+
+#remove-btn {
+    background: #e35f5f;
+    width: 40px;
+}
+#remove-btn:hover {
+    background: #d44444;
+    width: 160px;
+}
+
+#add-member-btn {
+    background: #97b0cc;
+    width: 50px;
+}
+#add-member-btn:hover {
+    background: #607fa1;
+    width: 140px;
+}
+
+.btn-collapse {
+    color: #fff;
+    margin-top: 10px;
+    margin-right: 10px;
+    -webkit-border-radius: 40px;
+    -moz-border-radius: 40px;
+    border-radius: 40px;
+    -webkit-transition: width 0.3s;
+    -moz-transition: width 0.3s;
+    transition: width 0.3s;
+    overflow: hidden;
+}
+
+.btn-collapse span {
+    opacity: 1;
+    display: inline-block;
+    color: #fff;
+    transition: opacity 0.3s ease 0s, transform 0.5s ease 0s;
+    -webkit-transition: opacity 0.3s ease 0s, -webkit-transform 0.5s ease 0s;
+    -moz-transition: opacity 0.3s ease 0s, -moz-transform 0.5s ease 0s;
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+}
+
+.btn-collapse span:before {
+    width: 100%;
+    position: absolute;
+    left: 0px;
+    top: 200%;
+    opacity: 0;
+    color: #fff;
+    content: attr(data-hover);
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+}
+
+.btn-collapse:hover span {
+    -webkit-transform: translateY(-200%);
+    -moz-transform: translateY(-200%);
+    transform: translateY(-200%);
+}
+.btn-collapse:hover span:before {
+    opacity: 1;
 }

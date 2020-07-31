@@ -71,9 +71,9 @@
                     </div>
                     <div class="sidenav-section blue">
                         <div class="section-title">Members</div>
-                        <div class="section-subtitle">Number of unique groups</div>
+                        <div class="section-subtitle">Number of unique groups displayed</div>
                         <p id="num-groups"></p>
-                        <div class="section-subtitle">Number of unique users</div>
+                        <div class="section-subtitle">Number of unique users displayed</div>
                         <p id="num-users"></p>
                     </div>
                     <div class="sidenav-section">
@@ -161,7 +161,100 @@
                             </div>
                         </div>
                     </div>
-                    <div id="chart"></div>
+                    <div id="chart">
+                        <button class="btn btn-light" id="create-btn" onclick="createGroupModal()">
+                            <i class="fa fa-plus"></i> Create new group
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Group Modal -->
+            <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createModalLabel">Create Group</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="create-group-form" novalidate>
+                            <div class="section-subtitle">Name</div>
+                            <input type="text" class="form-control" id="group-name-field" placeholder="Group name" required></input>
+                            <div class="invalid-feedback">
+                                Please provide a valid group name.
+                            </div>
+                            <div class="section-subtitle">Email</div>
+                            <div class="input-group">
+                                <input type="text" id="group-email-field" class="form-control" aria-describedby="group-email-domain" placeholder="Group email" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="modal-group-email-domain"></span>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Please provide a valid group email.
+                                </div>
+                            </div>
+                            <div class="section-subtitle">Description</div>
+                            <input type="text" class="form-control" id="group-description-field" placeholder="Group description"></input>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" onclick="createGroup()">Create</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Remove Member Modal -->
+            <div class="modal fade" id="removeModal" tabindex="-1" role="dialog" aria-labelledby="removeModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="removeModalLabel">Remove Member</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to remove <span class="light" id="memberEmail"></span> from its parent <span class="light" id="parentGroupEmailRemove"></span>? 
+                        This action will not delete the member, so you can always add it back later.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-danger" id="removeMemberButton">Remove</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Member Modal -->
+            <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addModalLabel">Add Member</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="add-member-form" novalidate>
+                            <div class="section-subtitle">Add member to <span class="light" id="parentGroupEmailAdd"></span></div>
+                            <select class="form-control" id="add-member-sel" required>
+                            </select>
+                            <div class="invalid-feedback">
+                                Please select a group or user to add.
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" id="addMemberButton">Add</button>
+                    </div>
+                    </div>
                 </div>
             </div>
         </div>
