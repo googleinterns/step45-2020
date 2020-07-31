@@ -22,6 +22,7 @@ var tooltipDescription;
 var tooltipRole;
 var tooltipLink;
 var tooltipRemove;
+var tooltipAddMember;
 
 /** Search and filters */
 var searchName;
@@ -265,12 +266,8 @@ function visualize() {
 	.style("visibility", "hidden")
     .classed("card", true)
     .classed("group", true)
-    .on("mouseover", function(d) {
-        tooltipRemove.classed("hidden", false)
+    .on("mouseover", function() {
         return tooltip.style("visibility", "visible");
-    })
-    .on("mouseout", function(d) {
-        tooltipRemove.classed("hidden", true)
     })
 
     tooltipName = tooltip
@@ -312,16 +309,30 @@ function visualize() {
     tooltipRemove = tooltip
     .append("button")
     .classed("btn", true)
+    .classed("btn-collapse", true)
     .attr("id", "remove-btn")
-    .classed("hidden", true)
 
     var tooltipRemoveSpan = tooltipRemove
     .append("span")
-    .attr("data-hover", "Remove")
+    .attr("data-hover", "Remove member")
     var tooltipRemoveIcon = tooltipRemoveSpan
     .append("i")
     .classed("fa", true)
     .classed("fa-times", true)
+
+    tooltipAddMember = tooltip
+    .append("button")
+    .classed("btn", true)
+    .classed("btn-collapse", true)
+    .attr("id", "add-member-btn")
+
+    var tooltipAddMemberSpan = tooltipAddMember
+    .append("span")
+    .attr("data-hover", "Add member")
+    var tooltipAddMemberIcon = tooltipAddMemberSpan
+    .append("i")
+    .classed("fa", true)
+    .classed("fa-user-plus", true)
 
     const root = pack(data);
     var focus = root;
@@ -347,10 +358,12 @@ function visualize() {
                 makeUserTooltip(d, d.parent.data.id)
                 tooltipDescription.classed("hidden", true)
                 tooltipRole.classed("hidden", false)
+                tooltipAddMember.classed("hidden", true)
             } else {
                 makeGroupTooltip(d, d.parent.data.id);
                 tooltipRole.classed("hidden", true)
                 tooltipDescription.classed("hidden", false)
+                tooltipAddMember.classed("hidden", false)
             }
             var pageY = event.pageY;
             var pageX = event.pageX;
@@ -380,17 +393,6 @@ function visualize() {
         .style("fill-opacity", d => d.parent === root ? 1 : 0)
         .style("display", d => d.parent === root ? "inline" : "none")
         .text(d => d.data.name);
-    
-    // const label = svg.append("g")
-    //     .style("font", "1.25em sans-serif")
-    //     .attr("pointer-events", "none")
-    //     .attr("text-anchor", "middle")
-    //     .selectAll("text")
-    //     .data(root.descendants())
-    //     .join("text")
-    //     .style("fill-opacity", d => d.parent === root ? 1 : 0)
-    //     .style("display", d => d.parent === root ? "inline" : "none")
-    //     .text(d => d.data.name);
 
     function zoomTo(v) {
         const k = width / v[2];
@@ -468,6 +470,7 @@ function makeGroupTooltip(d, parentId) {
     tooltipDescription.text(group.description)
     tooltipLink.attr("href", "/pages/groupdetails.html?group=" + d.data.id)
     tooltipRemove.attr("onclick", "removeMemberModal('" + d.data.id +  "', '" + parentId + "')")
+    tooltipAddMember.attr("onclick", "addMemberModal('" + d.data.id +  "')")
 }
 
 /** Creates the components of the hovering <div> element for each user */
@@ -693,10 +696,6 @@ async function createGroup() {
     isLoading = true;
     setLoadingOverlay();
 
-    var groupName = document.getElementById("group-name-field").value;
-    var groupEmail = document.getElementById("group-email-field").value;
-    var groupDescription = document.getElementById("group-description-field").value;
-
     var form = document.getElementById('create-group-form');
     form.classList.add('was-validated');
     if (form.checkValidity() === false) {
@@ -704,6 +703,10 @@ async function createGroup() {
         setLoadingOverlay();
         return;
     }
+
+    var groupName = document.getElementById("group-name-field").value;
+    var groupEmail = document.getElementById("group-email-field").value;
+    var groupDescription = document.getElementById("group-description-field").value;
 
     const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups',
     {
@@ -797,6 +800,69 @@ function removeMemberModal(id, parentId) {
     $('#removeModal').modal('show');
     var removeMemberButton = document.getElementById("removeMemberButton");
     removeMemberButton.onclick = () => removeMember(id, parentId);
+    displayTooltip = false;
+    return tooltip.style("visibility", "hidden");
+}
+
+/** Add member to this group */
+async function addMember(id) {
+    isLoading = true;
+    setLoadingOverlay();
+
+    var form = document.getElementById('add-member-form');
+    form.classList.add('was-validated');
+    if (form.checkValidity() === false) {
+        isLoading = false;
+        setLoadingOverlay();
+        return;
+    }
+
+    var selectedMemberEmail = document.getElementById("add-member-sel").value;
+
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' 
+    + id + '/members',
+    {
+        headers: {
+            'authorization': `Bearer ` + token,
+            'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({"email": selectedMemberEmail, "role": "MEMBER"})
+    })
+    const json = response.json();
+    console.log(json);
+
+    if (response.status == 200) {
+        $('#addModal').modal('hide');
+        isLoading = false;
+        setLoadingOverlay();
+        Promise.all([getAllGroups(true), getAllUsers()])
+        .then(async function(results) {
+            loadGroups();
+        })
+    }
+}
+
+/** Shows the modal for user to select which member to add */
+function addMemberModal(id) {
+    $('#addModal').modal('show');
+    var addMemberButton = document.getElementById("addMemberButton");
+    addMemberButton.onclick = () => addMember(id);
+
+    var parentGroupEmail = document.getElementById("parentGroupEmail");
+    parentGroupEmail.innerHTML = groups[groups.findIndex(elem => elem.id == id)].email;
+
+    // add all groups and users as options
+    var memberOptions = [];
+    memberOptions.push("<option value=null selected='selected'>Select member...</option>");
+    for (var i = 0; i < users.length; i++) {
+        memberOptions.push("<option value='" + users[i].emails[0].address + "' id='" + users[i].emails[0].address + "'>" + users[i].emails[0].address + " </option>");
+    }
+    for (var i = 0; i < groups.length; i++) {
+        memberOptions.push("<option value='" + groups[i].email + "' id='" + groups[i].email + "'>" + groups[i].email + " </option>");
+    }
+    document.getElementById("add-member-sel").innerHTML = memberOptions.join();
+
     displayTooltip = false;
     return tooltip.style("visibility", "hidden");
 }

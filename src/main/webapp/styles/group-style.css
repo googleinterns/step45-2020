@@ -5,7 +5,7 @@
 .group {
     max-width: 300px;
     margin: 0 40px 40px 0;
-    padding: 60px 40px 40px 40px;
+    padding: 60px 40px 20px 40px;
     color: #333;
 }
 
@@ -50,11 +50,27 @@
 }
 
 #remove-btn {
-    color: #fff;
-    width: 40px;
-    margin-top: 15px;
-    margin-right: 10px;
     background: #e35f5f;
+    width: 40px;
+}
+#remove-btn:hover {
+    background: #d44444;
+    width: 160px;
+}
+
+#add-member-btn {
+    background: #97b0cc;
+    width: 50px;
+}
+#add-member-btn:hover {
+    background: #607fa1;
+    width: 140px;
+}
+
+.btn-collapse {
+    color: #fff;
+    margin-top: 10px;
+    margin-right: 10px;
     transition: 0.5s;
     -webkit-border-radius: 40px;
     -moz-border-radius: 40px;
@@ -65,39 +81,35 @@
     overflow: hidden;
 }
 
-#remove-btn span {
+.btn-collapse span {
     opacity: 1;
     display: inline-block;
+    color: #fff;
     transition: opacity 0.3s ease 0s, transform 0.5s ease 0s;
     -webkit-transition: opacity 0.3s ease 0s, -webkit-transform 0.5s ease 0s;
     -moz-transition: opacity 0.3s ease 0s, -moz-transform 0.5s ease 0s;
     width: 100%;
 }
 
-#remove-btn span:before {
+.btn-collapse span:before {
     width: 100%;
     position: absolute;
     left: 0px;
     top: 200%;
     opacity: 0;
+    color: #fff;
     content: attr(data-hover);
     -webkit-transform: translate3d(0, 0, 0);
     -moz-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
 }
 
-/* Hover State */
-#remove-btn:hover {
-    width: 100px;
-    background: #d44444;
-}
-
-#remove-btn:hover span {
+.btn-collapse:hover span {
     -webkit-transform: translateY(-200%);
     -moz-transform: translateY(-200%);
     transform: translateY(-200%);
 }
-#remove-btn:hover span:before {
+.btn-collapse:hover span:before {
     opacity: 1;
 }
 
