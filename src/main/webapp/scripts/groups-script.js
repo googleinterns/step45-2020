@@ -729,7 +729,11 @@ async function createGroup() {
         $('#createModal').modal('hide');
         isLoading = false;
         setLoadingOverlay();
-        getAllGroups();
+        if (window.location.href.split("pages/")[1].split(".html")[0] == "groups") {
+            onloadGroupsPage();
+        } else if (window.location.href.split("pages/")[1].split(".html")[0] == "groupdetails") {
+            onloadGroupDetails();
+        }
     }
 }
 
@@ -785,10 +789,11 @@ async function removeMember(memberEmail, parentId) {
         $('#removeModal').modal('hide');
         isLoading = false;
         setLoadingOverlay();
-        Promise.all([getAllGroups(true), getAllUsers()])
-        .then(async function(results) {
-            loadGroups();
-        })
+        if (window.location.href.split("pages/")[1].split(".html")[0] == "groups") {
+            onloadGroupsPage();
+        } else if (window.location.href.split("pages/")[1].split(".html")[0] == "groupdetails") {
+            onloadGroupDetails();
+        }
     }
 }
 
@@ -847,10 +852,11 @@ async function addMember(id) {
         $('#addModal').modal('hide');
         isLoading = false;
         setLoadingOverlay();
-        Promise.all([getAllGroups(true), getAllUsers()])
-        .then(async function(results) {
-            loadGroups();
-        })
+        if (window.location.href.split("pages/")[1].split(".html")[0] == "groups") {
+            onloadGroupsPage();
+        } else if (window.location.href.split("pages/")[1].split(".html")[0] == "groupdetails") {
+            onloadGroupDetails();
+        }
     }
 }
 
