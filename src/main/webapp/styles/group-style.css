@@ -9,17 +9,11 @@
     color: #333;
 }
 
-.group:hover {
-    text-decoration: none;
-    color: #333;
-    background: #f6f6f6;
-}
-
 .group .name {
     font-weight: 400;
 }
 
-.group .description {
+.group .description, .group .role {
     color: #888;
     font-weight: 300;
 }
@@ -28,7 +22,7 @@
     font-weight: 300;
 }
 
-.group .direct-members {
+.group .link {
     color: #4a86e8;
     font-weight: 300;
 }
@@ -43,6 +37,10 @@
 
 #access-type-radio-group .form-check .form-check-label {
     color: #444;
+}
+
+#tooltip-role-sel {
+    margin: 10px 0;
 }
 
 #create-btn {

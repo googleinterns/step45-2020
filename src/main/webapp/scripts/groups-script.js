@@ -17,8 +17,9 @@ var members;
 var displayTooltip;
 var tooltip;
 var tooltipName;
-var tooltipDescription;
 var tooltipEmail;
+var tooltipDescription;
+var tooltipRole;
 var tooltipLink;
 
 /** Search and filters */
@@ -87,7 +88,12 @@ function getAllGroups(noLoadGroups) {
         } else {
             groups = [];
         }
-        if (!noLoadGroups) loadGroups();
+        if (!noLoadGroups) {
+            loadGroups();
+        } else {
+            isLoading = false;
+            setLoadingOverlay();
+        }
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -95,6 +101,9 @@ function getAllGroups(noLoadGroups) {
 }
 
 function getAllUsers() {
+    isLoading = true;
+    setLoadingOverlay();
+
     var url = 'https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&customer=my_customer'
     return fetch(url, {
         headers: {
@@ -109,6 +118,8 @@ function getAllUsers() {
         } else {
             users = [];
         }
+        isLoading = false;
+        setLoadingOverlay();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -247,7 +258,7 @@ function visualize() {
     .sort((a, b) => b.value - a.value))
 
     tooltip = d3.select("body")
-	.append("a")
+	.append("div")
 	.style("position", "absolute")
 	.style("z-index", "10")
 	.style("visibility", "hidden")
@@ -268,10 +279,29 @@ function visualize() {
     tooltipDescription = tooltip
     .append("div")
     .classed("description", true)
+    
+    tooltipRole = tooltip
+    .append("select")
+    .classed("role", true)
+    .classed("form-control", true)
+    .attr("id", "tooltip-role-sel")
+
+    tooltipRoleMember = tooltipRole
+    .append("option")
+    .attr("value", "Member")
+    .text("Member")
+    tooltipRoleManager = tooltipRole
+    .append("option")
+    .attr("value", "Manager")
+    .text("Manager")
+    tooltipRoleOwner = tooltipRole
+    .append("option")
+    .attr("value", "Owner")
+    .text("Owner")
 
     tooltipLink = tooltip
-    .append("span")
-    .classed("direct-members", true)
+    .append("a")
+    .classed("link", true)
     .text("Click to view more")
 
     const root = pack(data);
@@ -296,8 +326,12 @@ function visualize() {
             d3.select(this).attr("stroke", "#000");
             if (d.data.type == "USER") {
                 makeUserTooltip(d, d.parent.data.id)
+                tooltipDescription.classed("hidden", true)
+                tooltipRole.classed("hidden", false)
             } else {
                 makeGroupTooltip(d);
+                tooltipRole.classed("hidden", true)
+                tooltipDescription.classed("hidden", false)
             }
             var pageY = event.pageY;
             var pageX = event.pageX;
@@ -314,7 +348,7 @@ function visualize() {
             return tooltip.style("visibility", "hidden");
         })
         .on("click", function(d) {
-            if (d.data.type != "USER") focus !== d && (zoom(d), d3.event.stopPropagation())
+            if (d.data.type != "USER" && d.data.children.length > 0) focus !== d && (zoom(d), d3.event.stopPropagation())
         });
 
     const label = svg.append("g")
@@ -402,7 +436,7 @@ function makeGroupTooltip(d) {
     tooltipName.text(group.name)
     tooltipEmail.text(group.email)
     tooltipDescription.text(group.description)
-    tooltip.attr("href", "/pages/groupdetails.html?group=" + d.data.id)
+    tooltipLink.attr("href", "/pages/groupdetails.html?group=" + d.data.id)
 }
 
 /** Creates the components of the hovering <div> element for each user */
@@ -411,12 +445,16 @@ function makeUserTooltip(d, parentId) {
     var user = usersDisplayed[usersDisplayed.findIndex(elem => elem.id == d.data.id)]
     tooltipName.text(user.name.fullName)
     tooltipEmail.text(user.emails[0].address)
-    tooltipDescription.text(user.roles[parentId][0].toUpperCase() + user.roles[parentId].slice(1).toLowerCase())
-    tooltip.attr("href", "/pages/userdetails.html?user=" + d.data.id)
+    document.getElementById("tooltip-role-sel").value = user.roles[parentId][0].toUpperCase() + user.roles[parentId].slice(1).toLowerCase();
+    tooltipRole.attr("onchange", "selectRole('" + d.data.id +  "', '" + parentId + "')")
+    tooltipLink.attr("href", "/pages/userdetails.html?user=" + d.data.id)
 }
 
 /** Load all of the groups into data for d3 */
 async function loadGroups() {
+    isLoading = true;
+    setLoadingOverlay();
+
     // reset data and unique users
     // if empty groups, data should also be empty
     usersDisplayed = [];
@@ -660,4 +698,32 @@ function createGroupModal() {
     $('#createModal').modal('show');
     var groupEmailDomain = document.getElementById("modal-group-email-domain");
     groupEmailDomain.innerHTML = "@" + domain;
+}
+
+/** Function is called when the user selects a role for the member */
+async function selectRole(id, parentId) {
+    isLoading = true;
+    setLoadingOverlay();
+
+    var role = document.getElementById("tooltip-role-sel").value;
+    var user = usersDisplayed[usersDisplayed.findIndex(elem => elem.id == id)];
+
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' 
+    + parentId + '/members/' + user.emails[0].address,
+    {
+        headers: {
+            'authorization': `Bearer ` + token,
+            'Content-Type': 'application/json'
+        },
+        method: 'PUT',
+        body: JSON.stringify({"email": user.emails[0].address, "role": role.toUpperCase()})
+    })
+    const json = await response.json();
+    console.log(json)
+
+    if (response.status == 200) {
+        isLoading = false;
+        setLoadingOverlay();
+        getAllUsers();
+    }
 }
