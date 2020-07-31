@@ -187,29 +187,6 @@ function getGroups(userid, username){
     });
 }
 
-// rename a user with input
-async function renameUser(){
-    var firstname = document.getElementById("edit-firstname").value;
-    var lastname = document.getElementById("edit-lastname").value;
-    var email = document.getElementById("edit-email").value + "@" + domain;
-    var updatedInfo = {
-        "primaryEmail": email,
-        "name": {
-        "givenName": firstname,
-        "familyName": lastname
-        }
-    }
-    var response = await fetch('https://www.googleapis.com/admin/directory/v1/users/' + userid,{
-        method: 'PUT',
-        headers: {
-            'authorization': `Bearer ` + token,
-            'dataType': 'application/json'
-        },
-        body: JSON.stringify(updatedInfo),
-    })
-    location.reload();
-}
-
 // request to delete the user
 async function deleteUser(){
     var response = await fetch('https://www.googleapis.com/admin/directory/v1/users/' + userid,{

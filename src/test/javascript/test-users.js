@@ -30,7 +30,7 @@ describe("Test checkboxes", function() {
 
         $.getScript('/src/main/webapp/scripts/users-script.js', function() { 
             spyOn(window, "clearSearch");
-            spyOn(window, "loginStatus");
+            spyOn(window, "checkLoginAndSetUp");
             spyOn(window, "fetchOUs");
 
             // uncheck to remove input from orgUnitInput
@@ -52,7 +52,7 @@ describe("Test checkboxes", function() {
 
         $.getScript('/src/main/webapp/scripts/users-script.js', function() { 
             spyOn(window, "clearSearch");
-            spyOn(window, "loginStatus");
+            spyOn(window, "checkLoginAndSetUp");
             spyOn(window, "fetchOUs");
 
             checkbox1.id = checkbox1.value;

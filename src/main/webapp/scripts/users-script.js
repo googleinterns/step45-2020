@@ -3,6 +3,7 @@ var flatdata = [] // flatdata to contain all orgUnits, will be converted to hier
 var data = {} // data to contail all orgUnits and users 
 var allUsers; 
 var rootID;
+var userid;
 
 /** Search and filter viarbles */
 var searchInput; // input for searchbar
@@ -12,14 +13,6 @@ var oulength = 0; // length of all ous
 
 /** Show refresh button and overlay*/
 var isLoading;
-
-/** Tooltip hover card */
-var displayTooltip;
-var tooltip;
-var tooltipName;
-var tooltipDescription;
-var tooltipEmail;
-var tooltipLink;
 
 
 /** Functions for user main page */
@@ -63,7 +56,8 @@ async function fetchUsers(){
         var fullname = user['name']['fullName'];
         var id = user['id'];
         var orgUnitPath = user['orgUnitPath'];
-        var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
+        var email = user['primaryEmail'];
+        var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath, 'email': email};
         allUsers.push(userJSON);
     }
     return allUsers;
@@ -125,13 +119,11 @@ async function addUserToData(){
                 var fullname = user['name']['fullName'];
                 var id = user['id'];
                 var orgUnitPath = user['orgUnitPath'];
-                var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
+                var email = user['primaryEmail'];
+                var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath, "email": email};
                 addUserToOUByPath(data, orgUnitPath, userJSON);
             }
         }
-        
-        incrementUserCount(data);
-        visualize(null);
     }
     
     // if there's input for filering, get users match both orgUnit filters and group filters
@@ -164,7 +156,6 @@ async function addUserToData(){
         var numElement = document.getElementById('num-filter-users');
         numElement.innerText = userIds.length;
         for(var user of allUsers){
-            var user = allUsers[i];
             if(userIds.includes(user.id)){
                 addUserToOUByPath(data, user["orgUnitPath"], user);
             }
@@ -213,8 +204,8 @@ function incrementUserCount (node){
     node.data['numUsers'] = numUsers;
     var children = node['children'];
     if(children !== undefined){
-        for(var ou of chilren){
-            incrementUserCount(ou);
+        for(var i = 0; i < children.length; i++){
+            incrementUserCount(children[i]);
         }
     }
     else{
@@ -224,7 +215,6 @@ function incrementUserCount (node){
 
 // Visualization
 function visualize(order) {
-    console.log("vis");
     function name(d) {
         return d.ancestors().reverse().map(d => d.data.name).join("/");
     }
@@ -261,19 +251,67 @@ function visualize(order) {
             .on("click", d => d === root ? zoomout(root) : zoomin(d));
 
         node.append("title")
-            .text(d => `${name(d)}\n${format(d.numUsers)}`);
+            .text(d => `${name(d)}`);
 
         var rect = node.append("rect")
             .attr("id", function(d) { return d.data.id; })
             .attr("fill", d => d === root ? "#fff" : d.children ? "#99bbff" : "#ccddff") //#99bbff is darker blue, #ccddff is lighter blue
-            .attr("stroke", "#fff");
+            .attr("stroke", "#fff")
 
         node.append("clipPath")
             .attr("id", function(d) { return "clip-" + d.data.id; })
             .append("use")
             .attr("xlink:href", function(d) { return "#" + d.data.id; });
 
+        var orgUnitHover = d3.select("body")
+            .append("a")
+            .classed("card", true)
+            .style("position", "absolute")
+            .style("z-index", "10")
+            .style("visibility", "hidden")
+            .on("mouseover", function() {
+                return orgUnitHover.style("visibility", "visible");
+            })
+            .on("mouseout", function(d) { 
+                return orgUnitHover.style("visibility", "hidden");
+            })
+
+        var orgUnitCardbody = orgUnitHover
+            .append("div")
+            .classed("card-body", true)
+
+        var addUserButton = orgUnitCardbody
+            .append("div")
+            .attr("type", "button")
+            .classed("card-right", true)
+            .attr("class", "icon")
+            .append("i")
+            .attr("class", "icon fa fa-user-plus")
+            .attr("aria-hidden", "true")
+
+        var orgUnitName = orgUnitCardbody
+            .append("h5")
+            .classed("card-title", true)
+        
+        function OUToText(d) {
+            console.log(d); 
+            return (d === root ? name(d) : d.data.name).split(/(?=[])/g);
+        }
+
         node.append("text")
+            .on("mouseover", function(d){
+                var pageY = event.pageY;
+                var pageX = event.pageX;
+                console.log(d);
+                orgUnitName.text(d.data.name);
+                addUserButton.attr("id", d.data.path);
+                addUserButton.attr("onclick", function(){  return  "event.stopPropagation(); triggerAdd(event)"})
+                orgUnitHover.style("top", (pageY-8)+"px").style("left",(pageX)+"px")
+                orgUnitHover.style("visibility", "visible");
+            })
+            .on("mouseout", function(d) { 
+                return orgUnitHover.style("visibility", "hidden");
+            })
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === root ? "bold" : null)
             .selectAll("tspan")
@@ -283,7 +321,8 @@ function visualize(order) {
             .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
             .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
             .attr("font-weight", (d, i, nodes) => i === nodes.length - 1 ? "600" : null)
-            .text(d => d);
+            .text(d => d)
+            
         
         var nodeSelect = node.append("foreignObject")
             .attr("x", 8)
@@ -295,14 +334,14 @@ function visualize(order) {
             .attr("style", (d => (d === root ? "max-height: 60px; overflow: auto" : "max-height: " + (y(d.y1) - y(d.y0) - 50)) + "; overflow: auto"))
         
         // icon to add users
-        var addNode = nodeSelect.insert("div", ".list-container")
-            .attr("type", "button")
-            .attr("class", "iconadd")
-            .append("i")
-            .attr("id", function(d){ return d.data.path })
-            .attr("class", "fa fa-user-plus")
-            .attr("onclick", function(){  return  "event.stopPropagation(); triggerAdd(event)"})
-            .attr("aria-hidden", "true")
+        // var addNode = nodeSelect.insert("div", ".list-container")
+        //     .attr("type", "button")
+        //     .attr("class", "iconadd")
+        //     .append("i")
+        //     .attr("id", function(d){ return d.data.path })
+        //     .attr("class", "fa fa-user-plus")
+        //     .attr("onclick", function(){  return  "event.stopPropagation(); triggerAdd(event)"})
+        //     .attr("aria-hidden", "true")
 
         // add users with links to each node
         var nodeselect = nodeSelect.selectAll("li")
@@ -324,7 +363,7 @@ function visualize(order) {
                 }
                 var userlist = []
                 for(var user of users){
-                    var userInfo = {"name": user.name, "id": user.id }
+                    var userInfo = {"name": user.name, "id": user.id, "email": user.email }
                     userlist.push(userInfo);
                 }
                 return userlist;
@@ -332,61 +371,81 @@ function visualize(order) {
             .enter()
             .append("li")
 
-        tooltip = d3.select("body")
+        var tooltip = d3.select("body")
             .append("a")
+            .classed("card", true)
             .style("position", "absolute")
             .style("z-index", "10")
             .style("visibility", "hidden")
-            .classed("card", true)
-            .classed("group", true)
-            .on("mouseover", function(d) {
+            .on("mouseover", function() {
                 return tooltip.style("visibility", "visible");
             })
-        
-        tooltipName = tooltip
-            .append("h5")
-            .classed("name", true)
+            .on("mouseout", function(d) { 
+                return tooltip.style("visibility", "hidden");
+            })
 
-        tooltipEmail = tooltip
+        var cardbody = tooltip
             .append("div")
-            .classed("email", true)
+            .classed("card-body", true)
+
+        var renameUserButton = cardbody
+            .append("div")
+            .attr("type", "button")
+            .attr("class", "icon")
+            .classed("card-right", true)
+            .attr("data-toggle", "modal")
+            .attr("data-target", "#renameModal")
+            .append("i")
+            .attr("class", "icon fa fa-edit")
+            .attr("aria-hidden", "true")
+
+        var deleteUserButton = cardbody
+            .append("div")
+            .attr("type", "button")
+            .attr("class", "icon")
+            .classed("card-right", true)
+            .attr("onclick", function(){  return  "event.stopPropagation(); triggerDelete(event)"})
+            .append("i")
+            .attr("class", "icon fa fa-trash")
+            .attr("aria-hidden", "true")
+
+        var tooltipName = cardbody
+            .append("h5")
+            .classed("card-title", true)
+
+        var tooltipEmail = cardbody
+            .append("p")
+            .classed("card-text", true)
+
+        var tooltipLink = cardbody
+            .append("a")
+            .classed("card-link", true)
+            .text("Click to view more")
 
         nodeselect
             .append("a")
             .attr("href", "#")
             .attr("class", "userdetail")
+            .on("mouseover", function(d){
+                var pageY = event.pageY;
+                var pageX = event.pageX;
+                tooltipName.text(d.name)
+                tooltipEmail.text(d.email);
+                deleteUserButton.attr("id", d.id);
+                tooltipLink.attr("href", "userdetails.html?user=" + d.id);
+                tooltip.style("top", (pageY-8)+"px").style("left",(pageX)+"px")
+                tooltip.style("visibility", "visible");
+            })
+            .on("mouseout", function(d) { 
+                return tooltip.style("visibility", "hidden");
+            })
             .text(function(d){ return d.name })
-        
-        nodeselect
-            .append("div")
-            .attr("type", "button")
-            .attr("class", "icon")
-            .attr("onclick", function(){  return  "event.stopPropagation(); triggerDelete(event)"})
-            .append("i")
-            .attr("id", function(d){ return d.id })
-            .attr("class", "icon fa fa-trash")
-            .attr("aria-hidden", "true")
             
-
         // Change links to include user id 
         nodeSelect.selectAll("a.userdetail")
-            .data(function(d){
-                var users = d.data.users;
-                var userlist = []
-                for(var user of users){
-                    userlist.push(user.id);
-                }
-                return userlist
-            })
-            .attr("href", (d => "userdetails.html?user=" + d))
-            .attr("onmouseover", hover(d))
+            .attr("href", (d => "userdetails.html?user=" + d.id))
 
         group.call(position, root);
-    }
-
-    function hover(d){
-        console.log("hover");
-        console.log(d);
     }
 
     function position(group, root) {
@@ -405,12 +464,9 @@ function visualize(order) {
     function zoomin(d) {
         const group0 = group.attr("pointer-events", "none");
         const group1 = group = svg.append("g").call(render, d);
-
-        console.log(x.domain, y.domain);
-       
+ 
         x.domain([d.x0, d.x1]);
         y.domain([d.y0, d.y1]);
-        console.log("zoom in ", d.x0, d.x1, x.domain, y.domian);
 
         svg.transition()
             .duration(750)
@@ -426,11 +482,8 @@ function visualize(order) {
         const group0 = group.attr("pointer-events", "none");
         const group1 = group = svg.insert("g", "*").call(render, d.parent);
 
-        console.log(x.domain, y.domain);
         x.domain([d.parent.x0, d.parent.x1]);
         y.domain([d.parent.y0, d.parent.y1]);
-        console.log("zoom out", d.x0, d.x1, x.domain, y.domain);
-        console.log("zoom out", d.parent.x0, d.parent.x1);
 
         svg.transition()
             .duration(750)
@@ -443,7 +496,48 @@ function visualize(order) {
     var chartElement = document.getElementById("user-chart");
     chartElement.appendChild(svg.node());
 
+    // populate rename modal with selected user
+    $('#renameModal').on('show.bs.modal', function (event) {
+        var email =  $(event.relatedTarget).siblings(".card-text")[0].textContent;
+        var name =  $(event.relatedTarget).siblings(".card-title")[0].textContent;
+        var link = $(event.relatedTarget).siblings(".card-link")[0].href;
+        var id = link.split("=")[1];
+        userid = id;
+
+        var firstnameInput = document.getElementById("edit-firstname");
+        firstnameInput.value = name.split(" ")[0];
+        var lastnameInput = document.getElementById("edit-lastname");
+        lastnameInput.value = name.split(" ")[1];
+        var emailInput = document.getElementById("edit-email");
+        emailInput.value = email.substring(0, email.indexOf("@"));
+        var emailDomainElement = document.getElementById("email-domain");
+        emailDomainElement.innerText = "@"+domain;
+    });
+
     return svg.node();
+}
+
+// rename a user with input
+async function renameUser(){
+    var firstname = document.getElementById("edit-firstname").value;
+    var lastname = document.getElementById("edit-lastname").value;
+    var email = document.getElementById("edit-email").value + "@" + domain;
+    var updatedInfo = {
+        "primaryEmail": email,
+        "name": {
+        "givenName": firstname,
+        "familyName": lastname
+        }
+    }
+    var response = await fetch('https://www.googleapis.com/admin/directory/v1/users/' + userid,{
+        method: 'PUT',
+        headers: {
+            'authorization': `Bearer ` + token,
+            'dataType': 'application/json'
+        },
+        body: JSON.stringify(updatedInfo),
+    })
+    location.reload();
 }
 
 // trigger delete modal in user.html

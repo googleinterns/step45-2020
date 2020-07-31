@@ -149,15 +149,19 @@ img {
     overflow: auto 
 }
 
-#user-groups .card-title {
+.card-title {
     font-weight: 400;
 }
 
-#user-groups .card-text, #user-groups .card-link {
+.card-text, .card-link {
     font-weight: 300;
 }
 
 .card-right {
     display: inline;
     float: right;
+}
+
+a .card-body .icon {
+    padding: 0px 5px;
 }
