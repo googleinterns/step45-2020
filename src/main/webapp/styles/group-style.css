@@ -5,7 +5,7 @@
 .group {
     max-width: 300px;
     margin: 0 40px 40px 0;
-    padding: 40px;
+    padding: 60px 40px 40px 40px;
     color: #333;
 }
 
@@ -43,10 +43,62 @@
     margin: 10px 0;
 }
 
-#create-btn {
+#create-btn, #remove-btn {
     position: absolute;
     top: 0;
     right: 0;
+}
+
+#remove-btn {
+    color: #fff;
+    width: 40px;
+    margin-top: 15px;
+    margin-right: 10px;
+    background: #e35f5f;
+    transition: 0.5s;
+    -webkit-border-radius: 40px;
+    -moz-border-radius: 40px;
+    border-radius: 40px;
+    -webkit-transition: width 0.3s;
+    -moz-transition: width 0.3s;
+    transition: width 0.3s;
+    overflow: hidden;
+}
+
+#remove-btn span {
+    opacity: 1;
+    display: inline-block;
+    transition: opacity 0.3s ease 0s, transform 0.5s ease 0s;
+    -webkit-transition: opacity 0.3s ease 0s, -webkit-transform 0.5s ease 0s;
+    -moz-transition: opacity 0.3s ease 0s, -moz-transform 0.5s ease 0s;
+    width: 100%;
+}
+
+#remove-btn span:before {
+    width: 100%;
+    position: absolute;
+    left: 0px;
+    top: 200%;
+    opacity: 0;
+    content: attr(data-hover);
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+}
+
+/* Hover State */
+#remove-btn:hover {
+    width: 100px;
+    background: #d44444;
+}
+
+#remove-btn:hover span {
+    -webkit-transform: translateY(-200%);
+    -moz-transform: translateY(-200%);
+    transform: translateY(-200%);
+}
+#remove-btn:hover span:before {
+    opacity: 1;
 }
 
 .no-search-results {

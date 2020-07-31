@@ -21,6 +21,7 @@ var tooltipEmail;
 var tooltipDescription;
 var tooltipRole;
 var tooltipLink;
+var tooltipRemove;
 
 /** Search and filters */
 var searchName;
@@ -265,7 +266,11 @@ function visualize() {
     .classed("card", true)
     .classed("group", true)
     .on("mouseover", function(d) {
+        tooltipRemove.classed("hidden", false)
         return tooltip.style("visibility", "visible");
+    })
+    .on("mouseout", function(d) {
+        tooltipRemove.classed("hidden", true)
     })
 
     tooltipName = tooltip
@@ -286,15 +291,15 @@ function visualize() {
     .classed("form-control", true)
     .attr("id", "tooltip-role-sel")
 
-    tooltipRoleMember = tooltipRole
+    var tooltipRoleMember = tooltipRole
     .append("option")
     .attr("value", "Member")
     .text("Member")
-    tooltipRoleManager = tooltipRole
+    var tooltipRoleManager = tooltipRole
     .append("option")
     .attr("value", "Manager")
     .text("Manager")
-    tooltipRoleOwner = tooltipRole
+    var tooltipRoleOwner = tooltipRole
     .append("option")
     .attr("value", "Owner")
     .text("Owner")
@@ -303,6 +308,20 @@ function visualize() {
     .append("a")
     .classed("link", true)
     .text("Click to view more")
+
+    tooltipRemove = tooltip
+    .append("button")
+    .classed("btn", true)
+    .attr("id", "remove-btn")
+    .classed("hidden", true)
+
+    var tooltipRemoveSpan = tooltipRemove
+    .append("span")
+    .attr("data-hover", "Remove")
+    var tooltipRemoveIcon = tooltipRemoveSpan
+    .append("i")
+    .classed("fa", true)
+    .classed("fa-times", true)
 
     const root = pack(data);
     var focus = root;
@@ -329,14 +348,14 @@ function visualize() {
                 tooltipDescription.classed("hidden", true)
                 tooltipRole.classed("hidden", false)
             } else {
-                makeGroupTooltip(d);
+                makeGroupTooltip(d, d.parent.data.id);
                 tooltipRole.classed("hidden", true)
                 tooltipDescription.classed("hidden", false)
             }
             var pageY = event.pageY;
             var pageX = event.pageX;
             displayTooltip = true;
-            tooltip.style("top", (pageY)+"px").style("left",(pageX)+"px")
+            tooltip.style("top", (pageY-10)+"px").style("left",(pageX+10)+"px")
             // show hover card after 500 ms if cursor is still on the same circle
             setTimeout(function() {
                 if (displayTooltip == true) return tooltip.style("visibility", "visible");
@@ -348,7 +367,7 @@ function visualize() {
             return tooltip.style("visibility", "hidden");
         })
         .on("click", function(d) {
-            if (d.data.type != "USER" && d.data.children.length > 0) focus !== d && (zoom(d), d3.event.stopPropagation())
+            if (d.data.type != "USER" && d.data.children) focus !== d && (zoom(d), d3.event.stopPropagation())
         });
 
     const label = svg.append("g")
@@ -361,6 +380,17 @@ function visualize() {
         .style("fill-opacity", d => d.parent === root ? 1 : 0)
         .style("display", d => d.parent === root ? "inline" : "none")
         .text(d => d.data.name);
+    
+    // const label = svg.append("g")
+    //     .style("font", "1.25em sans-serif")
+    //     .attr("pointer-events", "none")
+    //     .attr("text-anchor", "middle")
+    //     .selectAll("text")
+    //     .data(root.descendants())
+    //     .join("text")
+    //     .style("fill-opacity", d => d.parent === root ? 1 : 0)
+    //     .style("display", d => d.parent === root ? "inline" : "none")
+    //     .text(d => d.data.name);
 
     function zoomTo(v) {
         const k = width / v[2];
@@ -430,13 +460,14 @@ function visualize() {
 }
 
 /** Creates the components of the hovering <div> element for each group */
-function makeGroupTooltip(d) {
+function makeGroupTooltip(d, parentId) {
     // find group with this id
     var group = groups[groups.findIndex(elem => elem.id == d.data.id)]
     tooltipName.text(group.name)
     tooltipEmail.text(group.email)
     tooltipDescription.text(group.description)
     tooltipLink.attr("href", "/pages/groupdetails.html?group=" + d.data.id)
+    tooltipRemove.attr("onclick", "removeMemberModal('" + d.data.id +  "', '" + parentId + "')")
 }
 
 /** Creates the components of the hovering <div> element for each user */
@@ -448,6 +479,7 @@ function makeUserTooltip(d, parentId) {
     document.getElementById("tooltip-role-sel").value = user.roles[parentId][0].toUpperCase() + user.roles[parentId].slice(1).toLowerCase();
     tooltipRole.attr("onchange", "selectRole('" + d.data.id +  "', '" + parentId + "')")
     tooltipLink.attr("href", "/pages/userdetails.html?user=" + d.data.id)
+    tooltipRemove.attr("onclick", "removeMemberModal('" + d.data.id +  "', '" + parentId + "')")
 }
 
 /** Load all of the groups into data for d3 */
@@ -726,4 +758,45 @@ async function selectRole(id, parentId) {
         setLoadingOverlay();
         getAllUsers();
     }
+}
+
+/** Remove membership from this group */
+async function removeMember(id, parentId) {
+    isLoading = true;
+    setLoadingOverlay();
+
+    var memberEmail;
+    var userIndex = usersDisplayed.findIndex(elem => elem.id == id);
+    if (userIndex < 0) {
+        memberEmail = groups[groups.findIndex(elem => elem.id == id)].email;
+    } else {
+        memberEmail = usersDisplayed[userIndex].emails[0].address;
+    }
+
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' 
+    + parentId + '/members/' + memberEmail,
+    {
+        headers: {
+            'authorization': `Bearer ` + token
+        },
+        method: 'DELETE'
+    })
+    if (response.status == 204) {
+        $('#removeModal').modal('hide');
+        isLoading = false;
+        setLoadingOverlay();
+        Promise.all([getAllGroups(true), getAllUsers()])
+        .then(async function(results) {
+            loadGroups();
+        })
+    }
+}
+
+/** Double checks that the user wants to remove this membership */
+function removeMemberModal(id, parentId) {
+    $('#removeModal').modal('show');
+    var removeMemberButton = document.getElementById("removeMemberButton");
+    removeMemberButton.onclick = () => removeMember(id, parentId);
+    displayTooltip = false;
+    return tooltip.style("visibility", "hidden");
 }
