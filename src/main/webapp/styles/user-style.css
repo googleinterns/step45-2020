@@ -81,9 +81,10 @@ img {
 
 .userdetail-title {
   padding: 5px; 
+  margin: 5px;
   font-weight: 400;
   color: #888;
-  font-size: 1.20rem;
+  font-size: 1.30rem;
 }
 
 .modal-header {
@@ -123,4 +124,40 @@ img {
 #rename-span {
     background-color: #ffe680;
     padding: 3px;
+}
+
+#user-groups {
+    max-height: 50px; 
+    overflow: auto;
+}
+
+#single-user-OU-branch {
+    padding: 0 5px; 
+    margin: 0 5px;
+    font-weight: 400;
+    overflow: auto;
+}
+
+.fa-angle-right {
+    padding: 0 5px;
+}
+
+#user-groups {
+    padding: 0 5px; 
+    margin: 0 5px;
+    max-height: 400px; 
+    overflow: auto 
+}
+
+#user-groups .card-title {
+    font-weight: 400;
+}
+
+#user-groups .card-text, #user-groups .card-link {
+    font-weight: 300;
+}
+
+.card-right {
+    display: inline;
+    float: right;
 }
