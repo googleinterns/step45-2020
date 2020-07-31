@@ -263,6 +263,7 @@ function visualize(order) {
             .append("use")
             .attr("xlink:href", function(d) { return "#" + d.data.id; });
 
+        /** hovering card for org unit */ 
         var orgUnitHover = d3.select("body")
             .append("a")
             .classed("card", true)
@@ -292,17 +293,12 @@ function visualize(order) {
         var orgUnitName = orgUnitCardbody
             .append("h5")
             .classed("card-title", true)
-        
-        function OUToText(d) {
-            console.log(d); 
-            return (d === root ? name(d) : d.data.name).split(/(?=[])/g);
-        }
 
         node.append("text")
+            // hover event for org unit name
             .on("mouseover", function(d){
                 var pageY = event.pageY;
                 var pageX = event.pageX;
-                console.log(d);
                 orgUnitName.text(d.data.name);
                 addUserButton.attr("id", d.data.path);
                 addUserButton.attr("onclick", function(){  return  "event.stopPropagation(); triggerAdd(event)"})
@@ -312,6 +308,7 @@ function visualize(order) {
             .on("mouseout", function(d) { 
                 return orgUnitHover.style("visibility", "hidden");
             })
+
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === root ? "bold" : null)
             .selectAll("tspan")
@@ -321,8 +318,7 @@ function visualize(order) {
             .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
             .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
             .attr("font-weight", (d, i, nodes) => i === nodes.length - 1 ? "600" : null)
-            .text(d => d)
-            
+            .text(d => d)           
         
         var nodeSelect = node.append("foreignObject")
             .attr("x", 8)
@@ -332,16 +328,6 @@ function visualize(order) {
             .attr("class", "list-container")
             .append("ul")
             .attr("style", (d => (d === root ? "max-height: 60px; overflow: auto" : "max-height: " + (y(d.y1) - y(d.y0) - 50)) + "; overflow: auto"))
-        
-        // icon to add users
-        // var addNode = nodeSelect.insert("div", ".list-container")
-        //     .attr("type", "button")
-        //     .attr("class", "iconadd")
-        //     .append("i")
-        //     .attr("id", function(d){ return d.data.path })
-        //     .attr("class", "fa fa-user-plus")
-        //     .attr("onclick", function(){  return  "event.stopPropagation(); triggerAdd(event)"})
-        //     .attr("aria-hidden", "true")
 
         // add users with links to each node
         var nodeselect = nodeSelect.selectAll("li")
@@ -371,6 +357,7 @@ function visualize(order) {
             .enter()
             .append("li")
 
+        /** hovering card for user */ 
         var tooltip = d3.select("body")
             .append("a")
             .classed("card", true)
@@ -426,6 +413,7 @@ function visualize(order) {
             .append("a")
             .attr("href", "#")
             .attr("class", "userdetail")
+            // hover event for user
             .on("mouseover", function(d){
                 var pageY = event.pageY;
                 var pageX = event.pageX;
