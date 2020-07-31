@@ -1,3 +1,12 @@
+// Notes to self
+// IF we have no orgunits in admin console, response.json()['organizationUnits'] is undefined
+// blockInheritance can be undefined for some orgunits in our response, means it was never set
+// we can use the API to return all org units STARTING at a certain org unit (makes layers up / layers down code easy)
+// collapse all, expand all button OR by default, limit layers (3) should show all 3 layers expanded (user would see on sidebar and would probably expect to see 3 layers in full rather than just the 2 with the nodes collapsed)
+// because not saving on API calls (one to get all OUs), just have limit layers make those 3 layers expanded rather than ONLY showing those 3 layers OR reword limit depth to limit display of or something
+// trim search string of spaces and also make lowercase to ensure west-coast still matches with West-coast
+
+
 // Show refresh button and overlay
 var isLoading;
 
@@ -225,6 +234,10 @@ function constructD3JSON(sortedOUs) {
     // initialize root OU
     var outputJson = {};
     outputJson['name'] = 'root';
+    outputJson['description'] = 'The root organizational unit.';
+    outputJson['orgUnitPath'] = '/';
+    outputJson['parentOrgUnitPath'] = '';
+    outputJson['blockInheritance'] = false;
     outputJson['children'] = [];
 
     for (var i = 0; i < sortedOUs.length; i++) {
@@ -239,13 +252,11 @@ function constructD3JSON(sortedOUs) {
 function addToJSON(ou, outputJson) {
     var parentOrgUnitPath = ou['parentOrgUnitPath'];
 
+    ou.children = [];
+
     if (parentOrgUnitPath === '/') {
         // can add directly as child of root
-        var json = {
-            "name": ou['name'],
-            "children": []
-        };
-        outputJson['children'].push(json);
+        outputJson['children'].push(ou);
         return;
     }
 
@@ -257,20 +268,17 @@ function addToJSON(ou, outputJson) {
     // keep searching deeper until we've reached the OU's direct parent
     while (parentArr.length !== 0) {
         var parentQuery = parentArr.shift(); // pops off highest level parent
-        for (var i = 0; i < currentLevel.length; i++) {
-            if (currentLevel[i]['name'] === parentQuery) {
-                currentLevel = currentLevel[i]['children'];
+        // scan this level's OUs for the queried parent
+        for (orgUnit of currentLevel) {
+            if (orgUnit['name'] == parentQuery) {
+                currentLevel = orgUnit['children'];
                 break;
             }
         }
     }
 
     // once reached direct parent, append the OU to children
-    var json = {
-        "name": ou['name'],
-        "children": []
-    };
-    currentLevel.push(json);
+    currentLevel.push(ou);
 }
 
 /*
@@ -304,8 +312,10 @@ function visualize(orgUnitsTree) {
     root.x0 = height / 2;
     root.y0 = 0;
 
+
+
     // Collapse after the second level
-    root.children.forEach(collapse);
+    // root.children.forEach(collapse);
 
     update(root);
 
@@ -342,7 +352,8 @@ function visualize(orgUnitsTree) {
             .attr("transform", function(d) {
                 return "translate(" + source.x0 + "," + source.y0 + ")";
             })
-            .on('click', nodeClick);
+            .on('click.children', nodeClick)
+            .on('click.getPath', populatePaths);
 
         // Add Circle for the nodes
         nodeEnter.append('circle')
@@ -460,6 +471,19 @@ function visualize(orgUnitsTree) {
     // d3 visualization has loaded
     isLoading = false;
     setLoadingOverlay();
+}
+
+// Populates OU paths upon node click.
+function populatePaths(node) {
+    console.log(node);
+    console.log(node.data.orgUnitPath);
+    var deletePath = document.getElementById('delete-path');
+    var createPath = document.getElementById('create-path');
+    var updatePath = document.getElementById('update-path');
+
+    deletePath.value = node.data.orgUnitPath.substring(1);
+    createPath.value = node.data.orgUnitPath.substring(1);
+    updatePath.value = node.data.orgUnitPath.substring(1);
 }
 
 /*

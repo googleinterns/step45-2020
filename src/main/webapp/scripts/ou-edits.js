@@ -1,8 +1,16 @@
 /*
+ * Opens the delete OU confirmation modal.
+*/
+function openDeleteModal() {
+    $('#deleteModal').modal('show');
+}
+
+/*
  * Deletes an existing OU given its path.
 */
 function deleteOU() {
     loginStatus();
+    $('#deleteModal').modal('hide');
     const ouPath = document.getElementById('delete-path');
     
     fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath.value.trim()), {

@@ -95,3 +95,16 @@
     justify-content: center;
     align-items: center;
 }
+
+.modal-header {
+    background: rgba(51,103,214,1);
+    color: white;
+}
+
+.modal-text {
+    font-size: 0.90rem;
+    margin-top: 1px;
+    padding: 2px;
+    font-weight: 400;
+    color: #888;
+}
