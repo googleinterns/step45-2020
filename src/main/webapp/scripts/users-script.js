@@ -13,36 +13,43 @@ var oulength = 0; // length of all ous
 /** Show refresh button and overlay*/
 var isLoading;
 
+/** Tooltip hover card */
+var displayTooltip;
+var tooltip;
+var tooltipName;
+var tooltipDescription;
+var tooltipEmail;
+var tooltipLink;
+
+
+/** Functions for user main page */
+
 // the function called onload for user.html
 function userOnload(){
     checkLoginAndSetUp(); 
-    //loadInstruction();
     sidebar();
     fetchOUs();
 }
 
 // retrieve all OrgUnits from the API (the API returns all OrgUnits except the root OrgUnit)
-function fetchOUs(){
+async function fetchOUs(){
     chartElement = document.getElementById("user-chart");
-    chartElement.innerHTML = "";
+    chartElement.innerHTML = "";  
     flatdata = [];
     data = {};
-    fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
+
+    var response = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
     headers: {
         'authorization': `Bearer ` + token,
     }
-    }).
-    then(response => response.json())
-    .then((ousjson) => {
-        var ous = ousjson['organizationUnits'];
-        oulength = ous.length;
-        addOrgUnitsToData(ous);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
     });
+    var ousjson = await response.json();
+    var ous = ousjson['organizationUnits'];
+    oulength = ous.length;
+    addOrgUnitsToData(ous);
 }
 
+// retrieve all users from the API
 async function fetchUsers(){
     var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
         headers: {
@@ -52,8 +59,7 @@ async function fetchUsers(){
     var userJSON = await response.json();
     var users = userJSON['users'];
     allUsers = [];
-    for(var i = 0; i < users.length; i++){
-        let user = users[i];
+    for(var user of users){
         var fullname = user['name']['fullName'];
         var id = user['id'];
         var orgUnitPath = user['orgUnitPath'];
@@ -64,36 +70,31 @@ async function fetchUsers(){
 }
 
 // Add all OrgUnits (including the root OrgUnit) to data
-function addOrgUnitsToData(ous){
-    for(var i = 0; i < ous.length; i++){
-        var eachOU = ous[i];
+async function addOrgUnitsToData(ous){
+    for(var eachOU of ous){
         var childElement = {"name": eachOU["name"], "path": eachOU["orgUnitPath"], "parentPath": eachOU["parentOrgUnitPath"], "users": []};
         flatdata.push(childElement);
     }
     // add root OrgUnit to data
-    for(var i = 0; i < ous.length; i++){
-        if(ous[i]['parentOrgUnitPath'] === "/"){
-            rootID = ous[i]['parentOrgUnitId'];
-            fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
-            headers: {
-                'authorization': `Bearer ` + token,
-            }
-            }).
-            then(response => response.json())
-                .then((root) => {
-                    var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
-                    rootOUName = root["name"];
-                    flatdata.push(rootElement);
-                    // convert flat data to nested json with hierachy
-                    data = d3.stratify()
-                                .id(function(d) {return d.path})
-                                .parentId(function(d) {return d.parentPath})
-                                (flatdata)
-                    addUserToData();
-            })
-            .catch((error) => {
-                console.error(error);
-            })
+    for(var ou of ous){
+        if(ou['parentOrgUnitPath'] === "/"){
+            rootID = ou['parentOrgUnitId'];
+            var response = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
+                headers: {
+                    'authorization': `Bearer ` + token,
+                }
+            });
+            var root = await response.json();
+            var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
+            rootOUName = root["name"];
+            flatdata.push(rootElement);
+
+            // convert flat data to nested json with hierachy
+            data = d3.stratify()
+                        .id(function(d) {return d.path})
+                        .parentId(function(d) {return d.parentPath})
+                        (flatdata)
+            addUserToData();
         }
         break;
     }
@@ -103,24 +104,24 @@ function addOrgUnitsToData(ous){
 async function addUserToData(){
     isLoading = true; 
     setLoadingOverlay();
+
     var allUsers = await fetchUsers();
+
     // if there's input in the search bar, only add users from search result
     // query users match the query input, query can be any prefix of name and email
     if(searchInput){
-        console.log("search input");
         var encodedParam =  encodeURI(searchInput);
         var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&query=' + encodedParam, {
-                    headers: {
-                        'authorization': `Bearer ` + token,
-                    }
-                });
+            headers: {
+                'authorization': `Bearer ` + token,
+            }
+        });
         var json = await response.json();
         var numElement = document.getElementById('num-search-users');
         numElement.innerText = json.users ? json.users.length : 0;
         var users = json.users;
         if(json.users){
-            for(var i = 0; i < users.length; i++){
-                let user = users[i];
+            for(var user of users){
                 var fullname = user['name']['fullName'];
                 var id = user['id'];
                 var orgUnitPath = user['orgUnitPath'];
@@ -132,12 +133,12 @@ async function addUserToData(){
         incrementUserCount(data);
         visualize(null);
     }
+    
     // if there's input for filering, get users match both orgUnit filters and group filters
     else if((groupInput.length > 0 || orgUnitInput.length > 0)){
         var userIds = new Set();
         // for each orgUnit id, get users of the orgUnit
-        for(var i = 0; i < allUsers.length; i++){
-            let user = allUsers[i];
+        for(var user of allUsers){
             if(orgUnitInput.includes(user.orgUnitPath))
                 userIds.add(user.id);
         }
@@ -151,40 +152,38 @@ async function addUserToData(){
             var json = await response.json();
             var members = json.members;
             if(members){
-                for(var i = 0; i < members.length; i++){
-                    if(members[i].type === 'USER'){
-                        userIds.add(members[i].id);
+                for(var member of members){
+                    if(member.type === 'USER'){
+                        userIds.add(member.id);
                     }          
                 }
             }
-            
         }));
         // for each user id, find and add the user
         userIds = Array.from(userIds);
         var numElement = document.getElementById('num-filter-users');
         numElement.innerText = userIds.length;
-        for(var i = 0; i < allUsers.length; i++){
+        for(var user of allUsers){
             var user = allUsers[i];
             if(userIds.includes(user.id)){
                 addUserToOUByPath(data, user["orgUnitPath"], user);
             }
         }
-        incrementUserCount(data);
-        visualize(null);
     }
+
     // if there's no search and no filter
     else{
         var numSearchElement = document.getElementById('num-search-users');
         numSearchElement.innerText = 0;
         var numFilterElement = document.getElementById('num-filter-users');
         numFilterElement.innerText = 0;
-        for(var i = 0; i < allUsers.length; i++){
-            var user = allUsers[i];
+        for(var user of allUsers){
             addUserToOUByPath(data, user["orgUnitPath"], user);
-        }
-        incrementUserCount(data);
-        visualize(null);
+        }    
     }
+
+    incrementUserCount(data);
+    visualize(null);
     isLoading = false; 
     setLoadingOverlay();
 }
@@ -199,8 +198,7 @@ function addUserToOUByPath(node, path, user){
         if(node['children'] === undefined)
             return;
         var children = node['children'];
-        for(var i = 0; i < children.length; i++){
-            ou = children[i];
+        for(var ou of children){
             if(path.includes(ou.data['path'])){
                 addUserToOUByPath(ou, path, user);
             }
@@ -215,8 +213,8 @@ function incrementUserCount (node){
     node.data['numUsers'] = numUsers;
     var children = node['children'];
     if(children !== undefined){
-        for(var i = 0; i < children.length; i++){
-            incrementUserCount(children[i]);
+        for(var ou of chilren){
+            incrementUserCount(ou);
         }
     }
     else{
@@ -226,7 +224,7 @@ function incrementUserCount (node){
 
 // Visualization
 function visualize(order) {
-    console.log(data);
+    console.log("vis");
     function name(d) {
         return d.ancestors().reverse().map(d => d.data.name).join("/");
     }
@@ -300,7 +298,6 @@ function visualize(order) {
         var addNode = nodeSelect.insert("div", ".list-container")
             .attr("type", "button")
             .attr("class", "iconadd")
-            
             .append("i")
             .attr("id", function(d){ return d.data.path })
             .attr("class", "fa fa-user-plus")
@@ -313,9 +310,7 @@ function visualize(order) {
                 var users = d.data.users;
                 if(order === "firstname"){
                     users.sort(function(a, b) {
-                        return a.name.toLowerCase() == b.name.toLowerCase()
-                            ? 0
-                            : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+                        return a.name.toLowerCase() == b.name.toLowerCase() ? 0 : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
                     });
                 }
                 else if(order === "lastname"){
@@ -328,14 +323,33 @@ function visualize(order) {
                     });
                 }
                 var userlist = []
-                for(var i = 0; i < users.length; i++){
-                    var userInfo = {"name": users[i].name, "id": users[i].id }
+                for(var user of users){
+                    var userInfo = {"name": user.name, "id": user.id }
                     userlist.push(userInfo);
                 }
                 return userlist;
             })
             .enter()
             .append("li")
+
+        tooltip = d3.select("body")
+            .append("a")
+            .style("position", "absolute")
+            .style("z-index", "10")
+            .style("visibility", "hidden")
+            .classed("card", true)
+            .classed("group", true)
+            .on("mouseover", function(d) {
+                return tooltip.style("visibility", "visible");
+            })
+        
+        tooltipName = tooltip
+            .append("h5")
+            .classed("name", true)
+
+        tooltipEmail = tooltip
+            .append("div")
+            .classed("email", true)
 
         nodeselect
             .append("a")
@@ -359,14 +373,20 @@ function visualize(order) {
             .data(function(d){
                 var users = d.data.users;
                 var userlist = []
-                for(var i = 0; i < users.length; i++){
-                    userlist.push(users[i].id);
+                for(var user of users){
+                    userlist.push(user.id);
                 }
                 return userlist
             })
             .attr("href", (d => "userdetails.html?user=" + d))
+            .attr("onmouseover", hover(d))
 
         group.call(position, root);
+    }
+
+    function hover(d){
+        console.log("hover");
+        console.log(d);
     }
 
     function position(group, root) {
@@ -560,9 +580,9 @@ async function sidebar(){
     var orgUnits = json.organizationUnits;
     var orgUnitOptions = [];
     // add root OU
-    for(var i = 0; i < orgUnits.length; i++){
-        if(orgUnits[i]['parentOrgUnitPath'] === "/"){
-            rootID = orgUnits[i]['parentOrgUnitId'];
+    for(var orgUnit of orgUnits){
+        if(orgUnit['parentOrgUnitPath'] === "/"){
+            rootID = orgUnit['parentOrgUnitId'];
             var rootresponse = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
             headers: {
                 'authorization': `Bearer ` + token,
@@ -576,14 +596,13 @@ async function sidebar(){
     var newdiv = document.createElement("div");
     newdiv.innerHTML = "<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>"
     orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>");
-    for (var i = 0; i < orgUnits.length; i++) {
-        orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label></div>");
+    for(var orgUnit of orgUnits) {
+        orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + orgUnit.orgUnitId + "' value='" + orgUnit.orgUnitPath + "'><label class='form-check-label' for='" + orgUnit.orgUnitPath + "'> " + orgUnit.name + "</label></div>");
     }
     document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
     var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
-    for (var i = 0; i < checkboxElems.length; i++) {
-        var checkbox = checkboxElems[i];
-        checkboxElems[i].addEventListener("click", function(e) {
+    for(var checkbox of checkboxElems) {
+        checkbox.addEventListener("click", function(e) {
             updateOrgUnitInput(e.target);
         });
     }
@@ -598,13 +617,13 @@ async function sidebar(){
     var groups = json.groups;
     console.log(groups);
     var groupOptions = [];
-    for (var i = 0; i < groups.length; i++) {
-        groupOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + groups[i].id + "' value='" + groups[i].id + "'><label class='form-check-label' for='" + groups[i].id + "'> " + groups[i].name + "</label></div>");
+    for(var group of groups) {
+        groupOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + group.id + "' value='" + group.id + "'><label class='form-check-label' for='" + group.id + "'> " + group.name + "</label></div>");
     }
     document.getElementById("group-sel").innerHTML = groupOptions.join('');
     var checkboxElems = document.querySelectorAll("#group-sel input[type='checkbox']");
-    for (var i = 0; i < checkboxElems.length; i++) {
-        checkboxElems[i].addEventListener("click", function(e) {
+    for(var checkbox of checkboxElems) {
+        checkbox.addEventListener("click", function(e) {
             updateGroupInput(e.target);
         });
     }
@@ -615,11 +634,9 @@ function searchFilter(){
     console.log("searchfilter");
     searchCheckboxInput = document.getElementById("search-checkbox-input").value.toLowerCase();
     var checkboxes = document.getElementsByClassName("checkboxes");
-    for(var k = 0; k < checkboxes.length; k++){
-        var checkbox = checkboxes[k];
+    for(var checkbox of checkboxes){
         var checkboxName = checkbox.getElementsByTagName("label")[0].innerText;
         if(checkboxName.toLowerCase().indexOf(searchCheckboxInput) > -1){
-            console.log("find", checkboxName);
             checkbox.style.display = "";
         }
         else{
@@ -685,9 +702,9 @@ function clearFilters(){
 function checkAllOUFilters(){
     var ouchecks = document.getElementById("orgunit-sel").getElementsByTagName("input");
     orgUnitInput = []; 
-    for(var i = 0; i < ouchecks.length; i++){
-        ouchecks[i].checked = true;
-        orgUnitInput.push(ouchecks[i].value);
+    for(var oucheck of ouchecks){
+        oucheck.checked = true;
+        orgUnitInput.push(oucheck.value);
     }  
     clearSearch();
     checkLoginAndSetUp();
@@ -697,9 +714,9 @@ function checkAllOUFilters(){
 function checkAllGroupFilters(){
     var groupchecks = document.getElementById("group-sel").getElementsByTagName("input");
     groupInput = []; 
-    for(var i = 0; i < groupchecks.length; i++){
-        groupchecks[i].checked = true;
-        groupInput.push(groupchecks[i].value);
+    for(var groupcheck of groupchecks){
+        groupcheck.checked = true;
+        groupInput.push(groupcheck.value);
     }  
     clearSearch();
     checkLoginAndSetUp();
