@@ -365,6 +365,11 @@ function visualize() {
                 tooltipDescription.classed("hidden", false)
                 tooltipAddMember.classed("hidden", false)
             }
+            if (!d.parent.data.id) {
+                tooltipRemove.classed("hidden", true);
+            } else {
+                tooltipRemove.classed("hidden", false);
+            }
             var pageY = event.pageY;
             var pageX = event.pageX;
             displayTooltip = true;
@@ -764,17 +769,9 @@ async function selectRole(id, parentId) {
 }
 
 /** Remove membership from this group */
-async function removeMember(id, parentId) {
+async function removeMember(memberEmail, parentId) {
     isLoading = true;
     setLoadingOverlay();
-
-    var memberEmail;
-    var userIndex = usersDisplayed.findIndex(elem => elem.id == id);
-    if (userIndex < 0) {
-        memberEmail = groups[groups.findIndex(elem => elem.id == id)].email;
-    } else {
-        memberEmail = usersDisplayed[userIndex].emails[0].address;
-    }
 
     const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' 
     + parentId + '/members/' + memberEmail,
@@ -798,8 +795,22 @@ async function removeMember(id, parentId) {
 /** Double checks that the user wants to remove this membership */
 function removeMemberModal(id, parentId) {
     $('#removeModal').modal('show');
+    var memberEmail;
+    var userIndex = usersDisplayed.findIndex(elem => elem.id == id);
+    if (userIndex < 0) {
+        memberEmail = groups[groups.findIndex(elem => elem.id == id)].email;
+    } else {
+        memberEmail = usersDisplayed[userIndex].emails[0].address;
+    }
+
     var removeMemberButton = document.getElementById("removeMemberButton");
-    removeMemberButton.onclick = () => removeMember(id, parentId);
+    removeMemberButton.onclick = () => removeMember(memberEmail, parentId);
+
+    var memberEmailSpan = document.getElementById("memberEmail");
+    memberEmailSpan.innerHTML = memberEmail;
+    var parentGroupEmail = document.getElementById("parentGroupEmail");
+    parentGroupEmail.innerHTML = groups[groups.findIndex(elem => elem.id == parentId)].email;
+
     displayTooltip = false;
     return tooltip.style("visibility", "hidden");
 }

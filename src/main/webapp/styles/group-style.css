@@ -71,7 +71,6 @@
     color: #fff;
     margin-top: 10px;
     margin-right: 10px;
-    transition: 0.5s;
     -webkit-border-radius: 40px;
     -moz-border-radius: 40px;
     border-radius: 40px;
@@ -111,15 +110,4 @@
 }
 .btn-collapse:hover span:before {
     opacity: 1;
-}
-
-.no-search-results {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
