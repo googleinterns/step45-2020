@@ -1,13 +1,18 @@
 /*
- * Currently just returns the first OU matching the name search criterion.
+ * Returns a list of OUs matching the name search criterion.
 */
 function searchOU(searchName) {
+    var ouSearchMatches = [];
+    var searchNameStd = searchName.trim().toLowerCase();
+
     for (ouElem of orgUnits) {
-        if (ouElem['name'].includes(searchName)) {
-            return ouElem;
+        var ouName = ouElem['name'].trim().toLowerCase();
+
+        if (ouName.includes(searchNameStd)) {
+            ouSearchMatches.push(ouElem);
         }
     }
-    return null;
+    return ouSearchMatches;
 }
 
 /*

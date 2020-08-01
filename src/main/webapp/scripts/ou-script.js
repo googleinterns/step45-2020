@@ -2,10 +2,15 @@
 // IF we have no orgunits in admin console, response.json()['organizationUnits'] is undefined
 // blockInheritance can be undefined for some orgunits in our response, means it was never set
 // we can use the API to return all org units STARTING at a certain org unit (makes layers up / layers down code easy)
-// collapse all, expand all button OR by default, limit layers (3) should show all 3 layers expanded (user would see on sidebar and would probably expect to see 3 layers in full rather than just the 2 with the nodes collapsed)
 // because not saving on API calls (one to get all OUs), just have limit layers make those 3 layers expanded rather than ONLY showing those 3 layers OR reword limit depth to limit display of or something
-// trim search string of spaces and also make lowercase to ensure west-coast still matches with West-coast
 
+// prevent visualization from being potentially dragged off the screen
+// determine size for svg based on size of visualization somehow?
+// layers and search work independently now (aka you have to hit Render) to get layer limiting, won't just do it on search. might want to change that
+
+
+
+// clean up path that appears in delete modal
 
 // Show refresh button and overlay
 var isLoading;
@@ -17,12 +22,33 @@ var parentChildOUs;
 // Search criteria
 var searchName;
 
+
+var hereAreTheSearchedOUs;
+
+
+
 // Display criteria
 var layerLimitNum;
 var totalLayers;
 
+function removeVisualization() {
+    // either remove the no-search-result-element or the visualization
+    noSearchResultScreen = document.getElementById('no-search-result-elem');
+    if (noSearchResultScreen) {
+        noSearchResultScreen.remove();
+    } else {
+        // removing just the svg messes up the listeners
+        d3.select("#tree-chart").remove();
+        // need to add a new tree-chart elem
+        var container = document.getElementById("chart-container");
+        var newChartElem = document.createElement('div');
+        newChartElem.setAttribute("id", "tree-chart");
+        container.appendChild(newChartElem);
+    }
+}
+
 /*
- * Initially loads the page, fetching all OUs and adding search events.
+ * Loads the page, fetching all OUs and adding necessary events.
  */
 async function onloadOUPage() {
     loginStatus();
@@ -30,9 +56,9 @@ async function onloadOUPage() {
     var searchButton = document.getElementById("search-enter-btn");
     searchButton.addEventListener("click", function(event) {
         searchName = searchBar.value;
-        d3.select("svg").remove();
-        getAllOUs();
-    })
+        console.log(searchName);
+        executeSearch();
+    });
 
     var searchBar = document.getElementById("search");
     // Execute a function when the user presses enter or erases the input
@@ -40,14 +66,25 @@ async function onloadOUPage() {
         searchButton.click();
     });
 
+    // clear modals upon closure
+    $("#multiple-query-modal").on("hidden.bs.modal", function() {
+        var searchMatchSelectEl = document.getElementById("search-matches-select");
+        searchMatchSelectEl.innerHTML = '';
+    });
+    $("#delete-modal").on("hidden.bs.modal", function() {
+        const confirmOUElem = document.getElementById("delete-modal-orgunit");
+        confirmOUElem.innerHTML = '';
+    });
+
     orgUnits = await fetchOUs();
     layerLimitNum = parseInt(document.getElementById("limit-layer-num").value);
+    hereAreTheSearchedOUs = orgUnits;
 
-    getAllOUs();
+    getAllOUs(orgUnits);
 }
 
 /*
- * Used to refresh the page upon deletion, creation, or update of OUs.
+ * Refreshes the page.
  */
 async function refreshOUPage() {
     loginStatus();
@@ -55,18 +92,10 @@ async function refreshOUPage() {
     document.getElementById("search").value = '';
     searchName = '';
 
-    // either remove the no-search-result-element or the visualization
-    noSearchResultScreen = document.getElementById('no-search-result-elem');
-    if (noSearchResultScreen) {
-        noSearchResultScreen.remove();
-    } else {
-        d3.select("svg").remove();
-    }
-
     orgUnits = await fetchOUs();
-    layerLimitNum = parseInt(document.getElementById("limit-layer-num").value);
+    hereAreTheSearchedOUs = orgUnits;
 
-    getAllOUs();
+    refreshAllOUs(orgUnits);
 }
 
 /*
@@ -89,48 +118,96 @@ async function fetchOUs() {
 }
 
 /*
+ * Given an OU, finds all its parents up to the root OU.
+*/
+function retrieveOUParents(searchedOU) {
+    // assemble the matching query's parents
+    var limitedOUs = [];
+    var parentOrgUnitPath = searchedOU['parentOrgUnitPath'];
+    parentArr = parentOrgUnitPath.split('/');
+    // first elem is always empty
+    parentArr.shift();
+
+    // need to match OUs by paths (which are unique) rather than by names
+    var pathSoFar = '';
+
+    while (parentArr.length != 0) {
+        pathSoFar = pathSoFar + '/' + parentArr.shift();
+
+        for (unit of orgUnits) {
+            if (unit['orgUnitPath'] == pathSoFar) {
+                limitedOUs.push(unit);
+                break;
+            }
+        }
+    }
+
+    // no sort needed, as OUs added in order of increasing depth
+    limitedOUs.push(searchedOU);
+    return limitedOUs;
+}
+
+
+/*
+ * Given a search query, determines which OUs to render.
+*/
+function executeSearch() {
+    // set global var
+    hereAreTheSearchedOUs = orgUnits;
+
+    if (searchName) {
+        var searchedOUList = searchOU(searchName);
+        if (searchedOUList.length == 0) {
+            // no matches
+            hereAreTheSearchedOUs = [];
+            console.log("expecting this to print");
+            refreshAllOUs(hereAreTheSearchedOUs);
+        } else if (searchedOUList.length == 1) {
+            // render the tree of the one matching OU
+            var searchedOU = searchedOUList[0];
+            hereAreTheSearchedOUs = retrieveOUParents(searchedOU);
+            refreshAllOUs(hereAreTheSearchedOUs);
+        } else {
+            // else open selection modal
+            console.log(searchedOUList);
+            var searchMatchSelectEl = document.getElementById("search-matches-select");
+            for (matchingOU of searchedOUList) {
+                var optionEl = document.createElement("option");
+                optionEl.textContent = matchingOU['orgUnitPath'];
+                optionEl.value = JSON.stringify(matchingOU);
+                searchMatchSelectEl.appendChild(optionEl);
+            }
+            $('#multiple-query-modal').modal('show');
+        }
+    } else {
+        refreshAllOUs(hereAreTheSearchedOUs);
+    }
+}
+
+/*
+ * Once the user has selected from the searched OUs, display it.
+*/
+function displayOUSelected() {
+    var ouToDisplay = JSON.parse(document.getElementById("search-matches-select").value);
+    console.log(ouToDisplay);
+    $('#multiple-query-modal').modal('hide');
+    // now construct the tree for this one OU
+    hereAreTheSearchedOUs = retrieveOUParents(ouToDisplay);
+    refreshAllOUs(hereAreTheSearchedOUs);
+}
+
+/*
  * Calls all the functions to manipulate OU data, and loads the sidebar and visualization.
 */
-function getAllOUs() {
+function getAllOUs(limitedOUs) {
     isLoading = true;
     setLoadingOverlay();
-    var limitedOUs = orgUnits;
 
-    // Limit Layers always runs unless no search match, Search runs only if a query has been made
-    if (searchName) {
-        var searchedOU = searchOU(searchName);
-
-        if (searchedOU) {
-            // compile all parents of the searched org unit
-            limitedOUs = [];
-            var parentOrgUnitPath = searchedOU['parentOrgUnitPath'];
-            parentArr = parentOrgUnitPath.split('/');
-            // first elem is always empty
-            parentArr.shift();
-
-            // need to match OUs by paths (which are unique) rather than by names
-            var pathSoFar = '';
-
-            while (parentArr.length != 0) {
-                pathSoFar = pathSoFar + '/' + parentArr.shift();
-
-                for (unit of orgUnits) {
-                    if (unit['orgUnitPath'] == pathSoFar) {
-                        limitedOUs.push(unit);
-                        break;
-                    }
-                }
-            }
-
-            // no sort needed, as OUs added in order of increasing depth
-            limitedOUs.push(searchedOU);
-        } else {
-            limitedOUs = []
-            loadSidebar(limitedOUs);
-            noSearchResult();
-            
-            return;
-        }
+    // this ends up being an onload only. so check if OUs are undefined here -> display screen "You have no OUs."
+    if (limitedOUs.length == 0) {
+        loadSidebar(limitedOUs);
+        noSearchResult();
+        return;
     }
 
     // limit layers code
@@ -139,6 +216,35 @@ function getAllOUs() {
 
     loadSidebar(limitedOUs);
     parentChildOUs = constructD3JSON(limitedOUs); // transform into parent-child JSON
+    visualize(parentChildOUs); // visualize with D3
+    addListeners();
+}
+
+/*
+ * Very different.
+*/
+function refreshAllOUs(limitedOUs) {
+    console.log("entered refresh");
+
+    isLoading = true;
+    setLoadingOverlay();
+
+    if (limitedOUs.length == 0) {
+        loadSidebar(limitedOUs);
+        removeVisualization();
+        noSearchResult();
+        return;
+    }
+
+    // limit layers code
+    limitedOUs.sort(ouDepthSort); // sort by depth
+    limitedOUs = limitLayers(limitedOUs);
+
+    loadSidebar(limitedOUs);
+    parentChildOUs = constructD3JSON(limitedOUs); // transform into parent-child JSON
+
+    removeVisualization();
+
     visualize(parentChildOUs); // visualize with D3
     addListeners();
 }
@@ -177,12 +283,15 @@ function noSearchResult() {
 */
 function limitLayers(limitedOUs) {
     if (limitedOUs.length == 0) {
+        // set global
+        totalLayers = 1;
         return [];
     }
     var lastElementDepth = computeDepth(limitedOUs[limitedOUs.length - 1]);
     // set the totalLayers global var
     totalLayers = lastElementDepth;
     if (totalLayers <= layerLimitNum) {
+        layerLimitNum = totalLayers;
         return limitedOUs;
     } else {
         limitedOUList = [];
@@ -209,6 +318,7 @@ function loadSidebar(limitedOUs) {
     const totalLayerCount = document.getElementById("total-layers");
 
     var displayLimit = document.getElementById("limit-layer-num");
+    displayLimit.value = layerLimitNum;
     displayLimit.setAttribute("max", totalLayers);
     
     if (limitedOUs.length == 0) {
@@ -219,11 +329,7 @@ function loadSidebar(limitedOUs) {
         displayOUs.innerHTML = limitedOUs.length + 1;
     }
 
-    if (orgUnits.length == 0) {
-        totalLayerCount.innerHTML = 1;
-    } else {
-        totalLayerCount.innerHTML = computeDepth(orgUnits[orgUnits.length - 1]);
-    }
+    totalLayerCount.innerHTML = totalLayers;
     totalOUs.innerHTML = orgUnits.length + 1;
 }
 
@@ -319,7 +425,7 @@ function visualize(orgUnitsTree) {
 
     update(root);
 
-    // Collapse the node and all it's children
+    // Collapse the node and all its children
     function collapse(d) {
         if (d.children) {
             d._children = d.children
@@ -475,15 +581,20 @@ function visualize(orgUnitsTree) {
 
 // Populates OU paths upon node click.
 function populatePaths(node) {
-    console.log(node);
-    console.log(node.data.orgUnitPath);
     var deletePath = document.getElementById('delete-path');
     var createPath = document.getElementById('create-path');
     var updatePath = document.getElementById('update-path');
 
+    // if updatePath populated, populate the updateParentPath
+    if (updatePath.value) {
+        var updateParentPath = document.getElementById('update-parent-path');
+        updateParentPath.value = node.data.orgUnitPath.substring(1);
+    } else {
+        updatePath.value = node.data.orgUnitPath.substring(1);
+    }
+
     deletePath.value = node.data.orgUnitPath.substring(1);
     createPath.value = node.data.orgUnitPath.substring(1);
-    updatePath.value = node.data.orgUnitPath.substring(1);
 }
 
 /*
@@ -577,6 +688,6 @@ function renderLayers() {
     if (layerLimitNum > totalLayers) {
         layerLimitNum = totalLayers;
     }
-    d3.select("svg").remove();
-    getAllOUs();
+
+    refreshAllOUs(hereAreTheSearchedOUs);
 }

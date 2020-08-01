@@ -2,7 +2,12 @@
  * Opens the delete OU confirmation modal.
 */
 function openDeleteModal() {
-    $('#deleteModal').modal('show');
+    const confirmOUElem = document.getElementById("delete-modal-orgunit");
+    const chosenDeletePath = document.getElementById('delete-path');
+
+    confirmOUElem.innerHTML = chosenDeletePath.value.trim();
+
+    $('#delete-modal').modal('show');
 }
 
 /*
@@ -10,7 +15,7 @@ function openDeleteModal() {
 */
 function deleteOU() {
     loginStatus();
-    $('#deleteModal').modal('hide');
+    $('#delete-modal').modal('hide');
     const ouPath = document.getElementById('delete-path');
     
     fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath.value.trim()), {
