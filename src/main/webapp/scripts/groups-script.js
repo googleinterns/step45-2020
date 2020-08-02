@@ -84,7 +84,6 @@ function getAllGroups(noLoadGroups) {
     })
     .then(response => response.json())
     .then((res) => {
-        console.log(res);
         if (res.groups) {
             groups = res.groups;
         } else {
@@ -114,7 +113,6 @@ function getAllUsers() {
     })
     .then(response => response.json())
     .then((res) => {
-        console.log(res);
         if (res.users) {
             users = res.users;
         } else {
@@ -373,7 +371,7 @@ function visualize() {
             var pageY = event.pageY;
             var pageX = event.pageX;
             displayTooltip = true;
-            tooltip.style("top", (pageY-10)+"px").style("left",(pageX+10)+"px")
+            tooltip.style("top", (pageY)+"px").style("left",(pageX+10)+"px")
             // show hover card after 500 ms if cursor is still on the same circle
             setTimeout(function() {
                 if (displayTooltip == true) return tooltip.style("visibility", "visible");
@@ -768,7 +766,11 @@ async function selectRole(id, parentId) {
     if (response.status == 200) {
         isLoading = false;
         setLoadingOverlay();
-        getAllUsers();
+        if (window.location.href.split("pages/")[1].split(".html")[0] == "groups") {
+            onloadGroupsPage();
+        } else if (window.location.href.split("pages/")[1].split(".html")[0] == "groupdetails") {
+            onloadGroupDetails();
+        }
     }
 }
 
