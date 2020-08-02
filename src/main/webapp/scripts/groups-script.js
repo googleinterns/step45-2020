@@ -139,8 +139,8 @@ function loadGroupsSidebar() {
 
     var userOptions = [];
     userOptions.push("<option value=null selected='selected'>Select user...</option>");
-    for (var i = 0; i < users.length; i++) {
-        userOptions.push("<option value='" + users[i].emails[0].address + "' id='" + users[i].emails[0].address + "'>" + users[i].emails[0].address + " </option>");
+    for (user of users) {
+        userOptions.push("<option value='" + user.emails[0].address + "' id='" + user.emails[0].address + "'>" + user.emails[0].address + " </option>");
     }
     document.getElementById("user-sel").innerHTML = userOptions.join();
 
@@ -511,23 +511,23 @@ async function loadGroups() {
 
         // collect all the promises
         var promises = [];
-        for (var i = 0; i < groups.length; i++) {
+        for (group of groups) {
             // iterate through all the groups and get their direct members
-            promises.push(getGroupMembers(groups[i].id));
+            promises.push(getGroupMembers(group.id));
         }
 
         Promise.all(promises)
         .then(async function(results) {
-            for (var i = 0; i < groups.length; i++) {
+            for (group of groups) {
                 // if already visited, then add the circle data
-                if (visited.hasOwnProperty(groups[i].id)) {
+                if (visited.hasOwnProperty(group.id)) {
                     if (!showOnlyParentGroups) {
-                        var visitedGroup = visited[groups[i].id];
+                        var visitedGroup = visited[group.id];
                         data.children.push(visitedGroup)
                     }
                 } else {
                     // recursive DFS on the new group to get the new data
-                    var newData = await loadGroupsDFS(groups[i]);
+                    var newData = await loadGroupsDFS(group);
                     data.children.push(newData);
                 }
             }
@@ -577,10 +577,10 @@ async function loadGroupsDFS(currGroup, parentGroup) {
     } else {
         currMembers = members[currGroup.id];
     }
-    for (var j = 0; j < currMembers.length; j++) {
+    for (member of currMembers) {
         // if already visited, then add the circle into newCircle children list
-        if (visited.hasOwnProperty(currMembers[j].id)) {
-            var visitedGroup = visited[currMembers[j].id];
+        if (visited.hasOwnProperty(member.id)) {
+            var visitedGroup = visited[member.id];
 
             // if flatten groups, then don't add this group to children
             if (!flattenGroups) {
@@ -598,8 +598,6 @@ async function loadGroupsDFS(currGroup, parentGroup) {
         }
         // otherwise, recurse on the member and push to newCircle children list
         else {
-            var member = currMembers[j];
-
             // if group, get the group with the name
             if (member.type == "GROUP") {
                 var indexOfGroup = groups.findIndex(elem => elem.id == member.id);
@@ -874,11 +872,11 @@ function addMemberModal(id) {
     // add all groups and users as options
     var memberOptions = [];
     memberOptions.push("<option value=null selected='selected'>Select member...</option>");
-    for (var i = 0; i < users.length; i++) {
-        memberOptions.push("<option value='" + users[i].emails[0].address + "' id='" + users[i].emails[0].address + "'>" + users[i].emails[0].address + " </option>");
+    for (user of users) {
+        memberOptions.push("<option value='" + user.emails[0].address + "' id='" + user.emails[0].address + "'>" + user.emails[0].address + " </option>");
     }
-    for (var i = 0; i < groups.length; i++) {
-        memberOptions.push("<option value='" + groups[i].email + "' id='" + groups[i].email + "'>" + groups[i].email + " </option>");
+    for (group of groups) {
+        memberOptions.push("<option value='" + group.email + "' id='" + group.email + "'>" + group.email + " </option>");
     }
     document.getElementById("add-member-sel").innerHTML = memberOptions.join();
 

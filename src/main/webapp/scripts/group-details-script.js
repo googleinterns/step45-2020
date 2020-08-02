@@ -38,9 +38,9 @@ async function loadGroup() {
         
     // collect all the promises
     var promises = [];
-    for (var i = 0; i < groups.length; i++) {
+    for (group of groups) {
         // iterate through all the groups and get their direct members
-        promises.push(getGroupMembers(groups[i].id));
+        promises.push(getGroupMembers(group.id));
     }
 
     Promise.all(promises)
