@@ -150,3 +150,116 @@ var restrictedSettings = {
     "whoCanViewGroup": "ALL_MEMBERS_CAN_VIEW",
     "whoCanViewMembership": "ALL_MEMBERS_CAN_VIEW",
 }
+
+// Checkbox map for contact owners
+var whoCanContactOwnerCheckboxMap = {
+    "ANYONE_CAN_CONTACT": [
+        "contact-owners-group-owners",
+        "contact-owners-group-managers",
+        "contact-owners-group-members",
+        "contact-owners-entire-organization",
+        "contact-owners-external",
+        ],
+    "ALL_IN_DOMAIN_CAN_CONTACT": [
+        "contact-owners-group-owners",
+        "contact-owners-group-managers",
+        "contact-owners-group-members",
+        "contact-owners-entire-organization",
+        ],
+    "ALL_MEMBERS_CAN_CONTACT": [
+        "contact-owners-group-owners",
+        "contact-owners-group-managers",
+        "contact-owners-group-members",
+        ],
+    "ALL_MANAGERS_CONTACT": [
+        "contact-owners-group-owners",
+        "contact-owners-group-managers",
+        ],
+    "ALL_OWNERS_CAN_CONTACT": ["contact-owners-group-owners",],
+}
+// Checkbox map for view members
+var whoCanViewMembershipCheckboxMap = {
+    "ALL_IN_DOMAIN_CAN_VIEW": [
+        "view-members-group-owners",
+        "view-members-group-managers",
+        "view-members-group-members",
+        "view-members-entire-organization",
+        ],
+    "ALL_MEMBERS_CAN_VIEW": [
+        "view-members-group-owners",
+        "view-members-group-managers",
+        "view-members-group-members",
+        ],
+    "ALL_MANAGERS_CAN_VIEW": [
+        "view-members-group-owners",
+        "view-members-group-managers",
+        ],
+    "ALL_OWNERS_CAN_VIEW": ["view-members-group-owners",],
+}
+// Checkbox map for view topics
+var whoCanViewGroupCheckboxMap = {
+    "ANYONE_CAN_VIEW": [
+        "view-topics-group-owners",
+        "view-topics-group-managers",
+        "view-topics-group-members",
+        "view-topics-entire-organization",
+        "view-topics-external",
+        ],
+    "ALL_IN_DOMAIN_CAN_VIEW": [
+        "view-topics-group-owners",
+        "view-topics-group-managers",
+        "view-topics-group-members",
+        "view-topics-entire-organization",
+        ],
+    "ALL_MEMBERS_CAN_VIEW": [
+        "view-topics-group-owners",
+        "view-topics-group-managers",
+        "view-topics-group-members",
+    ],
+    "ALL_MANAGERS_CAN_VIEW": [
+        "view-topics-group-owners",
+        "view-topics-group-managers",
+    ],
+    "ALL_OWNERS_CAN_VIEW": ["view-topics-group-owners",],
+}
+// Checkbox map for publish posts
+var whoCanPostMessageCheckboxMap = {
+    "ANYONE_CAN_POST": [
+        "publish-posts-group-owners",
+        "publish-posts-group-managers",
+        "publish-posts-group-members",
+        "publish-posts-entire-organization",
+        "publish-posts-external",
+    ],
+    "ALL_IN_DOMAIN_CAN_POST": [
+        "publish-posts-group-owners",
+        "publish-posts-group-managers",
+        "publish-posts-group-members",
+        "publish-posts-entire-organization",
+    ],
+    "ALL_MEMBERS_CAN_POST": [
+        "publish-posts-group-owners",
+        "publish-posts-group-managers",
+        "publish-posts-group-members",
+    ],
+    "ALL_MANAGERS_CAN_POST": [
+        "publish-posts-group-owners",
+        "publish-posts-group-managers",
+    ],
+    "ALL_OWNERS_CAN_POST": ["publish-posts-group-owners",],
+    "NONE_CAN_POST": [],
+}
+// Checkbox map for manage members
+var whoCanModifyMembersCheckboxMap = {
+    "ALL_MEMBERS": [
+        "manage-members-group-owners",
+        "manage-members-group-managers",
+        "manage-members-group-members",
+        ],
+    "OWNERS_AND_MANAGERS": [
+        "manage-members-group-owners",
+        "manage-members-group-managers",
+        ],
+    "OWNERS_ONLY": ["manage-members-group-owners",],
+    "NONE": [],
+}

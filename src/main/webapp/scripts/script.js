@@ -53,17 +53,11 @@ function updateIndexPage() {
     var loginFormContainer = document.getElementById("login-form-container");
     var homeContainer = document.getElementById("home-container");
     if (isLoggedIn) {
-        if (headerNavbar) headerNavbar.classList.remove("hidden")
-        if (pageTitle) pageTitle[0].classList.remove("hidden")
-        if (homeContainer) homeContainer.classList.remove("hidden")
-        if (loginNavbar) loginNavbar.classList.add("hidden")
-        if (loginFormContainer) loginFormContainer.classList.add("hidden")
+        showElements([headerNavbar, pageTitle[0], homeContainer]);
+        hideElements([loginNavbar, loginFormContainer]);
     } else {
-        headerNavbar.classList.add("hidden")
-        pageTitle[0].classList.add("hidden")
-        homeContainer.classList.add("hidden")
-        loginNavbar.classList.remove("hidden")
-        loginFormContainer.classList.remove("hidden")
+        hideElements([headerNavbar, pageTitle[0], homeContainer]);
+        showElements([loginNavbar, loginFormContainer]);
     }
 }
 
@@ -184,11 +178,24 @@ function getDomain() {
 
 function setLoadingOverlay() {
     var overlay = document.getElementsByClassName("overlay");
-    var overlayArray = Array.from(overlay);
     if (isLoading) {
-        overlayArray.map(elem => elem.classList.remove("hidden"))
+        showElements(overlay)
     } else {
-        overlayArray.map(elem => elem.classList.add("hidden"))
+        hideElements(overlay)
+    }
+}
+
+// Adds the class "hidden" to the array of elements
+function hideElements(elements) {
+    for (elem of elements) {
+        if (elem) elem.classList.add("hidden");
+    }
+}
+
+// Removes the class "hidden" from the array of elements
+function showElements(elements) {
+    for (elem of elements) {
+        if (elem) elem.classList.remove("hidden");
     }
 }
 

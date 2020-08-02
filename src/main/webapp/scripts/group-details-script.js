@@ -142,122 +142,23 @@ function diff(obj1, obj2) {
 /** Function called when user clicks to view access and membership settings */
 function viewSettings() {
     var settingsChart = document.getElementById("group-settings-chart");
-    if (settingsChart.classList.contains("hidden")) {
-        settingsChart.classList.remove("hidden")
-    } else {
-        settingsChart.classList.add("hidden")
-    }
+    var viewSettingsLink = document.getElementById("view-settings-link");
+    var hideSettingsLink = document.getElementById("hide-settings-link");
+    hideElements([viewSettingsLink])
+    showElements([settingsChart, hideSettingsLink])
+}
+
+/** Function called when user clicks to view access and membership settings */
+function hideSettings() {
+    var settingsChart = document.getElementById("group-settings-chart");
+    var viewSettingsLink = document.getElementById("view-settings-link");
+    var hideSettingsLink = document.getElementById("hide-settings-link");
+    showElements([viewSettingsLink])
+    hideElements([settingsChart, hideSettingsLink])
 }
 
 /** Fills in the checkbox table for access and membership settings */
 function setAccessMembershipSettingsTable(accessSettingsJson) {
-    // contact owners
-    var whoCanContactOwnerCheckboxMap = {
-        "ANYONE_CAN_CONTACT": [
-            "contact-owners-group-owners",
-            "contact-owners-group-managers",
-            "contact-owners-group-members",
-            "contact-owners-entire-organization",
-            "contact-owners-external",
-            ],
-        "ALL_IN_DOMAIN_CAN_CONTACT": [
-            "contact-owners-group-owners",
-            "contact-owners-group-managers",
-            "contact-owners-group-members",
-            "contact-owners-entire-organization",
-            ],
-        "ALL_MEMBERS_CAN_CONTACT": [
-            "contact-owners-group-owners",
-            "contact-owners-group-managers",
-            "contact-owners-group-members",],
-        "ALL_MANAGERS_CONTACT": [
-            "contact-owners-group-owners",
-            "contact-owners-group-managers",],
-        "ALL_OWNERS_CAN_CONTACT": ["contact-owners-group-owners",],
-    }
-    // view members
-    var whoCanViewMembershipCheckboxMap = {
-        "ALL_IN_DOMAIN_CAN_VIEW": [
-            "view-members-group-owners",
-            "view-members-group-managers",
-            "view-members-group-members",
-            "view-members-entire-organization",
-            ],
-        "ALL_MEMBERS_CAN_VIEW": [
-            "view-members-group-owners",
-            "view-members-group-managers",
-            "view-members-group-members",
-            ],
-        "ALL_MANAGERS_CAN_VIEW": [
-            "view-members-group-owners",
-            "view-members-group-managers",
-            ],
-        "ALL_OWNERS_CAN_VIEW": ["view-members-group-owners",],
-    }
-    // view topics
-    var whoCanViewGroupCheckboxMap = {
-        "ANYONE_CAN_VIEW": ["view-topics-group-owners",
-            "view-topics-group-managers",
-            "view-topics-group-members",
-            "view-topics-entire-organization",
-            "view-topics-external",],
-        "ALL_IN_DOMAIN_CAN_VIEW": [
-            "view-topics-group-owners",
-            "view-topics-group-managers",
-            "view-topics-group-members",
-            "view-topics-entire-organization",
-            ],
-        "ALL_MEMBERS_CAN_VIEW": [
-            "view-topics-group-owners",
-            "view-topics-group-managers",
-            "view-topics-group-members",
-            ],
-        "ALL_MANAGERS_CAN_VIEW": ["view-topics-group-owners",
-            "view-topics-group-managers",],
-        "ALL_OWNERS_CAN_VIEW": ["view-topics-group-owners",],
-    }
-    // publish posts
-    var whoCanPostMessageCheckboxMap = {
-        "ANYONE_CAN_POST": [
-            "publish-posts-group-owners",
-            "publish-posts-group-managers",
-            "publish-posts-group-members",
-            "publish-posts-entire-organization",
-            "publish-posts-external",
-            ],
-        "ALL_IN_DOMAIN_CAN_POST": [
-            "publish-posts-group-owners",
-            "publish-posts-group-managers",
-            "publish-posts-group-members",
-            "publish-posts-entire-organization",
-            ],
-        "ALL_MEMBERS_CAN_POST": [
-            "publish-posts-group-owners",
-            "publish-posts-group-managers",
-            "publish-posts-group-members",
-            ],
-        "ALL_MANAGERS_CAN_POST": [
-            "publish-posts-group-owners",
-            "publish-posts-group-managers",
-            ],
-        "ALL_OWNERS_CAN_POST": ["publish-posts-group-owners",],
-        "NONE_CAN_POST": [],
-    }
-    // manage members
-    var whoCanModifyMembersCheckboxMap = {
-        "ALL_MEMBERS": [
-            "manage-members-group-owners",
-            "manage-members-group-managers",
-            "manage-members-group-members",
-            ],
-        "OWNERS_AND_MANAGERS": [
-            "manage-members-group-owners",
-            "manage-members-group-managers",
-            ],
-        "OWNERS_ONLY": ["manage-members-group-owners",],
-        "NONE": [],
-    }
-    
     setAllCheckBoxesFalse(); // assume that all check box values should be overriden
     setCheckBoxesTrue(whoCanContactOwnerCheckboxMap[accessSettingsJson.whoCanContactOwner]);
     setCheckBoxesTrue(whoCanViewMembershipCheckboxMap[accessSettingsJson.whoCanViewMembership]);
@@ -283,15 +184,13 @@ function setCheckBoxesTrue(checkBoxes) {
 /** Shows the edit fields for the information section */
 function showEditInformationForm() {
     var viewInformation = document.getElementById("view-information-form");
-    viewInformation.classList.add("hidden");
     var editInformation = document.getElementById("edit-information-form");
-    editInformation.classList.remove("hidden");
     var showEditInformation = document.getElementById("show-edit-information-form");
-    showEditInformation.classList.add("hidden");
     var saveInformation = document.getElementById("save-information-form");
-    saveInformation.classList.remove("hidden");
     var closeEditInformation = document.getElementById("close-edit-information-form");
-    closeEditInformation.classList.remove("hidden");
+    
+    hideElements([viewInformation, showEditInformation]);
+    showElements([editInformation, saveInformation, closeEditInformation]);
 
     var groupName = document.getElementById("group-name-field");
     groupName.value = group.name;
@@ -339,44 +238,35 @@ async function saveInformationForm() {
 /** Hides the edit fields for the information section without saving */
 function closeInformationForm() {
     var viewInformation = document.getElementById("view-information-form");
-    viewInformation.classList.remove("hidden");
     var editInformation = document.getElementById("edit-information-form");
-    editInformation.classList.add("hidden");
     var showEditInformation = document.getElementById("show-edit-information-form");
-    showEditInformation.classList.remove("hidden");
     var saveInformation = document.getElementById("save-information-form");
-    saveInformation.classList.add("hidden");
     var closeEditInformation = document.getElementById("close-edit-information-form");
-    closeEditInformation.classList.add("hidden");
+
+    showElements([viewInformation, showEditInformation]);
+    hideElements([editInformation, saveInformation, closeEditInformation]);
 }
 
 /** Shows the edit fields for the settings section */
 function showEditSettingsForm() {
     // Buttons
     var showEditSettings = document.getElementById("show-edit-settings-form");
-    showEditSettings.classList.add("hidden");
     var saveSettings = document.getElementById("save-settings-form");
-    saveSettings.classList.remove("hidden");
     var closeEditSettings = document.getElementById("close-edit-settings-form");
-    closeEditSettings.classList.remove("hidden");
 
     // Inputs
     var accessTypeValue = document.getElementById("access-type");
-    accessTypeValue.classList.add("hidden");
     var accessTypeRadio = document.getElementById("access-type-radio-group");
-    accessTypeRadio.classList.remove("hidden");
     var joinGroupValue = document.getElementById("join-group");
-    joinGroupValue.classList.add("hidden");
     var joinGroupSel = document.getElementById("join-group-sel-group");
-    joinGroupSel.classList.remove("hidden");
     var membersOutsideOrgValue = document.getElementById("members-outside-org");
-    membersOutsideOrgValue.classList.add("hidden");
     var membersOutsideOrgSwitch = document.getElementById("members-outside-org-switch-group");
-    membersOutsideOrgSwitch.classList.remove("hidden");
-
+    
     // Labels
     var saveSettingsLabel = document.getElementById("save-settings-label");
-    saveSettingsLabel.classList.remove("hidden");
+
+    hideElements([showEditSettings, accessTypeValue, joinGroupValue, membersOutsideOrgValue]);
+    showElements([saveSettings, closeEditSettings, accessTypeRadio, joinGroupSel, membersOutsideOrgSwitch, saveSettingsLabel]);
 
     // Set values based on current group settings
     var currentAccessType = document.getElementById("access-type-radio-" + accessType.replace(/ /g, '-').toLowerCase());
@@ -420,29 +310,22 @@ async function saveSettingsForm() {
 function closeSettingsForm() {
     // Buttons
     var showEditSettings = document.getElementById("show-edit-settings-form");
-    showEditSettings.classList.remove("hidden");
     var saveSettings = document.getElementById("save-settings-form");
-    saveSettings.classList.add("hidden");
     var closeEditSettings = document.getElementById("close-edit-settings-form");
-    closeEditSettings.classList.add("hidden");
 
     // Inputs
-    var accessType = document.getElementById("access-type");
-    accessType.classList.remove("hidden");
+    var accessTypeValue = document.getElementById("access-type");
     var accessTypeRadio = document.getElementById("access-type-radio-group");
-    accessTypeRadio.classList.add("hidden");
-    var joinGroup = document.getElementById("join-group");
-    joinGroup.classList.remove("hidden");
+    var joinGroupValue = document.getElementById("join-group");
     var joinGroupSel = document.getElementById("join-group-sel-group");
-    joinGroupSel.classList.add("hidden");
-    var membersOutsideOrg = document.getElementById("members-outside-org");
-    membersOutsideOrg.classList.remove("hidden");
+    var membersOutsideOrgValue = document.getElementById("members-outside-org");
     var membersOutsideOrgSwitch = document.getElementById("members-outside-org-switch-group");
-    membersOutsideOrgSwitch.classList.add("hidden");
 
     // Labels
     var saveSettingsLabel = document.getElementById("save-settings-label");
-    saveSettingsLabel.classList.add("hidden");
+
+    showElements([showEditSettings, accessTypeValue, joinGroupValue, membersOutsideOrgValue]);
+    hideElements([saveSettings, closeEditSettings, accessTypeRadio, joinGroupSel, membersOutsideOrgSwitch, saveSettingsLabel]);
 
     // Reset checkboxes to original settings
     setAccessMembershipSettingsTable(settings);
