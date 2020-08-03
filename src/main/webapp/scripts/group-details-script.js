@@ -38,9 +38,9 @@ async function loadGroup() {
         
     // collect all the promises
     var promises = [];
-    for (var i = 0; i < groups.length; i++) {
+    for (group of groups) {
         // iterate through all the groups and get their direct members
-        promises.push(getGroupMembers(groups[i].id));
+        promises.push(getGroupMembers(group.id));
     }
 
     Promise.all(promises)
@@ -61,23 +61,15 @@ function loadGroupDetailsSidebar() {
 
 /** Set group information for specific group */
 function setGroupInformation() {
-    var groupNameTitle = document.getElementById("group-name-title");
-    groupNameTitle.innerHTML = group.name;
-
-    var groupName = document.getElementById("group-name");
-    groupName.innerHTML = group.name;
-
-    var groupEmail = document.getElementById("group-email");
-    groupEmail.innerHTML = group.email;
+    document.getElementById("group-name-title").innerHTML = group.name;
+    document.getElementById("group-name").innerHTML = group.name;
+    document.getElementById("group-email").innerHTML = group.email;
 
     var groupDescription = document.getElementById("group-description");
     if (group.description) groupDescription.innerHTML = group.description;
 
-    var numGroups = document.getElementById("num-groups");
-    numGroups.innerHTML = Object.keys(visited).length;
-
-    var numUsers = document.getElementById("num-users");
-    numUsers.innerHTML = usersDisplayed.length;
+    document.getElementById("num-groups").innerHTML = Object.keys(visited).length;
+    document.getElementById("num-users").innerHTML = usersDisplayed.length;
 }
 
 /** Set group settings for specific group */
@@ -94,14 +86,9 @@ async function setGroupSettings() {
     if (response.status == 200) {
         settings = accessSettingsJson;
 
-        var accessType = document.getElementById("access-type");
-        accessType.innerHTML = getAccessType(accessSettingsJson);
-
-        var joinGroup = document.getElementById("join-group");
-        joinGroup.innerHTML = accessSettingsJson.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone in the organization can join" : accessSettingsJson.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "Anyone in the organization can ask" : "Only invited users";
-
-        var membersOutsideOrg = document.getElementById("members-outside-org");
-        membersOutsideOrg.innerHTML = accessSettingsJson.allowExternalMembers == "true" ? "Yes" : "No";
+        document.getElementById("access-type").innerHTML = getAccessType(accessSettingsJson);
+        document.getElementById("join-group").innerHTML = accessSettingsJson.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone in the organization can join" : accessSettingsJson.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "Anyone in the organization can ask" : "Only invited users";
+        document.getElementById("members-outside-org").innerHTML = accessSettingsJson.allowExternalMembers == "true" ? "Yes" : "No";
 
         setAccessMembershipSettingsTable(accessSettingsJson);
     }
@@ -141,123 +128,18 @@ function diff(obj1, obj2) {
 
 /** Function called when user clicks to view access and membership settings */
 function viewSettings() {
-    var settingsChart = document.getElementById("group-settings-chart");
-    if (settingsChart.classList.contains("hidden")) {
-        settingsChart.classList.remove("hidden")
-    } else {
-        settingsChart.classList.add("hidden")
-    }
+    hideElements(["view-settings-link"])
+    showElements(["group-settings-chart", "hide-settings-link"])
+}
+
+/** Function called when user clicks to view access and membership settings */
+function hideSettings() {
+    showElements(["view-settings-link"])
+    hideElements(["group-settings-chart", "hide-settings-link"])
 }
 
 /** Fills in the checkbox table for access and membership settings */
 function setAccessMembershipSettingsTable(accessSettingsJson) {
-    // contact owners
-    var whoCanContactOwnerCheckboxMap = {
-        "ANYONE_CAN_CONTACT": [
-            "contact-owners-group-owners",
-            "contact-owners-group-managers",
-            "contact-owners-group-members",
-            "contact-owners-entire-organization",
-            "contact-owners-external",
-            ],
-        "ALL_IN_DOMAIN_CAN_CONTACT": [
-            "contact-owners-group-owners",
-            "contact-owners-group-managers",
-            "contact-owners-group-members",
-            "contact-owners-entire-organization",
-            ],
-        "ALL_MEMBERS_CAN_CONTACT": [
-            "contact-owners-group-owners",
-            "contact-owners-group-managers",
-            "contact-owners-group-members",],
-        "ALL_MANAGERS_CONTACT": [
-            "contact-owners-group-owners",
-            "contact-owners-group-managers",],
-        "ALL_OWNERS_CAN_CONTACT": ["contact-owners-group-owners",],
-    }
-    // view members
-    var whoCanViewMembershipCheckboxMap = {
-        "ALL_IN_DOMAIN_CAN_VIEW": [
-            "view-members-group-owners",
-            "view-members-group-managers",
-            "view-members-group-members",
-            "view-members-entire-organization",
-            ],
-        "ALL_MEMBERS_CAN_VIEW": [
-            "view-members-group-owners",
-            "view-members-group-managers",
-            "view-members-group-members",
-            ],
-        "ALL_MANAGERS_CAN_VIEW": [
-            "view-members-group-owners",
-            "view-members-group-managers",
-            ],
-        "ALL_OWNERS_CAN_VIEW": ["view-members-group-owners",],
-    }
-    // view topics
-    var whoCanViewGroupCheckboxMap = {
-        "ANYONE_CAN_VIEW": ["view-topics-group-owners",
-            "view-topics-group-managers",
-            "view-topics-group-members",
-            "view-topics-entire-organization",
-            "view-topics-external",],
-        "ALL_IN_DOMAIN_CAN_VIEW": [
-            "view-topics-group-owners",
-            "view-topics-group-managers",
-            "view-topics-group-members",
-            "view-topics-entire-organization",
-            ],
-        "ALL_MEMBERS_CAN_VIEW": [
-            "view-topics-group-owners",
-            "view-topics-group-managers",
-            "view-topics-group-members",
-            ],
-        "ALL_MANAGERS_CAN_VIEW": ["view-topics-group-owners",
-            "view-topics-group-managers",],
-        "ALL_OWNERS_CAN_VIEW": ["view-topics-group-owners",],
-    }
-    // publish posts
-    var whoCanPostMessageCheckboxMap = {
-        "ANYONE_CAN_POST": [
-            "publish-posts-group-owners",
-            "publish-posts-group-managers",
-            "publish-posts-group-members",
-            "publish-posts-entire-organization",
-            "publish-posts-external",
-            ],
-        "ALL_IN_DOMAIN_CAN_POST": [
-            "publish-posts-group-owners",
-            "publish-posts-group-managers",
-            "publish-posts-group-members",
-            "publish-posts-entire-organization",
-            ],
-        "ALL_MEMBERS_CAN_POST": [
-            "publish-posts-group-owners",
-            "publish-posts-group-managers",
-            "publish-posts-group-members",
-            ],
-        "ALL_MANAGERS_CAN_POST": [
-            "publish-posts-group-owners",
-            "publish-posts-group-managers",
-            ],
-        "ALL_OWNERS_CAN_POST": ["publish-posts-group-owners",],
-        "NONE_CAN_POST": [],
-    }
-    // manage members
-    var whoCanModifyMembersCheckboxMap = {
-        "ALL_MEMBERS": [
-            "manage-members-group-owners",
-            "manage-members-group-managers",
-            "manage-members-group-members",
-            ],
-        "OWNERS_AND_MANAGERS": [
-            "manage-members-group-owners",
-            "manage-members-group-managers",
-            ],
-        "OWNERS_ONLY": ["manage-members-group-owners",],
-        "NONE": [],
-    }
-    
     setAllCheckBoxesFalse(); // assume that all check box values should be overriden
     setCheckBoxesTrue(whoCanContactOwnerCheckboxMap[accessSettingsJson.whoCanContactOwner]);
     setCheckBoxesTrue(whoCanViewMembershipCheckboxMap[accessSettingsJson.whoCanViewMembership]);
@@ -282,25 +164,12 @@ function setCheckBoxesTrue(checkBoxes) {
 
 /** Shows the edit fields for the information section */
 function showEditInformationForm() {
-    var viewInformation = document.getElementById("view-information-form");
-    viewInformation.classList.add("hidden");
-    var editInformation = document.getElementById("edit-information-form");
-    editInformation.classList.remove("hidden");
-    var showEditInformation = document.getElementById("show-edit-information-form");
-    showEditInformation.classList.add("hidden");
-    var saveInformation = document.getElementById("save-information-form");
-    saveInformation.classList.remove("hidden");
-    var closeEditInformation = document.getElementById("close-edit-information-form");
-    closeEditInformation.classList.remove("hidden");
+    hideElements(["view-information-form", "show-edit-information-form"]);
+    showElements(["edit-information-form", "save-information-form", "close-edit-information-form"]);
 
-    var groupName = document.getElementById("group-name-field");
-    groupName.value = group.name;
-
-    var groupEmail = document.getElementById("group-email-field");
-    groupEmail.value = group.email.split("@")[0];
-
-    var groupEmailDomain = document.getElementById("group-email-domain");
-    groupEmailDomain.innerHTML = "@" + domain;
+    document.getElementById("group-name-field").value = group.name;
+    document.getElementById("group-email-field").value = group.email.split("@")[0];
+    document.getElementById("group-email-domain").innerHTML = "@" + domain;
 
     var groupDescription = document.getElementById("group-description-field");
     if (group.description) groupDescription.value = group.description;
@@ -338,53 +207,19 @@ async function saveInformationForm() {
 
 /** Hides the edit fields for the information section without saving */
 function closeInformationForm() {
-    var viewInformation = document.getElementById("view-information-form");
-    viewInformation.classList.remove("hidden");
-    var editInformation = document.getElementById("edit-information-form");
-    editInformation.classList.add("hidden");
-    var showEditInformation = document.getElementById("show-edit-information-form");
-    showEditInformation.classList.remove("hidden");
-    var saveInformation = document.getElementById("save-information-form");
-    saveInformation.classList.add("hidden");
-    var closeEditInformation = document.getElementById("close-edit-information-form");
-    closeEditInformation.classList.add("hidden");
+    showElements(["view-information-form", "show-edit-information-form"]);
+    hideElements(["edit-information-form", "save-information-form", "close-edit-information-form"]);
 }
 
 /** Shows the edit fields for the settings section */
 function showEditSettingsForm() {
-    // Buttons
-    var showEditSettings = document.getElementById("show-edit-settings-form");
-    showEditSettings.classList.add("hidden");
-    var saveSettings = document.getElementById("save-settings-form");
-    saveSettings.classList.remove("hidden");
-    var closeEditSettings = document.getElementById("close-edit-settings-form");
-    closeEditSettings.classList.remove("hidden");
-
-    // Inputs
-    var accessTypeValue = document.getElementById("access-type");
-    accessTypeValue.classList.add("hidden");
-    var accessTypeRadio = document.getElementById("access-type-radio-group");
-    accessTypeRadio.classList.remove("hidden");
-    var joinGroupValue = document.getElementById("join-group");
-    joinGroupValue.classList.add("hidden");
-    var joinGroupSel = document.getElementById("join-group-sel-group");
-    joinGroupSel.classList.remove("hidden");
-    var membersOutsideOrgValue = document.getElementById("members-outside-org");
-    membersOutsideOrgValue.classList.add("hidden");
-    var membersOutsideOrgSwitch = document.getElementById("members-outside-org-switch-group");
-    membersOutsideOrgSwitch.classList.remove("hidden");
-
-    // Labels
-    var saveSettingsLabel = document.getElementById("save-settings-label");
-    saveSettingsLabel.classList.remove("hidden");
+    hideElements(["show-edit-settings-form", "access-type", "join-group", "members-outside-org"]);
+    showElements(["save-settings-form", "close-edit-settings-form", "access-type-radio-group", "join-group-sel-group", "members-outside-org-switch-group", "save-settings-label"]);
 
     // Set values based on current group settings
-    var currentAccessType = document.getElementById("access-type-radio-" + accessType.replace(/ /g, '-').toLowerCase());
-    currentAccessType.checked = true;
-    var currentJoinGroup = document.getElementById("join-group-sel");
-    currentJoinGroup.value = settings.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "anyone-can-join" : settings.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "anyone-can-ask" : "only-invited";
-    var currentMembersOutsideOrg = document.getElementById("members-outside-org-switch");
-    currentMembersOutsideOrg.checked = settings.allowExternalMembers == "true" ? true : false;
+    document.getElementById("access-type-radio-" + accessType.replace(/ /g, '-').toLowerCase()).checked = true;
+    document.getElementById("join-group-sel").value = settings.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "anyone-can-join" : settings.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "anyone-can-ask" : "only-invited";
+    document.getElementById("members-outside-org-switch").checked = settings.allowExternalMembers == "true" ? true : false;
 }
 
 /** Saves the edit fields for the settings section */
@@ -418,31 +253,8 @@ async function saveSettingsForm() {
 
 /** Hides the edit fields for the settings section without saving */
 function closeSettingsForm() {
-    // Buttons
-    var showEditSettings = document.getElementById("show-edit-settings-form");
-    showEditSettings.classList.remove("hidden");
-    var saveSettings = document.getElementById("save-settings-form");
-    saveSettings.classList.add("hidden");
-    var closeEditSettings = document.getElementById("close-edit-settings-form");
-    closeEditSettings.classList.add("hidden");
-
-    // Inputs
-    var accessType = document.getElementById("access-type");
-    accessType.classList.remove("hidden");
-    var accessTypeRadio = document.getElementById("access-type-radio-group");
-    accessTypeRadio.classList.add("hidden");
-    var joinGroup = document.getElementById("join-group");
-    joinGroup.classList.remove("hidden");
-    var joinGroupSel = document.getElementById("join-group-sel-group");
-    joinGroupSel.classList.add("hidden");
-    var membersOutsideOrg = document.getElementById("members-outside-org");
-    membersOutsideOrg.classList.remove("hidden");
-    var membersOutsideOrgSwitch = document.getElementById("members-outside-org-switch-group");
-    membersOutsideOrgSwitch.classList.add("hidden");
-
-    // Labels
-    var saveSettingsLabel = document.getElementById("save-settings-label");
-    saveSettingsLabel.classList.add("hidden");
+    showElements(["show-edit-settings-form", "access-type", "join-group", "members-outside-org"]);
+    hideElements(["save-settings-form", "close-edit-settings-form", "access-type-radio-group", "join-group-sel-group", "members-outside-org-switch-group", "save-settings-label"]);
 
     // Reset checkboxes to original settings
     setAccessMembershipSettingsTable(settings);
@@ -465,10 +277,8 @@ function selectAccessType() {
         return;
     }
 
-    var currentJoinGroup = document.getElementById("join-group-sel");
-    currentJoinGroup.value = newSettings.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "anyone-can-join" : newSettings.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "anyone-can-ask" : "only-invited";
-    var currentMembersOutsideOrg = document.getElementById("members-outside-org-switch");
-    currentMembersOutsideOrg.checked = newSettings.allowExternalMembers == "true" ? true : false;
+    document.getElementById("join-group-sel").value = newSettings.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "anyone-can-join" : newSettings.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "anyone-can-ask" : "only-invited";
+    document.getElementById("members-outside-org-switch").checked = newSettings.allowExternalMembers == "true" ? true : false;
 
     setAccessMembershipSettingsTable(newSettings);
     return newSettings;

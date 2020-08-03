@@ -47,23 +47,13 @@ function checkLoginAndSetUp() {
 // If isLoggedIn is true, then show the 3 main pages and the navbar
 // Otherwise, show tcheckLoginAndSetUp form page
 function updateIndexPage() {
-    var headerNavbar = document.getElementById("header-navbar");
-    var pageTitle = document.getElementsByClassName("page-title");
-    var loginNavbar = document.getElementById("login-navbar");
-    var loginFormContainer = document.getElementById("login-form-container");
-    var homeContainer = document.getElementById("home-container");
+    var pageTitle = document.getElementsByClassName("page-title")[0];
     if (isLoggedIn) {
-        if (headerNavbar) headerNavbar.classList.remove("hidden")
-        if (pageTitle) pageTitle[0].classList.remove("hidden")
-        if (homeContainer) homeContainer.classList.remove("hidden")
-        if (loginNavbar) loginNavbar.classList.add("hidden")
-        if (loginFormContainer) loginFormContainer.classList.add("hidden")
+        showElements(["header-navbar", pageTitle, "home-container"]);
+        hideElements(["login-navbar", "login-form-container"]);
     } else {
-        headerNavbar.classList.add("hidden")
-        pageTitle[0].classList.add("hidden")
-        homeContainer.classList.add("hidden")
-        loginNavbar.classList.remove("hidden")
-        loginFormContainer.classList.remove("hidden")
+        hideElements(["header-navbar", pageTitle, "home-container"]);
+        showElements(["login-navbar", "login-form-container"]);
     }
 }
 
@@ -77,14 +67,10 @@ function getUserProfile() {
             console.log("user info error");
             logout();
         } else {
-            const userItem = document.getElementById("dropdown-user-item");
-            const userPicture = document.getElementById("dropdown-user-picture");
-            const userName = document.getElementById("dropdown-user-name");
-            const userEmail = document.getElementById("dropdown-user-email");
-            userItem.href = "/pages/userdetails.html?user=" + user_info.id;
-            userPicture.src = user_info.picture;
-            userName.innerHTML = user_info.name;
-            userEmail.innerHTML = user_info.email;
+            document.getElementById("dropdown-user-item").href = "/pages/userdetails.html?user=" + user_info.id;
+            document.getElementById("dropdown-user-picture").src = user_info.picture;
+            document.getElementById("dropdown-user-name").innerHTML = user_info.name;
+            document.getElementById("dropdown-user-email").innerHTML = user_info.email;
         }
     })
     .catch((error) => {
@@ -190,6 +176,22 @@ function setLoadingOverlay() {
         overlayArray.map(elem => elem.classList.remove("hidden"))
     } else {
         overlayArray.map(elem => elem.classList.add("hidden"))
+    }
+}
+
+// Adds the class "hidden" to the array of elements
+function hideElements(elementIds) {
+    for (elemId of elementIds) {
+        var elem = document.getElementById(elemId);
+        if (elem) elem.classList.add("hidden");
+    }
+}
+
+// Removes the class "hidden" from the array of elements
+function showElements(elementIds) {
+    for (elemId of elementIds) {
+        var elem = document.getElementById(elemId);
+        if (elem) elem.classList.remove("hidden");
     }
 }
 

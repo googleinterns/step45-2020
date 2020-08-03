@@ -35,20 +35,6 @@ var flattenGroups = false;
 function onloadGroupsPage() {
     checkLoginAndSetUp();
 
-    var searchButton = document.getElementById("search-enter-btn");
-    searchButton.addEventListener("click", function(event) {
-        searchName = searchBar.value;
-
-        checkGroupsSidebar();
-        getAllGroups();
-    })
-
-    var searchBar = document.getElementById("search");
-    // Execute a function when the user presses enter or erases the input
-    searchBar.addEventListener("search", function(event) {
-        searchButton.click();
-    });
-
     Promise.all([getAllGroups(true), getAllUsers()])
     .then(async function(results) {
         loadGroups();
@@ -84,7 +70,6 @@ function getAllGroups(noLoadGroups) {
     })
     .then(response => response.json())
     .then((res) => {
-        console.log(res);
         if (res.groups) {
             groups = res.groups;
         } else {
@@ -114,7 +99,6 @@ function getAllUsers() {
     })
     .then(response => response.json())
     .then((res) => {
-        console.log(res);
         if (res.users) {
             users = res.users;
         } else {
@@ -130,19 +114,18 @@ function getAllUsers() {
 
 /** Fill in informational fields on the sidebar of the page */
 function loadGroupsSidebar() {
-    var domainName = document.getElementById("domain-name");
-    domainName.innerHTML = "@" + domain;
+    document.getElementById("domain-name").innerHTML = "@" + domain;
+    document.getElementById("num-groups").innerHTML = groups.length;
+    document.getElementById("num-users").innerHTML = usersDisplayed.length;
 
-    var numGroups = document.getElementById("num-groups");
-    numGroups.innerHTML = groups.length;
-
-    var numUsers = document.getElementById("num-users");
-    numUsers.innerHTML = usersDisplayed.length;
+    // Execute a function when the user presses enter or erases the input
+    document.getElementById("search-enter-btn").addEventListener("click", searchGroupName)
+    document.getElementById("search").addEventListener("search", searchGroupName);
 
     var userOptions = [];
     userOptions.push("<option value=null selected='selected'>Select user...</option>");
-    for (var i = 0; i < users.length; i++) {
-        userOptions.push("<option value='" + users[i].emails[0].address + "' id='" + users[i].emails[0].address + "'>" + users[i].emails[0].address + " </option>");
+    for (user of users) {
+        userOptions.push("<option value='" + user.emails[0].address + "' id='" + user.emails[0].address + "'>" + user.emails[0].address + " </option>");
     }
     document.getElementById("user-sel").innerHTML = userOptions.join();
 
@@ -186,6 +169,14 @@ function clearFilters() {
     getAllGroups();
 }
 
+/** Function called when user clicks on search button or presses enter */
+function searchGroupName() {
+    searchName = document.getElementById("search").value;
+
+    checkGroupsSidebar();
+    getAllGroups();
+}
+
 /** Function called when the user selects an option for memberKey */
 function selectUser() {
     var userSel = document.getElementById("user-sel");
@@ -214,8 +205,7 @@ function selectOrderBy() {
 
 /** Function called when the user selects an option for view number of total groups */
 function selectViewGroups() {
-    var viewSel = document.getElementById("view-total-groups-sel");
-    viewTotal = viewSel.value;
+    viewTotal = document.getElementById("view-total-groups-sel").value;
 
     checkGroupsSidebar();
     getAllGroups();
@@ -373,7 +363,7 @@ function visualize() {
             var pageY = event.pageY;
             var pageX = event.pageX;
             displayTooltip = true;
-            tooltip.style("top", (pageY-10)+"px").style("left",(pageX+10)+"px")
+            tooltip.style("top", (pageY)+"px").style("left",(pageX+10)+"px")
             // show hover card after 500 ms if cursor is still on the same circle
             setTimeout(function() {
                 if (displayTooltip == true) return tooltip.style("visibility", "visible");
@@ -513,23 +503,23 @@ async function loadGroups() {
 
         // collect all the promises
         var promises = [];
-        for (var i = 0; i < groups.length; i++) {
+        for (group of groups) {
             // iterate through all the groups and get their direct members
-            promises.push(getGroupMembers(groups[i].id));
+            promises.push(getGroupMembers(group.id));
         }
 
         Promise.all(promises)
         .then(async function(results) {
-            for (var i = 0; i < groups.length; i++) {
+            for (group of groups) {
                 // if already visited, then add the circle data
-                if (visited.hasOwnProperty(groups[i].id)) {
+                if (visited.hasOwnProperty(group.id)) {
                     if (!showOnlyParentGroups) {
-                        var visitedGroup = visited[groups[i].id];
+                        var visitedGroup = visited[group.id];
                         data.children.push(visitedGroup)
                     }
                 } else {
                     // recursive DFS on the new group to get the new data
-                    var newData = await loadGroupsDFS(groups[i]);
+                    var newData = await loadGroupsDFS(group);
                     data.children.push(newData);
                 }
             }
@@ -579,10 +569,10 @@ async function loadGroupsDFS(currGroup, parentGroup) {
     } else {
         currMembers = members[currGroup.id];
     }
-    for (var j = 0; j < currMembers.length; j++) {
+    for (member of currMembers) {
         // if already visited, then add the circle into newCircle children list
-        if (visited.hasOwnProperty(currMembers[j].id)) {
-            var visitedGroup = visited[currMembers[j].id];
+        if (visited.hasOwnProperty(member.id)) {
+            var visitedGroup = visited[member.id];
 
             // if flatten groups, then don't add this group to children
             if (!flattenGroups) {
@@ -600,8 +590,6 @@ async function loadGroupsDFS(currGroup, parentGroup) {
         }
         // otherwise, recurse on the member and push to newCircle children list
         else {
-            var member = currMembers[j];
-
             // if group, get the group with the name
             if (member.type == "GROUP") {
                 var indexOfGroup = groups.findIndex(elem => elem.id == member.id);
@@ -740,8 +728,7 @@ async function createGroup() {
 /** Shows the create form for making a new group */
 function createGroupModal() {
     $('#createModal').modal('show');
-    var groupEmailDomain = document.getElementById("modal-group-email-domain");
-    groupEmailDomain.innerHTML = "@" + domain;
+    document.getElementById("modal-group-email-domain").innerHTML = "@" + domain;
 }
 
 /** Function is called when the user selects a role for the member */
@@ -768,7 +755,11 @@ async function selectRole(id, parentId) {
     if (response.status == 200) {
         isLoading = false;
         setLoadingOverlay();
-        getAllUsers();
+        if (window.location.href.split("pages/")[1].split(".html")[0] == "groups") {
+            onloadGroupsPage();
+        } else if (window.location.href.split("pages/")[1].split(".html")[0] == "groupdetails") {
+            onloadGroupDetails();
+        }
     }
 }
 
@@ -808,13 +799,10 @@ function removeMemberModal(id, parentId) {
         memberEmail = usersDisplayed[userIndex].emails[0].address;
     }
 
-    var removeMemberButton = document.getElementById("removeMemberButton");
-    removeMemberButton.onclick = () => removeMember(memberEmail, parentId);
+    document.getElementById("removeMemberButton").onclick = () => removeMember(memberEmail, parentId);
 
-    var memberEmailSpan = document.getElementById("memberEmail");
-    memberEmailSpan.innerHTML = memberEmail;
-    var parentGroupEmail = document.getElementById("parentGroupEmailRemove");
-    parentGroupEmail.innerHTML = groups[groups.findIndex(elem => elem.id == parentId)].email;
+    document.getElementById("memberEmail").innerHTML = memberEmail;
+    document.getElementById("parentGroupEmailRemove").innerHTML = groups[groups.findIndex(elem => elem.id == parentId)].email;
 
     displayTooltip = false;
     return tooltip.style("visibility", "hidden");
@@ -863,20 +851,17 @@ async function addMember(id) {
 /** Shows the modal for user to select which member to add */
 function addMemberModal(id) {
     $('#addModal').modal('show');
-    var addMemberButton = document.getElementById("addMemberButton");
-    addMemberButton.onclick = () => addMember(id);
-
-    var parentGroupEmail = document.getElementById("parentGroupEmailAdd");
-    parentGroupEmail.innerHTML = groups[groups.findIndex(elem => elem.id == id)].email;
+    document.getElementById("addMemberButton").onclick = () => addMember(id);
+    document.getElementById("parentGroupEmailAdd").innerHTML = groups[groups.findIndex(elem => elem.id == id)].email;
 
     // add all groups and users as options
     var memberOptions = [];
     memberOptions.push("<option value=null selected='selected'>Select member...</option>");
-    for (var i = 0; i < users.length; i++) {
-        memberOptions.push("<option value='" + users[i].emails[0].address + "' id='" + users[i].emails[0].address + "'>" + users[i].emails[0].address + " </option>");
+    for (user of users) {
+        memberOptions.push("<option value='" + user.emails[0].address + "' id='" + user.emails[0].address + "'>" + user.emails[0].address + " </option>");
     }
-    for (var i = 0; i < groups.length; i++) {
-        memberOptions.push("<option value='" + groups[i].email + "' id='" + groups[i].email + "'>" + groups[i].email + " </option>");
+    for (group of groups) {
+        memberOptions.push("<option value='" + group.email + "' id='" + group.email + "'>" + group.email + " </option>");
     }
     document.getElementById("add-member-sel").innerHTML = memberOptions.join();
 
