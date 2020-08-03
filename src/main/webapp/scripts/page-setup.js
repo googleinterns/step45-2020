@@ -175,10 +175,11 @@ function getDomain() {
 // set loading icon while waiting for async calls
 function setLoadingOverlay() {
     var overlay = document.getElementsByClassName("overlay");
+    var overlayArray = Array.from(overlay);
     if (isLoading) {
-        showElements(overlay)
+        overlayArray.map(elem => elem.classList.remove("hidden"))
     } else {
-        hideElements(overlay)
+        overlayArray.map(elem => elem.classList.add("hidden"))
     }
 }
 
@@ -186,13 +187,7 @@ function setLoadingOverlay() {
 function hideElements(elementIds) {
     for (elemId of elementIds) {
         var elem = document.getElementById(elemId);
-        if (elem) {
-            // if passed in IDs
-            elem.classList.add("hidden");
-        } else if (elemId.classList) {
-            // if passed in actual elements
-            elemId.classList.add("hidden");
-        }
+        if (elem) elem.classList.add("hidden");
     }
 }
 
@@ -200,13 +195,7 @@ function hideElements(elementIds) {
 function showElements(elementIds) {
     for (elemId of elementIds) {
         var elem = document.getElementById(elemId);
-        if (elem) {
-            // if passed in IDs
-            elem.classList.remove("hidden");
-        } else if (elemId.classList) {
-            // if passed in actual elements
-            elemId.classList.remove("hidden");
-        }
+        if (elem) elem.classList.remove("hidden");
     }
 }
 
