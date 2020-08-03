@@ -37,7 +37,7 @@ function deleteOU() {
  * Adds a new OU given a name, the parent's path, and (optionally) description / inheritance setting.
 */
 function createOU() {
-    loginStatus();
+    checkLoginAndSetUp();
     var parentPath = document.getElementById('create-path');
     var name = document.getElementById('create-name');
     var descript =  document.getElementById('create-descript');
@@ -83,7 +83,7 @@ function createOU() {
  * Updates an OU with a new name, parent path, description, or inheritance setting.
 */
 function updateOU() {
-    loginStatus();
+    checkLoginAndSetUp();
 
     var updateOU = {};
 

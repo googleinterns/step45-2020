@@ -1,56 +1,48 @@
+/** User main page data */
 var flatdata = [] // flatdata to contain all orgUnits, will be converted to hierarchical data 
 var data = {} // data to contail all orgUnits and users 
 var allUsers; 
+var rootID;
+var userid;
+
+/** Search and filter viarbles */
 var searchInput; // input for searchbar
 var orgUnitInput = []; // input for filter by orgUnit
 var groupInput = []; // input for filter by group
 var oulength = 0; // length of all ous
-var rootID;
+
+/** Show refresh button and overlay*/
 var isLoading;
+
+
+/** Functions for user main page */
 
 // the function called onload for user.html
 function userOnload(){
-    loginStatus(); 
-    loadInstruction();
+    checkLoginAndSetUp(); 
     sidebar();
     fetchOUs();
 }
 
-function loadInstruction(){
-    var collapse = document.getElementsByClassName("collapse")[0];
-    var icon = document.getElementsByClassName("card-header")[0].getElementsByClassName("fa")[0];
-    if(collapse.classList.contains("show")){
-        icon.classList.remove("fa-plus");
-        icon.classList.add("fa-minus");
-    }
-    else{
-        icon.classList.remove("fa-minus");
-        icon.classList.add("fa-plus");
-    }
-}
-
 // retrieve all OrgUnits from the API (the API returns all OrgUnits except the root OrgUnit)
-function fetchOUs(){
+async function fetchOUs(){
     chartElement = document.getElementById("user-chart");
-    chartElement.innerHTML = "";
+    chartElement.innerHTML = "";  
     flatdata = [];
     data = {};
-    fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
+
+    var response = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
     headers: {
         'authorization': `Bearer ` + token,
     }
-    }).
-    then(response => response.json())
-    .then((ousjson) => {
-        var ous = ousjson['organizationUnits'];
-        oulength = ous.length;
-        addOrgUnitsToData(ous);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
     });
+    var ousjson = await response.json();
+    var ous = ousjson['organizationUnits'];
+    oulength = ous.length;
+    addOrgUnitsToData(ous);
 }
 
+// retrieve all users from the API
 async function fetchUsers(){
     var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
         headers: {
@@ -60,48 +52,43 @@ async function fetchUsers(){
     var userJSON = await response.json();
     var users = userJSON['users'];
     allUsers = [];
-    for(var i = 0; i < users.length; i++){
-        let user = users[i];
+    for(var user of users){
         var fullname = user['name']['fullName'];
         var id = user['id'];
         var orgUnitPath = user['orgUnitPath'];
-        var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
+        var email = user['primaryEmail'];
+        var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath, 'email': email};
         allUsers.push(userJSON);
     }
     return allUsers;
 }
 
 // Add all OrgUnits (including the root OrgUnit) to data
-function addOrgUnitsToData(ous){
-    for(var i = 0; i < ous.length; i++){
-        var eachOU = ous[i];
+async function addOrgUnitsToData(ous){
+    for(var eachOU of ous){
         var childElement = {"name": eachOU["name"], "path": eachOU["orgUnitPath"], "parentPath": eachOU["parentOrgUnitPath"], "users": []};
         flatdata.push(childElement);
     }
     // add root OrgUnit to data
-    for(var i = 0; i < ous.length; i++){
-        if(ous[i]['parentOrgUnitPath'] === "/"){
-            rootID = ous[i]['parentOrgUnitId'];
-            fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
-            headers: {
-                'authorization': `Bearer ` + token,
-            }
-            }).
-            then(response => response.json())
-                .then((root) => {
-                    var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
-                    rootOUName = root["name"];
-                    flatdata.push(rootElement);
-                    // convert flat data to nested json with hierachy
-                    data = d3.stratify()
-                                .id(function(d) {return d.path})
-                                .parentId(function(d) {return d.parentPath})
-                                (flatdata)
-                    addUserToData();
-            })
-            .catch((error) => {
-                console.error(error);
-            })
+    for(var ou of ous){
+        if(ou['parentOrgUnitPath'] === "/"){
+            rootID = ou['parentOrgUnitId'];
+            var response = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
+                headers: {
+                    'authorization': `Bearer ` + token,
+                }
+            });
+            var root = await response.json();
+            var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
+            rootOUName = root["name"];
+            flatdata.push(rootElement);
+
+            // convert flat data to nested json with hierachy
+            data = d3.stratify()
+                        .id(function(d) {return d.path})
+                        .parentId(function(d) {return d.parentPath})
+                        (flatdata)
+            addUserToData();
         }
         break;
     }
@@ -111,41 +98,39 @@ function addOrgUnitsToData(ous){
 async function addUserToData(){
     isLoading = true; 
     setLoadingOverlay();
+
     var allUsers = await fetchUsers();
+
     // if there's input in the search bar, only add users from search result
     // query users match the query input, query can be any prefix of name and email
     if(searchInput){
-        console.log("search input");
         var encodedParam =  encodeURI(searchInput);
         var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&query=' + encodedParam, {
-                    headers: {
-                        'authorization': `Bearer ` + token,
-                    }
-                });
+            headers: {
+                'authorization': `Bearer ` + token,
+            }
+        });
         var json = await response.json();
         var numElement = document.getElementById('num-search-users');
         numElement.innerText = json.users ? json.users.length : 0;
         var users = json.users;
         if(json.users){
-            for(var i = 0; i < users.length; i++){
-                let user = users[i];
+            for(var user of users){
                 var fullname = user['name']['fullName'];
                 var id = user['id'];
                 var orgUnitPath = user['orgUnitPath'];
-                var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath};
+                var email = user['primaryEmail'];
+                var userJSON = {"name": fullname, "id": id, "orgUnitPath": orgUnitPath, "email": email};
                 addUserToOUByPath(data, orgUnitPath, userJSON);
             }
         }
-        
-        incrementUserCount(data);
-        visualize(null);
     }
+    
     // if there's input for filering, get users match both orgUnit filters and group filters
     else if((groupInput.length > 0 || orgUnitInput.length > 0)){
         var userIds = new Set();
         // for each orgUnit id, get users of the orgUnit
-        for(var i = 0; i < allUsers.length; i++){
-            let user = allUsers[i];
+        for(var user of allUsers){
             if(orgUnitInput.includes(user.orgUnitPath))
                 userIds.add(user.id);
         }
@@ -159,40 +144,37 @@ async function addUserToData(){
             var json = await response.json();
             var members = json.members;
             if(members){
-                for(var i = 0; i < members.length; i++){
-                    if(members[i].type === 'USER'){
-                        userIds.add(members[i].id);
+                for(var member of members){
+                    if(member.type === 'USER'){
+                        userIds.add(member.id);
                     }          
                 }
             }
-            
         }));
         // for each user id, find and add the user
         userIds = Array.from(userIds);
         var numElement = document.getElementById('num-filter-users');
         numElement.innerText = userIds.length;
-        for(var i = 0; i < allUsers.length; i++){
-            var user = allUsers[i];
+        for(var user of allUsers){
             if(userIds.includes(user.id)){
                 addUserToOUByPath(data, user["orgUnitPath"], user);
             }
         }
-        incrementUserCount(data);
-        visualize(null);
     }
+
     // if there's no search and no filter
     else{
         var numSearchElement = document.getElementById('num-search-users');
         numSearchElement.innerText = 0;
         var numFilterElement = document.getElementById('num-filter-users');
         numFilterElement.innerText = 0;
-        for(var i = 0; i < allUsers.length; i++){
-            var user = allUsers[i];
+        for(var user of allUsers){
             addUserToOUByPath(data, user["orgUnitPath"], user);
-        }
-        incrementUserCount(data);
-        visualize(null);
+        }    
     }
+
+    incrementUserCount(data);
+    visualize(null);
     isLoading = false; 
     setLoadingOverlay();
 }
@@ -207,8 +189,7 @@ function addUserToOUByPath(node, path, user){
         if(node['children'] === undefined)
             return;
         var children = node['children'];
-        for(var i = 0; i < children.length; i++){
-            ou = children[i];
+        for(var ou of children){
             if(path.includes(ou.data['path'])){
                 addUserToOUByPath(ou, path, user);
             }
@@ -234,7 +215,6 @@ function incrementUserCount (node){
 
 // Visualization
 function visualize(order) {
-    console.log(data);
     function name(d) {
         return d.ancestors().reverse().map(d => d.data.name).join("/");
     }
@@ -271,19 +251,64 @@ function visualize(order) {
             .on("click", d => d === root ? zoomout(root) : zoomin(d));
 
         node.append("title")
-            .text(d => `${name(d)}\n${format(d.numUsers)}`);
+            .text(d => `${name(d)}`);
 
         var rect = node.append("rect")
             .attr("id", function(d) { return d.data.id; })
             .attr("fill", d => d === root ? "#fff" : d.children ? "#99bbff" : "#ccddff") //#99bbff is darker blue, #ccddff is lighter blue
-            .attr("stroke", "#fff");
+            .attr("stroke", "#fff")
 
         node.append("clipPath")
             .attr("id", function(d) { return "clip-" + d.data.id; })
             .append("use")
             .attr("xlink:href", function(d) { return "#" + d.data.id; });
 
+        /** hovering card for org unit */ 
+        var orgUnitHover = d3.select("body")
+            .append("a")
+            .classed("card", true)
+            .style("position", "absolute")
+            .style("z-index", "10")
+            .style("visibility", "hidden")
+            .on("mouseover", function() {
+                return orgUnitHover.style("visibility", "visible");
+            })
+            .on("mouseout", function(d) { 
+                return orgUnitHover.style("visibility", "hidden");
+            })
+
+        var orgUnitCardbody = orgUnitHover
+            .append("div")
+            .classed("card-body", true)
+
+        var addUserButton = orgUnitCardbody
+            .append("div")
+            .attr("type", "button")
+            .classed("card-right", true)
+            .attr("class", "icon")
+            .append("i")
+            .attr("class", "icon fa fa-user-plus")
+            .attr("aria-hidden", "true")
+
+        var orgUnitName = orgUnitCardbody
+            .append("h5")
+            .classed("card-title", true)
+
         node.append("text")
+            // hover event for org unit name
+            .on("mouseover", function(d){
+                var pageY = event.pageY;
+                var pageX = event.pageX;
+                orgUnitName.text(d.data.name);
+                addUserButton.attr("id", d.data.path);
+                addUserButton.attr("onclick", function(){  return  "event.stopPropagation(); triggerAdd(event)"})
+                orgUnitHover.style("top", (pageY-8)+"px").style("left",(pageX)+"px")
+                orgUnitHover.style("visibility", "visible");
+            })
+            .on("mouseout", function(d) { 
+                return orgUnitHover.style("visibility", "hidden");
+            })
+
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === root ? "bold" : null)
             .selectAll("tspan")
@@ -293,7 +318,7 @@ function visualize(order) {
             .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
             .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
             .attr("font-weight", (d, i, nodes) => i === nodes.length - 1 ? "600" : null)
-            .text(d => d);
+            .text(d => d)           
         
         var nodeSelect = node.append("foreignObject")
             .attr("x", 8)
@@ -303,17 +328,6 @@ function visualize(order) {
             .attr("class", "list-container")
             .append("ul")
             .attr("style", (d => (d === root ? "max-height: 60px; overflow: auto" : "max-height: " + (y(d.y1) - y(d.y0) - 50)) + "; overflow: auto"))
-        
-        // icon to add users
-        var addNode = nodeSelect.insert("div", ".list-container")
-            .attr("type", "button")
-            .attr("class", "iconadd")
-            
-            .append("i")
-            .attr("id", function(d){ return d.data.path })
-            .attr("class", "fa fa-user-plus")
-            .attr("onclick", function(){  return  "event.stopPropagation(); triggerAdd(event)"})
-            .attr("aria-hidden", "true")
 
         // add users with links to each node
         var nodeselect = nodeSelect.selectAll("li")
@@ -321,9 +335,7 @@ function visualize(order) {
                 var users = d.data.users;
                 if(order === "firstname"){
                     users.sort(function(a, b) {
-                        return a.name.toLowerCase() == b.name.toLowerCase()
-                            ? 0
-                            : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+                        return a.name.toLowerCase() == b.name.toLowerCase() ? 0 : (a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
                     });
                 }
                 else if(order === "lastname"){
@@ -336,8 +348,8 @@ function visualize(order) {
                     });
                 }
                 var userlist = []
-                for(var i = 0; i < users.length; i++){
-                    var userInfo = {"name": users[i].name, "id": users[i].id }
+                for(var user of users){
+                    var userInfo = {"name": user.name, "id": user.id, "email": user.email }
                     userlist.push(userInfo);
                 }
                 return userlist;
@@ -345,34 +357,81 @@ function visualize(order) {
             .enter()
             .append("li")
 
+        /** hovering card for user */ 
+        var tooltip = d3.select("body")
+            .append("a")
+            .classed("card", true)
+            .style("position", "absolute")
+            .style("z-index", "10")
+            .style("visibility", "hidden")
+            .on("mouseover", function() {
+                return tooltip.style("visibility", "visible");
+            })
+            .on("mouseout", function(d) { 
+                return tooltip.style("visibility", "hidden");
+            })
+
+        var cardbody = tooltip
+            .append("div")
+            .classed("card-body", true)
+
+        var renameUserButton = cardbody
+            .append("div")
+            .attr("type", "button")
+            .attr("class", "icon")
+            .classed("card-right", true)
+            .attr("data-toggle", "modal")
+            .attr("data-target", "#renameModal")
+            .append("i")
+            .attr("class", "icon fa fa-edit")
+            .attr("aria-hidden", "true")
+
+        var deleteUserButton = cardbody
+            .append("div")
+            .attr("type", "button")
+            .attr("class", "icon")
+            .classed("card-right", true)
+            .attr("onclick", function(){  return  "event.stopPropagation(); triggerDelete(event)"})
+            .append("i")
+            .attr("class", "icon fa fa-trash")
+            .attr("aria-hidden", "true")
+
+        var tooltipName = cardbody
+            .append("h5")
+            .classed("card-title", true)
+
+        var tooltipEmail = cardbody
+            .append("p")
+            .classed("card-text", true)
+
+        var tooltipLink = cardbody
+            .append("a")
+            .classed("card-link", true)
+            .text("Click to view more")
+
         nodeselect
             .append("a")
             .attr("href", "#")
             .attr("class", "userdetail")
+            // hover event for user
+            .on("mouseover", function(d){
+                var pageY = event.pageY;
+                var pageX = event.pageX;
+                tooltipName.text(d.name)
+                tooltipEmail.text(d.email);
+                deleteUserButton.attr("id", d.id);
+                tooltipLink.attr("href", "userdetails.html?user=" + d.id);
+                tooltip.style("top", (pageY-8)+"px").style("left",(pageX)+"px")
+                tooltip.style("visibility", "visible");
+            })
+            .on("mouseout", function(d) { 
+                return tooltip.style("visibility", "hidden");
+            })
             .text(function(d){ return d.name })
-        
-        nodeselect
-            .append("div")
-            .attr("type", "button")
-            .attr("class", "icon")
-            .attr("onclick", function(){  return  "event.stopPropagation(); triggerDelete(event)"})
-            .append("i")
-            .attr("id", function(d){ return d.id })
-            .attr("class", "icon fa fa-trash")
-            .attr("aria-hidden", "true")
             
-
         // Change links to include user id 
         nodeSelect.selectAll("a.userdetail")
-            .data(function(d){
-                var users = d.data.users;
-                var userlist = []
-                for(var i = 0; i < users.length; i++){
-                    userlist.push(users[i].id);
-                }
-                return userlist
-            })
-            .attr("href", (d => "userdetails.html?user=" + d))
+            .attr("href", (d => "userdetails.html?user=" + d.id))
 
         group.call(position, root);
     }
@@ -393,12 +452,9 @@ function visualize(order) {
     function zoomin(d) {
         const group0 = group.attr("pointer-events", "none");
         const group1 = group = svg.append("g").call(render, d);
-
-        console.log(x.domain, y.domain);
-       
+ 
         x.domain([d.x0, d.x1]);
         y.domain([d.y0, d.y1]);
-        console.log("zoom in ", d.x0, d.x1, x.domain, y.domian);
 
         svg.transition()
             .duration(750)
@@ -414,11 +470,8 @@ function visualize(order) {
         const group0 = group.attr("pointer-events", "none");
         const group1 = group = svg.insert("g", "*").call(render, d.parent);
 
-        console.log(x.domain, y.domain);
         x.domain([d.parent.x0, d.parent.x1]);
         y.domain([d.parent.y0, d.parent.y1]);
-        console.log("zoom out", d.x0, d.x1, x.domain, y.domain);
-        console.log("zoom out", d.parent.x0, d.parent.x1);
 
         svg.transition()
             .duration(750)
@@ -431,7 +484,48 @@ function visualize(order) {
     var chartElement = document.getElementById("user-chart");
     chartElement.appendChild(svg.node());
 
+    // populate rename modal with selected user
+    $('#renameModal').on('show.bs.modal', function (event) {
+        var email =  $(event.relatedTarget).siblings(".card-text")[0].textContent;
+        var name =  $(event.relatedTarget).siblings(".card-title")[0].textContent;
+        var link = $(event.relatedTarget).siblings(".card-link")[0].href;
+        var id = link.split("=")[1];
+        userid = id;
+
+        var firstnameInput = document.getElementById("edit-firstname");
+        firstnameInput.value = name.split(" ")[0];
+        var lastnameInput = document.getElementById("edit-lastname");
+        lastnameInput.value = name.split(" ")[1];
+        var emailInput = document.getElementById("edit-email");
+        emailInput.value = email.substring(0, email.indexOf("@"));
+        var emailDomainElement = document.getElementById("email-domain");
+        emailDomainElement.innerText = "@"+domain;
+    });
+
     return svg.node();
+}
+
+// rename a user with input
+async function renameUser(){
+    var firstname = document.getElementById("edit-firstname").value;
+    var lastname = document.getElementById("edit-lastname").value;
+    var email = document.getElementById("edit-email").value + "@" + domain;
+    var updatedInfo = {
+        "primaryEmail": email,
+        "name": {
+        "givenName": firstname,
+        "familyName": lastname
+        }
+    }
+    var response = await fetch('https://www.googleapis.com/admin/directory/v1/users/' + userid,{
+        method: 'PUT',
+        headers: {
+            'authorization': `Bearer ` + token,
+            'dataType': 'application/json'
+        },
+        body: JSON.stringify(updatedInfo),
+    })
+    location.reload();
 }
 
 // trigger delete modal in user.html
@@ -551,7 +645,7 @@ async function sidebar(){
         $(':checkbox:enabled').prop('checked', false);
         var numFilterElement = document.getElementById('num-filter-users');
         numFilterElement.innerText = 0;
-        loginStatus();
+        checkLoginAndSetUp();
         fetchOUs();
     })
     searchField.addEventListener("search", function(event) {
@@ -568,9 +662,9 @@ async function sidebar(){
     var orgUnits = json.organizationUnits;
     var orgUnitOptions = [];
     // add root OU
-    for(var i = 0; i < orgUnits.length; i++){
-        if(orgUnits[i]['parentOrgUnitPath'] === "/"){
-            rootID = orgUnits[i]['parentOrgUnitId'];
+    for(var orgUnit of orgUnits){
+        if(orgUnit['parentOrgUnitPath'] === "/"){
+            rootID = orgUnit['parentOrgUnitId'];
             var rootresponse = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
             headers: {
                 'authorization': `Bearer ` + token,
@@ -584,14 +678,13 @@ async function sidebar(){
     var newdiv = document.createElement("div");
     newdiv.innerHTML = "<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>"
     orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + rootID + "' value='" + "/" + "'><label class='form-check-label' for='" + "/" + "'> " + rootname + "</label></div>");
-    for (var i = 0; i < orgUnits.length; i++) {
-        orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + orgUnits[i].orgUnitId + "' value='" + orgUnits[i].orgUnitPath + "'><label class='form-check-label' for='" + orgUnits[i].orgUnitPath + "'> " + orgUnits[i].name + "</label></div>");
+    for(var orgUnit of orgUnits) {
+        orgUnitOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + orgUnit.orgUnitId + "' value='" + orgUnit.orgUnitPath + "'><label class='form-check-label' for='" + orgUnit.orgUnitPath + "'> " + orgUnit.name + "</label></div>");
     }
     document.getElementById("orgunit-sel").innerHTML = orgUnitOptions.join('');
     var checkboxElems = document.querySelectorAll("#orgunit-sel input[type='checkbox']");
-    for (var i = 0; i < checkboxElems.length; i++) {
-        var checkbox = checkboxElems[i];
-        checkboxElems[i].addEventListener("click", function(e) {
+    for(var checkbox of checkboxElems) {
+        checkbox.addEventListener("click", function(e) {
             updateOrgUnitInput(e.target);
         });
     }
@@ -606,13 +699,13 @@ async function sidebar(){
     var groups = json.groups;
     console.log(groups);
     var groupOptions = [];
-    for (var i = 0; i < groups.length; i++) {
-        groupOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + groups[i].id + "' value='" + groups[i].id + "'><label class='form-check-label' for='" + groups[i].id + "'> " + groups[i].name + "</label></div>");
+    for(var group of groups) {
+        groupOptions.push("<div class='checkboxes'><input type='checkbox' class='form-check-input' id='" + group.id + "' value='" + group.id + "'><label class='form-check-label' for='" + group.id + "'> " + group.name + "</label></div>");
     }
     document.getElementById("group-sel").innerHTML = groupOptions.join('');
     var checkboxElems = document.querySelectorAll("#group-sel input[type='checkbox']");
-    for (var i = 0; i < checkboxElems.length; i++) {
-        checkboxElems[i].addEventListener("click", function(e) {
+    for(var checkbox of checkboxElems) {
+        checkbox.addEventListener("click", function(e) {
             updateGroupInput(e.target);
         });
     }
@@ -623,11 +716,9 @@ function searchFilter(){
     console.log("searchfilter");
     searchCheckboxInput = document.getElementById("search-checkbox-input").value.toLowerCase();
     var checkboxes = document.getElementsByClassName("checkboxes");
-    for(var k = 0; k < checkboxes.length; k++){
-        var checkbox = checkboxes[k];
+    for(var checkbox of checkboxes){
         var checkboxName = checkbox.getElementsByTagName("label")[0].innerText;
         if(checkboxName.toLowerCase().indexOf(searchCheckboxInput) > -1){
-            console.log("find", checkboxName);
             checkbox.style.display = "";
         }
         else{
@@ -645,20 +736,6 @@ function clearSearch(){
     numSearchElement.innerText = 0;
 }
 
-$(document).ready(function(){
-    // Add minus icon for collapse element which is open by default
-    $(".collapse.show").each(function(){
-        $(this).prev().prev(".section-right").find(".fa").addClass("fa-minus").removeClass("fa-plus");
-    });
-    
-    // Toggle plus minus icon on show hide of collapse element
-    $(".collapse").on('show.bs.collapse', function(){
-        $(this).prev().prev(".section-right").find(".fa").removeClass("fa-plus").addClass("fa-minus");
-    }).on('hide.bs.collapse', function(){
-        $(this).prev().prev(".section-right").find(".fa").removeClass("fa-minus").addClass("fa-plus");
-    });
-});
-
 // update variable orgUnitInput based on checkbox
 function updateOrgUnitInput(input){
     if(input.checked){
@@ -671,7 +748,7 @@ function updateOrgUnitInput(input){
         }
     }
     clearSearch();
-    loginStatus();
+    checkLoginAndSetUp();
     fetchOUs();
     return orgUnitInput;
 }
@@ -688,7 +765,7 @@ function updateGroupInput(input) {
         }
     }
     clearSearch();
-    loginStatus();
+    checkLoginAndSetUp();
     fetchOUs();
     return groupInput;
 }
@@ -700,31 +777,31 @@ function clearFilters(){
     $(':checkbox:enabled').prop('checked', false);
     var numFilterElement = document.getElementById('num-filter-users');
     numFilterElement.innerText = 0;
-    loginStatus();
+    checkLoginAndSetUp();
     fetchOUs();
 }
 
 function checkAllOUFilters(){
     var ouchecks = document.getElementById("orgunit-sel").getElementsByTagName("input");
     orgUnitInput = []; 
-    for(var i = 0; i < ouchecks.length; i++){
-        ouchecks[i].checked = true;
-        orgUnitInput.push(ouchecks[i].value);
+    for(var oucheck of ouchecks){
+        oucheck.checked = true;
+        orgUnitInput.push(oucheck.value);
     }  
     clearSearch();
-    loginStatus();
+    checkLoginAndSetUp();
     fetchOUs();
 }
 
 function checkAllGroupFilters(){
     var groupchecks = document.getElementById("group-sel").getElementsByTagName("input");
     groupInput = []; 
-    for(var i = 0; i < groupchecks.length; i++){
-        groupchecks[i].checked = true;
-        groupInput.push(groupchecks[i].value);
+    for(var groupcheck of groupchecks){
+        groupcheck.checked = true;
+        groupInput.push(groupcheck.value);
     }  
     clearSearch();
-    loginStatus();
+    checkLoginAndSetUp();
     fetchOUs();
 }
 

@@ -1,20 +1,24 @@
 /** Group information */
 var group;
+var settings;
+var accessType;
 
 /** Access and membership settings checkbox table */
 var accessSettingsChecked;
 var membershipSettingsChecked;
 
 async function onloadGroupDetails() {
-    loginStatus();
+    checkLoginAndSetUp();
     
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     var groupId = urlParams.get('group');
     
-    group = await getGroup(groupId);
-
-    loadGroup();
+    Promise.all([getAllGroups(true), getAllUsers()])
+    .then(async function(results) {
+        group = await getGroup(groupId);
+        loadGroup();
+    })
 }
 
 /** Load the group into data for d3 */
@@ -24,22 +28,29 @@ async function loadGroup() {
 
     // reset data and unique users
     usersDisplayed = [];
-    users = [];
     data = {
             name: domain,
             children: [],
         };
     // create the visited hash set for groups already processed, containing group IDs
     visited = {};
-
-    // initialize empty groups list
-    groups = [];
+    members = {};
         
-    var newData = await loadGroupsDFS(group);
-    data.children.push(newData);
-    
-    visualize();
-    loadGroupDetailsSidebar();
+    // collect all the promises
+    var promises = [];
+    for (var i = 0; i < groups.length; i++) {
+        // iterate through all the groups and get their direct members
+        promises.push(getGroupMembers(groups[i].id));
+    }
+
+    Promise.all(promises)
+    .then(async function(results) {
+        var newData = await loadGroupsDFS(group);
+        data.children.push(newData);
+        
+        visualize();
+        loadGroupDetailsSidebar();
+    })  
 }
 
 /** Fill in informational fields on the sidebar of the page */
@@ -81,6 +92,8 @@ async function setGroupSettings() {
     console.log(accessSettingsJson)
 
     if (response.status == 200) {
+        settings = accessSettingsJson;
+
         var accessType = document.getElementById("access-type");
         accessType.innerHTML = getAccessType(accessSettingsJson);
 
@@ -96,74 +109,18 @@ async function setGroupSettings() {
 
 /** Returns the access type based on this group's settings */
 function getAccessType() {
-    // Default public settings object
-    var publicSettings = {
-        whoCanAdd: "ALL_MANAGERS_CAN_ADD",	
-        whoCanAddReferences: "NONE",
-        whoCanApproveMembers: "ALL_MANAGERS_CAN_APPROVE",	
-        whoCanApproveMessages: "OWNERS_AND_MANAGERS",	
-        whoCanAssignTopics: "NONE",	
-        whoCanAssistContent: "NONE",	
-        whoCanBanUsers: "OWNERS_AND_MANAGERS",	
-        whoCanContactOwner: "ANYONE_CAN_CONTACT",	
-        whoCanDeleteAnyPost: "OWNERS_AND_MANAGERS",	
-        whoCanDeleteTopics: "OWNERS_AND_MANAGERS",	
-        whoCanDiscoverGroup: "ALL_IN_DOMAIN_CAN_DISCOVER",	
-        whoCanEnterFreeFormTags: "NONE",	
-        whoCanHideAbuse: "NONE",	
-        whoCanInvite: "ALL_MANAGERS_CAN_INVITE",	
-        whoCanJoin: "ALL_IN_DOMAIN_CAN_JOIN",	
-        whoCanLeaveGroup: "ALL_MEMBERS_CAN_LEAVE",	
-        whoCanLockTopics: "OWNERS_AND_MANAGERS",	
-        whoCanMakeTopicsSticky: "NONE",	
-        whoCanMarkDuplicate: "NONE",	
-        whoCanMarkFavoriteReplyOnAnyTopic: "NONE",	
-        whoCanMarkFavoriteReplyOnOwnTopic: "NONE",	
-        whoCanMarkNoResponseNeeded: "NONE",	
-        whoCanModerateContent: "OWNERS_AND_MANAGERS",	
-        whoCanModerateMembers: "OWNERS_AND_MANAGERS",	
-        whoCanModifyMembers: "OWNERS_AND_MANAGERS",	
-        whoCanModifyTagsAndCategories: "NONE",	
-        whoCanMoveTopicsIn: "OWNERS_AND_MANAGERS",	
-        whoCanMoveTopicsOut: "OWNERS_AND_MANAGERS",	
-        whoCanPostAnnouncements: "OWNERS_AND_MANAGERS",	
-        whoCanPostMessage: "ALL_IN_DOMAIN_CAN_POST",	
-        whoCanTakeTopics: "NONE",	
-        whoCanUnassignTopic: "NONE",	
-        whoCanUnmarkFavoriteReplyOnAnyTopic: "NONE",	
-        whoCanViewGroup: "ALL_IN_DOMAIN_CAN_VIEW",	
-        whoCanViewMembership: "ALL_IN_DOMAIN_CAN_VIEW"
-    }
-    // Differences for team
-    var teamDiffs = {
-        whoCanJoin: "CAN_REQUEST_TO_JOIN"
-    }
-    // Differences for announcement only
-    var announcementDiffs = {
-        whoCanPostMessage: "ALL_MANAGERS_CAN_POST",
-        whoCanViewMembership: "ALL_MANAGERS_CAN_VIEW"
-    }
-    // Differences for restricted
-    var restrictedDiffs = {
-        whoCanJoin: "CAN_REQUEST_TO_JOIN",
-        whoCanPostMessage: "ALL_MEMBERS_CAN_POST",
-        whoCanViewGroup: "ALL_MEMBERS_CAN_VIEW",
-        whoCanViewMembership: "ALL_MEMBERS_CAN_VIEW",
-    }
-    // Find out differences between this group's settings and default public settings
-    var diffs = diff(group, publicSettings);
-    console.log(diffs)
-    if (Object.keys(diffs).length == 0) {
-        return "Public";
-    } else if (Object.keys(diff(teamDiffs, diffs)).length == 0) {
-        return "Team";
-    } else if (Object.keys(diff(announcementDiffs, diffs)).length == 0) {
-        return "Announcement Only";
-    } else if (Object.keys(diff(restrictedDiffs, diffs)).length == 0) {
-        return "Restricted";
+    if (Object.keys(diff(settings, publicSettings)).length == 0) {
+        accessType = "Public";
+    } else if (Object.keys(diff(settings, teamSettings)).length == 0) {
+        accessType = "Team";
+    } else if (Object.keys(diff(settings, announcementOnlySettings)).length == 0) {
+        accessType = "Announcement Only";
+    } else if (Object.keys(diff(settings, restrictedSettings)).length == 0) {
+        accessType = "Restricted";
     } else {
-        return "Custom";
+        accessType = "Custom";
     }
+    return accessType;
 }
 
 /** Returns an object containing the key and value pairs for each difference between two objects
@@ -307,12 +264,11 @@ function setAccessMembershipSettingsTable(accessSettingsJson) {
     setCheckBoxesTrue(whoCanViewGroupCheckboxMap[accessSettingsJson.whoCanViewGroup]);
     setCheckBoxesTrue(whoCanPostMessageCheckboxMap[accessSettingsJson.whoCanPostMessage]);
     setCheckBoxesTrue(whoCanModifyMembersCheckboxMap[accessSettingsJson.whoCanModifyMembers]);
-
 }
 
 /** sets all check boxes for groups settings to false */
 function setAllCheckBoxesFalse() {
-    for (checkBox in document.getElementsByClassName("table-checkbox-input")) {
+    for (checkBox of document.getElementsByClassName("table-checkbox-input")) {
         checkBox.checked = false;
     }
 }
@@ -394,12 +350,150 @@ function closeInformationForm() {
     closeEditInformation.classList.add("hidden");
 }
 
-/** Toggles showing the edit fields for the settings section */
+/** Shows the edit fields for the settings section */
 function showEditSettingsForm() {
+    // Buttons
+    var showEditSettings = document.getElementById("show-edit-settings-form");
+    showEditSettings.classList.add("hidden");
+    var saveSettings = document.getElementById("save-settings-form");
+    saveSettings.classList.remove("hidden");
+    var closeEditSettings = document.getElementById("close-edit-settings-form");
+    closeEditSettings.classList.remove("hidden");
 
+    // Inputs
+    var accessTypeValue = document.getElementById("access-type");
+    accessTypeValue.classList.add("hidden");
+    var accessTypeRadio = document.getElementById("access-type-radio-group");
+    accessTypeRadio.classList.remove("hidden");
+    var joinGroupValue = document.getElementById("join-group");
+    joinGroupValue.classList.add("hidden");
+    var joinGroupSel = document.getElementById("join-group-sel-group");
+    joinGroupSel.classList.remove("hidden");
+    var membersOutsideOrgValue = document.getElementById("members-outside-org");
+    membersOutsideOrgValue.classList.add("hidden");
+    var membersOutsideOrgSwitch = document.getElementById("members-outside-org-switch-group");
+    membersOutsideOrgSwitch.classList.remove("hidden");
+
+    // Labels
+    var saveSettingsLabel = document.getElementById("save-settings-label");
+    saveSettingsLabel.classList.remove("hidden");
+
+    // Set values based on current group settings
+    var currentAccessType = document.getElementById("access-type-radio-" + accessType.replace(/ /g, '-').toLowerCase());
+    currentAccessType.checked = true;
+    var currentJoinGroup = document.getElementById("join-group-sel");
+    currentJoinGroup.value = settings.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "anyone-can-join" : settings.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "anyone-can-ask" : "only-invited";
+    var currentMembersOutsideOrg = document.getElementById("members-outside-org-switch");
+    currentMembersOutsideOrg.checked = settings.allowExternalMembers == "true" ? true : false;
+}
+
+/** Saves the edit fields for the settings section */
+async function saveSettingsForm() {
+    isLoading = true;
+    setLoadingOverlay();
+
+    var newPartialSettings = selectAccessType();
+    var newSettings = Object.assign(settings, newPartialSettings);
+
+    const response = await fetch('https://www.googleapis.com/groups/v1/groups/'
+    + group.email, {
+        headers: {
+            'authorization': `Bearer ` + token,
+            'Content-Type': 'application/json'
+        },
+        method: 'PUT',
+        body: JSON.stringify(newSettings)
+    })
+    const accessSettingsJson = await response.json();
+    console.log(accessSettingsJson)
+
+    if (response.status == 200) {
+        settings = accessSettingsJson;
+        setGroupSettings();
+        closeSettingsForm();
+        isLoading = false;
+        setLoadingOverlay();
+    }
+}
+
+/** Hides the edit fields for the settings section without saving */
+function closeSettingsForm() {
+    // Buttons
+    var showEditSettings = document.getElementById("show-edit-settings-form");
+    showEditSettings.classList.remove("hidden");
+    var saveSettings = document.getElementById("save-settings-form");
+    saveSettings.classList.add("hidden");
+    var closeEditSettings = document.getElementById("close-edit-settings-form");
+    closeEditSettings.classList.add("hidden");
+
+    // Inputs
+    var accessType = document.getElementById("access-type");
+    accessType.classList.remove("hidden");
+    var accessTypeRadio = document.getElementById("access-type-radio-group");
+    accessTypeRadio.classList.add("hidden");
+    var joinGroup = document.getElementById("join-group");
+    joinGroup.classList.remove("hidden");
+    var joinGroupSel = document.getElementById("join-group-sel-group");
+    joinGroupSel.classList.add("hidden");
+    var membersOutsideOrg = document.getElementById("members-outside-org");
+    membersOutsideOrg.classList.remove("hidden");
+    var membersOutsideOrgSwitch = document.getElementById("members-outside-org-switch-group");
+    membersOutsideOrgSwitch.classList.add("hidden");
+
+    // Labels
+    var saveSettingsLabel = document.getElementById("save-settings-label");
+    saveSettingsLabel.classList.add("hidden");
+
+    // Reset checkboxes to original settings
+    setAccessMembershipSettingsTable(settings);
+}
+
+/** Function called when user selects a new access type */
+function selectAccessType() {
+    var accessTypeSelected = document.querySelector('input[name="access-type-radio"]:checked').value;
+    // Select all the checkboxes that correspond to this access type
+    var newSettings;
+    if (accessTypeSelected == "public") {
+        newSettings = publicSettings;
+    } else if (accessTypeSelected == "team") {
+        newSettings = teamSettings;
+    } else if (accessTypeSelected == "announcement-only") {
+        newSettings = announcementOnlySettings;
+    } else if (accessTypeSelected == "restricted") {
+        newSettings = restrictedSettings;
+    } else {
+        return;
+    }
+
+    var currentJoinGroup = document.getElementById("join-group-sel");
+    currentJoinGroup.value = newSettings.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "anyone-can-join" : newSettings.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "anyone-can-ask" : "only-invited";
+    var currentMembersOutsideOrg = document.getElementById("members-outside-org-switch");
+    currentMembersOutsideOrg.checked = newSettings.allowExternalMembers == "true" ? true : false;
+
+    setAccessMembershipSettingsTable(newSettings);
+    return newSettings;
 }
 
 /** Deletes the current group */
-function deleteGroup() {
-    
+async function deleteGroup() {
+    isLoading = true;
+    setLoadingOverlay();
+
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/'
+    + group.id, {
+        headers: {
+            'authorization': `Bearer ` + token
+        },
+        method: 'DELETE',
+    })
+    if (response.status == 200 || response.status == 204) {
+        isLoading = false;
+        setLoadingOverlay();
+        window.location.href = "groups.html";
+    }
+}
+
+/** Double checks that the user wants to delete this group */
+function deleteGroupModal() {
+    $('#deleteModal').modal('show');
 }
