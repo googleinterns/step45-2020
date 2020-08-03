@@ -8,7 +8,7 @@ var accessSettingsChecked;
 var membershipSettingsChecked;
 
 async function onloadGroupDetails() {
-    loginStatus();
+    checkLoginAndSetUp();
     
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);

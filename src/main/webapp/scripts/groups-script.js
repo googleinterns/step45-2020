@@ -33,7 +33,7 @@ var showOnlyParentGroups = true;
 var flattenGroups = false;
 
 function onloadGroupsPage() {
-    loginStatus();
+    checkLoginAndSetUp();
 
     var searchButton = document.getElementById("search-enter-btn");
     searchButton.addEventListener("click", function(event) {

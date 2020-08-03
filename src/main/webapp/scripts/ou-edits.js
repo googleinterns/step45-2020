@@ -2,7 +2,7 @@
  * Deletes an existing OU given its path.
 */
 function deleteOU() {
-    loginStatus();
+    checkLoginAndSetUp();
     const ouPath = document.getElementById('delete-path');
     
     fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath.value.trim()), {
@@ -25,7 +25,7 @@ function deleteOU() {
  * Adds a new OU given a name, the parent's path, and (optionally) description / inheritance setting.
 */
 function createOU() {
-    loginStatus();
+    checkLoginAndSetUp();
     var parentPath = document.getElementById('create-path');
     var name = document.getElementById('create-name');
     var descript =  document.getElementById('create-descript');
@@ -72,7 +72,7 @@ function createOU() {
  * Updates an OU with a new name, parent path, description, or inheritance setting.
 */
 function updateOU() {
-    loginStatus();
+    checkLoginAndSetUp();
 
     var updateOU = {};
 
