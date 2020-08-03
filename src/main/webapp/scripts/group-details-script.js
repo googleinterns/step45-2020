@@ -61,23 +61,15 @@ function loadGroupDetailsSidebar() {
 
 /** Set group information for specific group */
 function setGroupInformation() {
-    var groupNameTitle = document.getElementById("group-name-title");
-    groupNameTitle.innerHTML = group.name;
-
-    var groupName = document.getElementById("group-name");
-    groupName.innerHTML = group.name;
-
-    var groupEmail = document.getElementById("group-email");
-    groupEmail.innerHTML = group.email;
+    document.getElementById("group-name-title").innerHTML = group.name;
+    document.getElementById("group-name").innerHTML = group.name;
+    document.getElementById("group-email").innerHTML = group.email;
 
     var groupDescription = document.getElementById("group-description");
     if (group.description) groupDescription.innerHTML = group.description;
 
-    var numGroups = document.getElementById("num-groups");
-    numGroups.innerHTML = Object.keys(visited).length;
-
-    var numUsers = document.getElementById("num-users");
-    numUsers.innerHTML = usersDisplayed.length;
+    document.getElementById("num-groups").innerHTML = Object.keys(visited).length;
+    document.getElementById("num-users").innerHTML = usersDisplayed.length;
 }
 
 /** Set group settings for specific group */
@@ -94,14 +86,9 @@ async function setGroupSettings() {
     if (response.status == 200) {
         settings = accessSettingsJson;
 
-        var accessType = document.getElementById("access-type");
-        accessType.innerHTML = getAccessType(accessSettingsJson);
-
-        var joinGroup = document.getElementById("join-group");
-        joinGroup.innerHTML = accessSettingsJson.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone in the organization can join" : accessSettingsJson.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "Anyone in the organization can ask" : "Only invited users";
-
-        var membersOutsideOrg = document.getElementById("members-outside-org");
-        membersOutsideOrg.innerHTML = accessSettingsJson.allowExternalMembers == "true" ? "Yes" : "No";
+        document.getElementById("access-type").innerHTML = getAccessType(accessSettingsJson);
+        document.getElementById("join-group").innerHTML = accessSettingsJson.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "Anyone in the organization can join" : accessSettingsJson.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "Anyone in the organization can ask" : "Only invited users";
+        document.getElementById("members-outside-org").innerHTML = accessSettingsJson.allowExternalMembers == "true" ? "Yes" : "No";
 
         setAccessMembershipSettingsTable(accessSettingsJson);
     }
@@ -180,14 +167,9 @@ function showEditInformationForm() {
     hideElements(["view-information-form", "show-edit-information-form"]);
     showElements(["edit-information-form", "save-information-form", "close-edit-information-form"]);
 
-    var groupName = document.getElementById("group-name-field");
-    groupName.value = group.name;
-
-    var groupEmail = document.getElementById("group-email-field");
-    groupEmail.value = group.email.split("@")[0];
-
-    var groupEmailDomain = document.getElementById("group-email-domain");
-    groupEmailDomain.innerHTML = "@" + domain;
+    document.getElementById("group-name-field").value = group.name;
+    document.getElementById("group-email-field").value = group.email.split("@")[0];
+    document.getElementById("group-email-domain").innerHTML = "@" + domain;
 
     var groupDescription = document.getElementById("group-description-field");
     if (group.description) groupDescription.value = group.description;
@@ -235,12 +217,9 @@ function showEditSettingsForm() {
     showElements(["save-settings-form", "close-edit-settings-form", "access-type-radio-group", "join-group-sel-group", "members-outside-org-switch-group", "save-settings-label"]);
 
     // Set values based on current group settings
-    var currentAccessType = document.getElementById("access-type-radio-" + accessType.replace(/ /g, '-').toLowerCase());
-    currentAccessType.checked = true;
-    var currentJoinGroup = document.getElementById("join-group-sel");
-    currentJoinGroup.value = settings.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "anyone-can-join" : settings.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "anyone-can-ask" : "only-invited";
-    var currentMembersOutsideOrg = document.getElementById("members-outside-org-switch");
-    currentMembersOutsideOrg.checked = settings.allowExternalMembers == "true" ? true : false;
+    document.getElementById("access-type-radio-" + accessType.replace(/ /g, '-').toLowerCase()).checked = true;
+    document.getElementById("join-group-sel").value = settings.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "anyone-can-join" : settings.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "anyone-can-ask" : "only-invited";
+    document.getElementById("members-outside-org-switch").checked = settings.allowExternalMembers == "true" ? true : false;
 }
 
 /** Saves the edit fields for the settings section */
@@ -298,10 +277,8 @@ function selectAccessType() {
         return;
     }
 
-    var currentJoinGroup = document.getElementById("join-group-sel");
-    currentJoinGroup.value = newSettings.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "anyone-can-join" : newSettings.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "anyone-can-ask" : "only-invited";
-    var currentMembersOutsideOrg = document.getElementById("members-outside-org-switch");
-    currentMembersOutsideOrg.checked = newSettings.allowExternalMembers == "true" ? true : false;
+    document.getElementById("join-group-sel").value = newSettings.whoCanJoin == "ALL_IN_DOMAIN_CAN_JOIN" ? "anyone-can-join" : newSettings.whoCanJoin == "CAN_REQUEST_TO_JOIN" ? "anyone-can-ask" : "only-invited";
+    document.getElementById("members-outside-org-switch").checked = newSettings.allowExternalMembers == "true" ? true : false;
 
     setAccessMembershipSettingsTable(newSettings);
     return newSettings;

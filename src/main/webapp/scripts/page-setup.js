@@ -67,14 +67,10 @@ function getUserProfile() {
             console.log("user info error");
             logout();
         } else {
-            const userItem = document.getElementById("dropdown-user-item");
-            const userPicture = document.getElementById("dropdown-user-picture");
-            const userName = document.getElementById("dropdown-user-name");
-            const userEmail = document.getElementById("dropdown-user-email");
-            userItem.href = "/pages/userdetails.html?user=" + user_info.id;
-            userPicture.src = user_info.picture;
-            userName.innerHTML = user_info.name;
-            userEmail.innerHTML = user_info.email;
+            document.getElementById("dropdown-user-item").href = "/pages/userdetails.html?user=" + user_info.id;
+            document.getElementById("dropdown-user-picture").src = user_info.picture;
+            document.getElementById("dropdown-user-name").innerHTML = user_info.name;
+            document.getElementById("dropdown-user-email").innerHTML = user_info.email;
         }
     })
     .catch((error) => {

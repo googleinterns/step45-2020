@@ -114,21 +114,13 @@ function getAllUsers() {
 
 /** Fill in informational fields on the sidebar of the page */
 function loadGroupsSidebar() {
-    var domainName = document.getElementById("domain-name");
-    domainName.innerHTML = "@" + domain;
+    document.getElementById("domain-name").innerHTML = "@" + domain;
+    document.getElementById("num-groups").innerHTML = groups.length;
+    document.getElementById("num-users").innerHTML = usersDisplayed.length;
 
-    var numGroups = document.getElementById("num-groups");
-    numGroups.innerHTML = groups.length;
-
-    var numUsers = document.getElementById("num-users");
-    numUsers.innerHTML = usersDisplayed.length;
-
-    var searchButton = document.getElementById("search-enter-btn");
-    searchButton.addEventListener("click", searchGroupName)
-
-    var searchBar = document.getElementById("search");
     // Execute a function when the user presses enter or erases the input
-    searchBar.addEventListener("search", searchGroupName);
+    document.getElementById("search-enter-btn").addEventListener("click", searchGroupName)
+    document.getElementById("search").addEventListener("search", searchGroupName);
 
     var userOptions = [];
     userOptions.push("<option value=null selected='selected'>Select user...</option>");
@@ -179,8 +171,7 @@ function clearFilters() {
 
 /** Function called when user clicks on search button or presses enter */
 function searchGroupName() {
-    var searchBar = document.getElementById("search");
-    searchName = searchBar.value;
+    searchName = document.getElementById("search").value;
 
     checkGroupsSidebar();
     getAllGroups();
@@ -214,8 +205,7 @@ function selectOrderBy() {
 
 /** Function called when the user selects an option for view number of total groups */
 function selectViewGroups() {
-    var viewSel = document.getElementById("view-total-groups-sel");
-    viewTotal = viewSel.value;
+    viewTotal = document.getElementById("view-total-groups-sel").value;
 
     checkGroupsSidebar();
     getAllGroups();
@@ -738,8 +728,7 @@ async function createGroup() {
 /** Shows the create form for making a new group */
 function createGroupModal() {
     $('#createModal').modal('show');
-    var groupEmailDomain = document.getElementById("modal-group-email-domain");
-    groupEmailDomain.innerHTML = "@" + domain;
+    document.getElementById("modal-group-email-domain").innerHTML = "@" + domain;
 }
 
 /** Function is called when the user selects a role for the member */
@@ -810,13 +799,10 @@ function removeMemberModal(id, parentId) {
         memberEmail = usersDisplayed[userIndex].emails[0].address;
     }
 
-    var removeMemberButton = document.getElementById("removeMemberButton");
-    removeMemberButton.onclick = () => removeMember(memberEmail, parentId);
+    document.getElementById("removeMemberButton").onclick = () => removeMember(memberEmail, parentId);
 
-    var memberEmailSpan = document.getElementById("memberEmail");
-    memberEmailSpan.innerHTML = memberEmail;
-    var parentGroupEmail = document.getElementById("parentGroupEmailRemove");
-    parentGroupEmail.innerHTML = groups[groups.findIndex(elem => elem.id == parentId)].email;
+    document.getElementById("memberEmail").innerHTML = memberEmail;
+    document.getElementById("parentGroupEmailRemove").innerHTML = groups[groups.findIndex(elem => elem.id == parentId)].email;
 
     displayTooltip = false;
     return tooltip.style("visibility", "hidden");
@@ -865,11 +851,8 @@ async function addMember(id) {
 /** Shows the modal for user to select which member to add */
 function addMemberModal(id) {
     $('#addModal').modal('show');
-    var addMemberButton = document.getElementById("addMemberButton");
-    addMemberButton.onclick = () => addMember(id);
-
-    var parentGroupEmail = document.getElementById("parentGroupEmailAdd");
-    parentGroupEmail.innerHTML = groups[groups.findIndex(elem => elem.id == id)].email;
+    document.getElementById("addMemberButton").onclick = () => addMember(id);
+    document.getElementById("parentGroupEmailAdd").innerHTML = groups[groups.findIndex(elem => elem.id == id)].email;
 
     // add all groups and users as options
     var memberOptions = [];
