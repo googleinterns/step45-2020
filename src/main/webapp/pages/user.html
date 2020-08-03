@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="../styles/user-style.css">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="../scripts/script.js"></script>
+    <script src="../scripts/page-setup.js"></script>
     <script src="../scripts/users-script.js"></script>
   </head>
   <body onload="userOnload();">
@@ -138,7 +138,8 @@
                             <div class="card-body">
                                 <text id="instruction">Click darker blue rectangles to <span class="highlight">zoom in</span> to child orgUnits<br>
                                     Click the top white rectangle to <span class="highlight">zoom out</span> levels<br>
-                                    Click user name to <span class="highlight">view details</span> of single user
+                                    Hover over org unit name to <span class="highlight"> preview and add user</span> under the specific org unit<br>
+                                    Hover over user name to <span class="highlight">preview, rename, or delete</span> the user
                                 </text>
                             </div>
                         </div>
@@ -211,9 +212,43 @@
         </div>
         </div>
 
+        <!-- Rename User Modal -->
+        <div class="modal fade" id="renameModal" tabindex="-1" role="dialog" aria-labelledby="renameModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="renameModalLabel">Rename User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="rename-span">Renaming a user is a system-wide change that can take up to 10 minutes.</div>
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="edit-firstname">First Name</div>
+                    <input type="text" id="edit-firstname" class="form-control validate">
+                </div>
+
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="edit-lastname">Last Name</div>
+                    <input type="text" id="edit-lastname" class="form-control validate">
+                </div>
+
+                <div class="md-form mb-5">
+                    <div class="modal-text" data-error="wrong" data-success="right" for="edit-email">Primary Email</div>
+                    <span id="email-domain" class="input-group-addon"></span>
+                    <span class="shorter-input"><input type="text" id="edit-email" class="form-control" name="email" required /></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="renameUser()">Rename</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
     </div>
-    <script src="../scripts/script.js"></script>
-    <script src="../scripts/user-script.js"></script>
   </body>
 </html>
 

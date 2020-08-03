@@ -1,3 +1,4 @@
+/** Get current user of the page */
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 var userid = urlParams.get('user');
@@ -5,7 +6,7 @@ var userid = urlParams.get('user');
 /** User details page */
 // user detail onload
 async function userdetailOnload(){
-    loginStatus(); 
+    checkLoginAndSetUp(); 
     var response = await fetch("https://www.googleapis.com/admin/directory/v1/users/" + userid, {
     headers: {
         'authorization': `Bearer ` + token,
@@ -15,9 +16,9 @@ async function userdetailOnload(){
     var relations = user.relations ? user.relations : null;
     var manager;
     if(relations){
-        for(var i = 0; i < relations.length; i++){
-            if(relations[i].type === "manager"){
-                manager = relations[i].value;
+        for(var relation of relations){
+            if(relation.type === "manager"){
+                manager = relation.value;
             }
         }
     }
@@ -42,10 +43,8 @@ async function userdetailOnload(){
     var emailDomainElement = document.getElementById("email-domain");
     emailDomainElement.innerText = "@"+domain;
 
-    for (var i = 0; i < userName2Element.length; i++){
-        each = userName2Element[i];
-        console.log(each);
-        each.innerText = user.name.fullName;
+    for (var username2 of userName2Element){
+        username2.innerText = user.name.fullName;
     }
     var src = await getPhoto(user.id);
     var imageElement = document.getElementById("profile");
@@ -90,72 +89,63 @@ async function getPhoto(userid){
 }
 
 // get the path of OUs for a single user
-function getSingleBranchOfOU(user){
+async function getSingleBranchOfOU(user){
     var singleBranchOUs = [];
     var theUser = {"name": user.name.fullName, "path": user.name.fullName, "parent": user.orgUnitPath};
     singleBranchOUs.push(theUser);
-    fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
-    headers: {
-        'authorization': `Bearer ` + token,
-    }
-    }).
-    then(response => response.json())
-    .then((ousjson) => {
-        var ous = ousjson['organizationUnits'];
-        addPathSelections(ous, user.orgUnitPath);
-        for(var i = 0; i < ous.length; i++){
-            var eachOU = ous[i];
-            var childElement = {"name": eachOU["name"], "path": eachOU["orgUnitPath"], "parentPath": eachOU["parentOrgUnitPath"], "users": []};
-            flatdata.push(childElement);
+    var response  = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?type=all', {
+        headers: {
+            'authorization': `Bearer ` + token,
         }
-        // add root OrgUnit to data
-        for(var i = 0; i < ous.length; i++){
-            if(ous[i]['parentOrgUnitPath'] === "/"){
-                var rootID = ous[i]['parentOrgUnitId'];
-                fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
+    });
+    var ousjson = await response.json();
+    var ous = ousjson['organizationUnits'];
+    addPathSelections(ous, user.orgUnitPath);
+    for(var eachOU of ous){
+        var childElement = {"name": eachOU["name"], "path": eachOU["orgUnitPath"], "parentPath": eachOU["parentOrgUnitPath"], "users": []};
+        flatdata.push(childElement);
+    }
+    // add root OrgUnit to data
+    for(var eachOU of ous){
+        if(eachOU['parentOrgUnitPath'] === "/"){
+            var rootID = eachOU['parentOrgUnitId'];
+            var rootResponse = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + rootID, {
                 headers: {
                     'authorization': `Bearer ` + token,
                 }
-                }).
-                then(response => response.json())
-                    .then((root) => {
-                        console.log(root);
-                        var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
-                        flatdata.push(rootElement);
-                        addOUToSingleBranch(user.orgUnitPath);
-                        // convert flatdata to nested
-                        treeData = d3.stratify()
-                            .id(function(d) { return d.path; })
-                            .parentId(function(d) { return d.parent; })
-                            (singleBranchOUs);
-                        
-                        var oupath = document.getElementById("single-user-OU-branch");
-                        while(treeData.children){
-                            var span = document.createElement("span");
-                            span.textContent = treeData.data.name;
-                            oupath.append(span);
-                            var icon = document.createElement("i");
-                            icon.setAttribute("class", "fa fa-angle-right");
-                            icon.setAttribute("aria-hidden", "true");
-                            oupath.append(icon);
-                            treeData = treeData.children[0];
-                        }
-                        var span = document.createElement("span");
-                        span.textContent = treeData.data.name;
-                        oupath.append(span);
-                        getGroups(user.id, user.name.fullName);
-                    })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-                break;
-            }
-        }
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+            });
+            var root = await rootResponse.json();
+            var rootElement = {"name": root["name"], "path": root["orgUnitPath"], "parentPath": null, "users": []};
+            flatdata.push(rootElement);
+            addOUToSingleBranch(user.orgUnitPath);
 
+            // convert flatdata to nested
+            treeData = d3.stratify()
+                .id(function(d) { return d.path; })
+                .parentId(function(d) { return d.parent; })
+                (singleBranchOUs);
+            
+            var oupath = document.getElementById("single-user-OU-branch");
+            while(treeData.children){
+                var span = document.createElement("span");
+                span.textContent = treeData.data.name;
+                oupath.append(span);
+                var icon = document.createElement("i");
+                icon.setAttribute("class", "fa fa-angle-right");
+                icon.setAttribute("aria-hidden", "true");
+                oupath.append(icon);
+                treeData = treeData.children[0];
+            }
+            var span = document.createElement("span");
+            span.textContent = treeData.data.name;
+            oupath.append(span);
+            getGroups(user.id, user.name.fullName);
+
+            break;
+        }
+    }
+
+    // iterate through list of all org units, add the ones are parent of current user layer by layer
     function addOUToSingleBranch(path){
         if(path === null){
             return;
@@ -183,8 +173,7 @@ function getGroups(userid, username){
         var userGroupIds = [];
         if(groupsJson.hasOwnProperty('groups')){
             groups = groupsJson.groups;
-            for(var i = 0; i < groups.length; i++){
-                var group = groups[i];
+            for(var group of groups){
                 groupElement = {"id": group.id, "name": group.name, "email": group.email, "parent": username};
                 userGroups.push(groupElement);
                 userGroupIds.push(group.id);
@@ -196,29 +185,6 @@ function getGroups(userid, username){
     .catch((error) => {
         console.error(error);
     });
-}
-
-// rename a user with input
-async function renameUser(){
-    var firstname = document.getElementById("edit-firstname").value;
-    var lastname = document.getElementById("edit-lastname").value;
-    var email = document.getElementById("edit-email").value + "@" + domain;
-    var updatedInfo = {
-        "primaryEmail": email,
-        "name": {
-        "givenName": firstname,
-        "familyName": lastname
-        }
-    }
-    var response = await fetch('https://www.googleapis.com/admin/directory/v1/users/' + userid,{
-        method: 'PUT',
-        headers: {
-            'authorization': `Bearer ` + token,
-            'dataType': 'application/json'
-        },
-        body: JSON.stringify(updatedInfo),
-    })
-    location.reload();
 }
 
 // request to delete the user
@@ -235,8 +201,7 @@ async function deleteUser(){
 // display all groups (userGroups) the user is in
 function addUserGroups(userGroups){
     var container = document.getElementById("user-groups");
-    for(var i = 0; i < userGroups.length; i++){
-        var group = userGroups[i];
+    for(var group of userGroups){
         var card = document.createElement("div");
         card.setAttribute("class", "card");
         var cardBody = document.createElement("div");
@@ -277,12 +242,12 @@ function addPathSelections(ous, userpath){
     selection.setAttribute("value", "/");
     selection.innerHTML = "Root" + ":  " + "/";
     pathsContainer.append(selection);
-    for (var i = 0; i < ous.length; i++) {
-        if(userpath == ous[i].orgUnitPath)
+    for (var ou of ous) {
+        if(userpath == ou.orgUnitPath)
             continue;     
         var selection = document.createElement("option");
-        selection.setAttribute("value", ous[i].orgUnitPath);
-        selection.innerHTML = ous[i].name + "  " + ous[i].orgUnitPath;
+        selection.setAttribute("value", ou.orgUnitPath);
+        selection.innerHTML = ou.name + "  " + ou.orgUnitPath;
         pathsContainer.append(selection);
     }
 }
@@ -297,7 +262,6 @@ async function changePath() {
         },
         body: JSON.stringify({"orgUnitPath": sel.value})
     })
-    console.log(response);
     location.reload();
 }
 
@@ -311,12 +275,12 @@ async function addGroupSelections(userGroupIds){
     var json = await response.json();
     var groups = json.groups;
     var groupsContainer = document.getElementById("groups");
-    for (var i = 0; i < groups.length; i++) {
-        if(userGroupIds.includes(groups[i].id))
+    for (var group of groups) {
+        if(userGroupIds.includes(group.id))
             continue;
         var selection = document.createElement("option");
-        selection.setAttribute("value", groups[i].id);
-        selection.textContent = groups[i].name;
+        selection.setAttribute("value", group.id);
+        selection.textContent = group.name;
         groupsContainer.append(selection);
     }
 }

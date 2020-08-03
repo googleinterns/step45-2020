@@ -33,7 +33,7 @@ var showOnlyParentGroups = true;
 var flattenGroups = false;
 
 function onloadGroupsPage() {
-    loginStatus();
+    checkLoginAndSetUp();
 
     Promise.all([getAllGroups(true), getAllUsers()])
     .then(async function(results) {
