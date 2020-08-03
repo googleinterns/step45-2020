@@ -17,9 +17,12 @@ var members;
 var displayTooltip;
 var tooltip;
 var tooltipName;
-var tooltipDescription;
 var tooltipEmail;
+var tooltipDescription;
+var tooltipRole;
 var tooltipLink;
+var tooltipRemove;
+var tooltipAddMember;
 
 /** Search and filters */
 var searchName;
@@ -30,7 +33,7 @@ var showOnlyParentGroups = true;
 var flattenGroups = false;
 
 function onloadGroupsPage() {
-    loginStatus();
+    checkLoginAndSetUp();
 
     var searchButton = document.getElementById("search-enter-btn");
     searchButton.addEventListener("click", function(event) {
@@ -87,7 +90,12 @@ function getAllGroups(noLoadGroups) {
         } else {
             groups = [];
         }
-        if (!noLoadGroups) loadGroups();
+        if (!noLoadGroups) {
+            loadGroups();
+        } else {
+            isLoading = false;
+            setLoadingOverlay();
+        }
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -95,6 +103,9 @@ function getAllGroups(noLoadGroups) {
 }
 
 function getAllUsers() {
+    isLoading = true;
+    setLoadingOverlay();
+
     var url = 'https://www.googleapis.com/admin/directory/v1/users?domain=' + domain + '&customer=my_customer'
     return fetch(url, {
         headers: {
@@ -109,6 +120,8 @@ function getAllUsers() {
         } else {
             users = [];
         }
+        isLoading = false;
+        setLoadingOverlay();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -247,13 +260,13 @@ function visualize() {
     .sort((a, b) => b.value - a.value))
 
     tooltip = d3.select("body")
-	.append("a")
+	.append("div")
 	.style("position", "absolute")
 	.style("z-index", "10")
 	.style("visibility", "hidden")
     .classed("card", true)
     .classed("group", true)
-    .on("mouseover", function(d) {
+    .on("mouseover", function() {
         return tooltip.style("visibility", "visible");
     })
 
@@ -268,11 +281,58 @@ function visualize() {
     tooltipDescription = tooltip
     .append("div")
     .classed("description", true)
+    
+    tooltipRole = tooltip
+    .append("select")
+    .classed("role", true)
+    .classed("form-control", true)
+    .attr("id", "tooltip-role-sel")
+
+    var tooltipRoleMember = tooltipRole
+    .append("option")
+    .attr("value", "Member")
+    .text("Member")
+    var tooltipRoleManager = tooltipRole
+    .append("option")
+    .attr("value", "Manager")
+    .text("Manager")
+    var tooltipRoleOwner = tooltipRole
+    .append("option")
+    .attr("value", "Owner")
+    .text("Owner")
 
     tooltipLink = tooltip
-    .append("span")
-    .classed("direct-members", true)
+    .append("a")
+    .classed("link", true)
     .text("Click to view more")
+
+    tooltipRemove = tooltip
+    .append("button")
+    .classed("btn", true)
+    .classed("btn-collapse", true)
+    .attr("id", "remove-btn")
+
+    var tooltipRemoveSpan = tooltipRemove
+    .append("span")
+    .attr("data-hover", "Remove member")
+    var tooltipRemoveIcon = tooltipRemoveSpan
+    .append("i")
+    .classed("fa", true)
+    .classed("fa-times", true)
+
+    tooltipAddMember = tooltip
+    .append("button")
+    .classed("btn", true)
+    .classed("btn-collapse", true)
+    .attr("id", "add-member-btn")
+
+    var tooltipAddMemberSpan = tooltipAddMember
+    .append("span")
+    .attr("data-hover", "Add member")
+    var tooltipAddMemberIcon = tooltipAddMemberSpan
+    .append("i")
+    .classed("fa", true)
+    .classed("fa-user-plus", true)
 
     const root = pack(data);
     var focus = root;
@@ -296,8 +356,19 @@ function visualize() {
             d3.select(this).attr("stroke", "#000");
             if (d.data.type == "USER") {
                 makeUserTooltip(d, d.parent.data.id)
+                tooltipDescription.classed("hidden", true)
+                tooltipRole.classed("hidden", false)
+                tooltipAddMember.classed("hidden", true)
             } else {
-                makeGroupTooltip(d);
+                makeGroupTooltip(d, d.parent.data.id);
+                tooltipRole.classed("hidden", true)
+                tooltipDescription.classed("hidden", false)
+                tooltipAddMember.classed("hidden", false)
+            }
+            if (!d.parent.data.id) {
+                tooltipRemove.classed("hidden", true);
+            } else {
+                tooltipRemove.classed("hidden", false);
             }
             var pageY = event.pageY;
             var pageX = event.pageX;
@@ -314,7 +385,7 @@ function visualize() {
             return tooltip.style("visibility", "hidden");
         })
         .on("click", function(d) {
-            if (d.data.type != "USER") focus !== d && (zoom(d), d3.event.stopPropagation())
+            if (d.data.type != "USER" && d.data.children) focus !== d && (zoom(d), d3.event.stopPropagation())
         });
 
     const label = svg.append("g")
@@ -365,7 +436,7 @@ function visualize() {
     }
 
     var chartElement = document.getElementById("chart");
-    while (chartElement.lastChild) {
+    while (chartElement.lastElementChild.id != "create-btn") {
         chartElement.removeChild(chartElement.lastChild);
     }
     chartElement.appendChild(svg.node());
@@ -373,6 +444,7 @@ function visualize() {
     if (groups.length > 0) {
         zoomTo([root.x, root.y, root.r * 2]);
     } else {
+        // Show no search results
         var div = document.createElement("div");
         div.classList.add("no-search-results")
         var p = document.createElement("P");
@@ -395,13 +467,15 @@ function visualize() {
 }
 
 /** Creates the components of the hovering <div> element for each group */
-function makeGroupTooltip(d) {
+function makeGroupTooltip(d, parentId) {
     // find group with this id
     var group = groups[groups.findIndex(elem => elem.id == d.data.id)]
     tooltipName.text(group.name)
     tooltipEmail.text(group.email)
     tooltipDescription.text(group.description)
-    tooltip.attr("href", "/pages/groupdetails.html?group=" + d.data.id)
+    tooltipLink.attr("href", "/pages/groupdetails.html?group=" + d.data.id)
+    tooltipRemove.attr("onclick", "removeMemberModal('" + d.data.id +  "', '" + parentId + "')")
+    tooltipAddMember.attr("onclick", "addMemberModal('" + d.data.id +  "')")
 }
 
 /** Creates the components of the hovering <div> element for each user */
@@ -410,12 +484,17 @@ function makeUserTooltip(d, parentId) {
     var user = usersDisplayed[usersDisplayed.findIndex(elem => elem.id == d.data.id)]
     tooltipName.text(user.name.fullName)
     tooltipEmail.text(user.emails[0].address)
-    tooltipDescription.text(user.roles[parentId][0].toUpperCase() + user.roles[parentId].slice(1).toLowerCase())
-    tooltip.attr("href", "/pages/userdetails.html?user=" + d.data.id)
+    document.getElementById("tooltip-role-sel").value = user.roles[parentId][0].toUpperCase() + user.roles[parentId].slice(1).toLowerCase();
+    tooltipRole.attr("onchange", "selectRole('" + d.data.id +  "', '" + parentId + "')")
+    tooltipLink.attr("href", "/pages/userdetails.html?user=" + d.data.id)
+    tooltipRemove.attr("onclick", "removeMemberModal('" + d.data.id +  "', '" + parentId + "')")
 }
 
 /** Load all of the groups into data for d3 */
 async function loadGroups() {
+    isLoading = true;
+    setLoadingOverlay();
+
     // reset data and unique users
     // if empty groups, data should also be empty
     usersDisplayed = [];
@@ -493,9 +572,9 @@ async function loadGroupsDFS(currGroup, parentGroup) {
         value: parseInt(currGroup.directMembersCount == 0 ? 1 : currGroup.directMembersCount),
         id: currGroup.id
     }
-    // if members does not exist, a.k.a. you are on group details page
+    // if members for this group does not exist
     var currMembers
-    if (!members || !members[currGroup.id]) {
+    if (!members[currGroup.id]) {
         currMembers = await getGroupMembers(currGroup.id);
     } else {
         currMembers = members[currGroup.id];
@@ -615,4 +694,192 @@ async function getUser(id) {
     if (response.status == 200) {
         return json;
     }
+}
+
+/** Creates a new group */
+async function createGroup() {
+    isLoading = true;
+    setLoadingOverlay();
+
+    var form = document.getElementById('create-group-form');
+    form.classList.add('was-validated');
+    if (form.checkValidity() === false) {
+        isLoading = false;
+        setLoadingOverlay();
+        return;
+    }
+
+    var groupName = document.getElementById("group-name-field").value;
+    var groupEmail = document.getElementById("group-email-field").value;
+    var groupDescription = document.getElementById("group-description-field").value;
+
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups',
+    {
+        headers: {
+            'authorization': `Bearer ` + token,
+            'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({"name": groupName, "email": groupEmail + "@" + domain, "description": groupDescription})
+    })
+    const json = await response.json();
+    console.log(json)
+
+    if (response.status == 200) {
+        $('#createModal').modal('hide');
+        isLoading = false;
+        setLoadingOverlay();
+        if (window.location.href.split("pages/")[1].split(".html")[0] == "groups") {
+            onloadGroupsPage();
+        } else if (window.location.href.split("pages/")[1].split(".html")[0] == "groupdetails") {
+            onloadGroupDetails();
+        }
+    }
+}
+
+/** Shows the create form for making a new group */
+function createGroupModal() {
+    $('#createModal').modal('show');
+    var groupEmailDomain = document.getElementById("modal-group-email-domain");
+    groupEmailDomain.innerHTML = "@" + domain;
+}
+
+/** Function is called when the user selects a role for the member */
+async function selectRole(id, parentId) {
+    isLoading = true;
+    setLoadingOverlay();
+
+    var role = document.getElementById("tooltip-role-sel").value;
+    var user = usersDisplayed[usersDisplayed.findIndex(elem => elem.id == id)];
+
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' 
+    + parentId + '/members/' + user.emails[0].address,
+    {
+        headers: {
+            'authorization': `Bearer ` + token,
+            'Content-Type': 'application/json'
+        },
+        method: 'PUT',
+        body: JSON.stringify({"email": user.emails[0].address, "role": role.toUpperCase()})
+    })
+    const json = await response.json();
+    console.log(json)
+
+    if (response.status == 200) {
+        isLoading = false;
+        setLoadingOverlay();
+        getAllUsers();
+    }
+}
+
+/** Remove membership from this group */
+async function removeMember(memberEmail, parentId) {
+    isLoading = true;
+    setLoadingOverlay();
+
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' 
+    + parentId + '/members/' + memberEmail,
+    {
+        headers: {
+            'authorization': `Bearer ` + token
+        },
+        method: 'DELETE'
+    })
+    if (response.status == 204) {
+        $('#removeModal').modal('hide');
+        isLoading = false;
+        setLoadingOverlay();
+        if (window.location.href.split("pages/")[1].split(".html")[0] == "groups") {
+            onloadGroupsPage();
+        } else if (window.location.href.split("pages/")[1].split(".html")[0] == "groupdetails") {
+            onloadGroupDetails();
+        }
+    }
+}
+
+/** Double checks that the user wants to remove this membership */
+function removeMemberModal(id, parentId) {
+    $('#removeModal').modal('show');
+    var memberEmail;
+    var userIndex = usersDisplayed.findIndex(elem => elem.id == id);
+    if (userIndex < 0) {
+        memberEmail = groups[groups.findIndex(elem => elem.id == id)].email;
+    } else {
+        memberEmail = usersDisplayed[userIndex].emails[0].address;
+    }
+
+    var removeMemberButton = document.getElementById("removeMemberButton");
+    removeMemberButton.onclick = () => removeMember(memberEmail, parentId);
+
+    var memberEmailSpan = document.getElementById("memberEmail");
+    memberEmailSpan.innerHTML = memberEmail;
+    var parentGroupEmail = document.getElementById("parentGroupEmailRemove");
+    parentGroupEmail.innerHTML = groups[groups.findIndex(elem => elem.id == parentId)].email;
+
+    displayTooltip = false;
+    return tooltip.style("visibility", "hidden");
+}
+
+/** Add member to this group */
+async function addMember(id) {
+    isLoading = true;
+    setLoadingOverlay();
+
+    var form = document.getElementById('add-member-form');
+    form.classList.add('was-validated');
+    if (form.checkValidity() === false) {
+        isLoading = false;
+        setLoadingOverlay();
+        return;
+    }
+
+    var selectedMemberEmail = document.getElementById("add-member-sel").value;
+
+    const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' 
+    + id + '/members',
+    {
+        headers: {
+            'authorization': `Bearer ` + token,
+            'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({"email": selectedMemberEmail, "role": "MEMBER"})
+    })
+    const json = response.json();
+    console.log(json);
+
+    if (response.status == 200) {
+        $('#addModal').modal('hide');
+        isLoading = false;
+        setLoadingOverlay();
+        if (window.location.href.split("pages/")[1].split(".html")[0] == "groups") {
+            onloadGroupsPage();
+        } else if (window.location.href.split("pages/")[1].split(".html")[0] == "groupdetails") {
+            onloadGroupDetails();
+        }
+    }
+}
+
+/** Shows the modal for user to select which member to add */
+function addMemberModal(id) {
+    $('#addModal').modal('show');
+    var addMemberButton = document.getElementById("addMemberButton");
+    addMemberButton.onclick = () => addMember(id);
+
+    var parentGroupEmail = document.getElementById("parentGroupEmailAdd");
+    parentGroupEmail.innerHTML = groups[groups.findIndex(elem => elem.id == id)].email;
+
+    // add all groups and users as options
+    var memberOptions = [];
+    memberOptions.push("<option value=null selected='selected'>Select member...</option>");
+    for (var i = 0; i < users.length; i++) {
+        memberOptions.push("<option value='" + users[i].emails[0].address + "' id='" + users[i].emails[0].address + "'>" + users[i].emails[0].address + " </option>");
+    }
+    for (var i = 0; i < groups.length; i++) {
+        memberOptions.push("<option value='" + groups[i].email + "' id='" + groups[i].email + "'>" + groups[i].email + " </option>");
+    }
+    document.getElementById("add-member-sel").innerHTML = memberOptions.join();
+
+    displayTooltip = false;
+    return tooltip.style("visibility", "hidden");
 }

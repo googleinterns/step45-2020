@@ -51,7 +51,7 @@ function removeVisualization() {
  * Loads the page, fetching all OUs and adding necessary events.
  */
 async function onloadOUPage() {
-    loginStatus();
+    checkLoginAndSetUp();
 
     var searchButton = document.getElementById("search-enter-btn");
     searchButton.addEventListener("click", function(event) {

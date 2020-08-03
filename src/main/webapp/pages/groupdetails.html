@@ -14,8 +14,9 @@
 
         <link rel="stylesheet" href="../styles/style.css">
         <link rel="stylesheet" href="../styles/group-style.css">
-        <script src="../scripts/script.js"></script>
+        <script src="../scripts/page-setup.js"></script>
         <script src="../scripts/groups-script.js"></script>
+        <script src="../scripts/group-constants.js"></script>
         <script src="../scripts/group-details-script.js"></script>
 
     </head>
@@ -88,16 +89,16 @@
                         </section>
                         <section id="edit-information-form" class="hidden">
                             <div class="section-subtitle">Name</div>
-                            <input type="text" class="form-control" id="group-name-field"></input>
+                            <input type="text" class="form-control" id="group-name-field" placeholder="Group name"></input>
                             <div class="section-subtitle">Email</div>
                             <div class="input-group">
-                                <input type="text" id="group-email-field" class="form-control" aria-describedby="group-email-domain">
+                                <input type="text" id="group-email-field" class="form-control" aria-describedby="group-email-domain" placeholder="Group email">
                                 <div class="input-group-append">
                                     <span class="input-group-text" id="group-email-domain"></span>
                                 </div>
                             </div>
                             <div class="section-subtitle">Description</div>
-                            <input type="text" class="form-control" id="group-description-field"></input>
+                            <input type="text" class="form-control" id="group-description-field" placeholder="Group description"></input>
                             <button type="button" class="btn btn-success hidden mt-3" id="save-information-form" onclick="saveInformationForm()">
                                 <i class="fa fa-check"></i>
                                 Save
@@ -113,14 +114,50 @@
                     </div>
                     <div class="sidenav-section">
                         <div class="section-right">
-                            <button type="button" class="btn btn-light" onclick="showEditSettingsForm()">
+                            <button type="button" class="btn btn-light" id="show-edit-settings-form" onclick="showEditSettingsForm()">
                                 <i class="fa fa-edit"></i>
                                 Edit
+                            </button>
+                            <button type="button" class="btn btn-light hidden" id="close-edit-settings-form" onclick="closeSettingsForm()">
+                                <i class="fa fa-times"></i>
+                                Cancel
                             </button>
                         </div>
                         <div class="section-title">Settings</div>
                         <div class="section-subtitle">Access type</div>
                         <p id="access-type"></p>
+                        <div class="form-group hidden" id="access-type-radio-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="access-type-radio" id="access-type-radio-public" value="public" onclick="selectAccessType()">
+                                <label class="form-check-label" for="access-type-radio-public">
+                                    Public
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="access-type-radio" id="access-type-radio-team" value="team" onclick="selectAccessType()">
+                                <label class="form-check-label" for="access-type-radio-team">
+                                    Team
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="access-type-radio" id="access-type-radio-announcement-only" value="announcement-only" onclick="selectAccessType()">
+                                <label class="form-check-label" for="access-type-radio-announcement-only">
+                                    Announcement only
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="access-type-radio" id="access-type-radio-restricted" value="restricted" onclick="selectAccessType()">
+                                <label class="form-check-label" for="access-type-radio-restricted">
+                                    Restricted
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="access-type-radio" id="access-type-radio-custom" value="custom" onclick="selectAccessType()">
+                                <label class="form-check-label" for="access-type-radio-custom">
+                                    Custom
+                                </label>
+                            </div>
+                        </div>
                         <div class="section-link" onclick="viewSettings()">View access and membership settings <i class="fa fa-caret-down"></i></div>
                         <div id="group-settings-chart" class="hidden">
                             <div class="section-subtitle">Access settings</div>
@@ -268,13 +305,37 @@
                         </div>
                         <div class="section-subtitle">Who can join the group</div>
                         <p id="join-group"></p>
+                        <div class="form-group hidden" id="join-group-sel-group">
+                            <select class="form-control" id="join-group-sel" disabled>
+                                <option value="anyone-can-ask">Anyone in the organization can ask</option>
+                                <option value="anyone-can-join">Anyone in the organization can join</option>
+                                <option value="only-invited">Only invited users</option>
+                            </select>
+                        </div>
                         <div class="section-subtitle">Allow members outside your organization</div>
                         <p id="members-outside-org"></p>
+                        <div class="custom-control custom-switch hidden" id="members-outside-org-switch-group">
+                            <input type="checkbox" class="custom-control-input" id="members-outside-org-switch" disabled>
+                            <label class="custom-control-label" for="members-outside-org-switch"></label>
+                        </div>
+                        <p class="hidden" id="save-settings-label">
+                            You can only select the access type to change the settings. 
+                            For more specific modifications, refer to the Admin Console.
+                        </p>
+                        <button type="button" class="btn btn-success hidden mt-3" id="save-settings-form" onclick="saveSettingsForm()">
+                            <i class="fa fa-check"></i>
+                            Save
+                        </button>
                     </div>
                     <div class="sidenav-section">
-                        <div class="section-title">Danger zone</div>
-                        <div class="section-subtitle">This action is irreversible.</div>
-                        <button type="button" class="btn btn-danger" onclick="deleteGroup()">
+                        <div class="section-title">Delete group</div>
+                        <div class="section-subtitle">
+                            This action is irreversible. Deleting this group will permanently erase it from this domain.
+                        </div>
+                        <p>
+                            This is not the same as removing a group's membership, as the group will still exist in the domain.
+                        </p>
+                        <button type="button" class="btn btn-danger" onclick="deleteGroupModal()">
                             <i class="fa fa-trash"></i>
                             Delete group
                         </button>
@@ -307,7 +368,122 @@
                             </div>
                         </div>
                     </div>
-                    <div id="chart"></div>
+                    <div id="chart">
+                        <button class="btn btn-light" id="create-btn" onclick="createGroupModal()">
+                            <i class="fa fa-plus"></i> Create new group
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Group Modal -->
+            <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createModalLabel">Create Group</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="create-group-form" novalidate>
+                            <div class="section-subtitle">Name</div>
+                            <input type="text" class="form-control" id="group-name-field" placeholder="Group name" required></input>
+                            <div class="invalid-feedback">
+                                Please provide a valid group name.
+                            </div>
+                            <div class="section-subtitle">Email</div>
+                            <div class="input-group">
+                                <input type="text" id="group-email-field" class="form-control" aria-describedby="group-email-domain" placeholder="Group email" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="modal-group-email-domain"></span>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Please provide a valid group email.
+                                </div>
+                            </div>
+                            <div class="section-subtitle">Description</div>
+                            <input type="text" class="form-control" id="group-description-field" placeholder="Group description"></input>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" onclick="createGroup()">Create</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Group Modal -->
+            <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Delete Group</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete? All data for this group will be erased from the domain.
+                        Members of this group will not be affected.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-danger" onclick="deleteGroup()">Delete</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Remove Member Modal -->
+            <div class="modal fade" id="removeModal" tabindex="-1" role="dialog" aria-labelledby="removeModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="removeModalLabel">Remove Member</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to remove <span class="light" id="memberEmail"></span> from its parent <span class="light" id="parentGroupEmailRemove"></span>? 
+                        This action will not delete the member, so you can always add it back later.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-danger" id="removeMemberButton">Remove</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Member Modal -->
+            <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addModalLabel">Add Member</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="add-member-form" novalidate>
+                            <div class="section-subtitle">Add member to <span class="light" id="parentGroupEmailAdd"></span></div>
+                            <select class="form-control" id="add-member-sel" required>
+                            </select>
+                            <div class="invalid-feedback">
+                                Please select a group or user to add.
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" id="addMemberButton">Add</button>
+                    </div>
+                    </div>
                 </div>
             </div>
         </div>
