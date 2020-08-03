@@ -11,4 +11,5 @@ beforeEach(function () {
     });
 
     loadFixtures('test-user.html');
+    loadFixtures('test-group.html');
 });

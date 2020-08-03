@@ -47,17 +47,13 @@ function loginStatus() {
 // If isLoggedIn is true, then show the 3 main pages and the navbar
 // Otherwise, show the login form page
 function updateIndexPage() {
-    var headerNavbar = document.getElementById("header-navbar");
     var pageTitle = document.getElementsByClassName("page-title");
-    var loginNavbar = document.getElementById("login-navbar");
-    var loginFormContainer = document.getElementById("login-form-container");
-    var homeContainer = document.getElementById("home-container");
     if (isLoggedIn) {
-        showElements([headerNavbar, pageTitle[0], homeContainer]);
-        hideElements([loginNavbar, loginFormContainer]);
+        showElements(["header-navbar", pageTitle[0], "home-container"]);
+        hideElements(["login-navbar", "login-form-container"]);
     } else {
-        hideElements([headerNavbar, pageTitle[0], homeContainer]);
-        showElements([loginNavbar, loginFormContainer]);
+        hideElements(["header-navbar", pageTitle[0], "home-container"]);
+        showElements(["login-navbar", "login-form-container"]);
     }
 }
 
@@ -186,16 +182,30 @@ function setLoadingOverlay() {
 }
 
 // Adds the class "hidden" to the array of elements
-function hideElements(elements) {
-    for (elem of elements) {
-        if (elem) elem.classList.add("hidden");
+function hideElements(elementIds) {
+    for (elemId of elementIds) {
+        var elem = document.getElementById(elemId);
+        if (elem) {
+            // if passed in IDs
+            elem.classList.add("hidden");
+        } else if (elemId.classList) {
+            // if passed in actual elements
+            elemId.classList.add("hidden");
+        }
     }
 }
 
 // Removes the class "hidden" from the array of elements
-function showElements(elements) {
-    for (elem of elements) {
-        if (elem) elem.classList.remove("hidden");
+function showElements(elementIds) {
+    for (elemId of elementIds) {
+        var elem = document.getElementById(elemId);
+        if (elem) {
+            // if passed in IDs
+            elem.classList.remove("hidden");
+        } else if (elemId.classList) {
+            // if passed in actual elements
+            elemId.classList.remove("hidden");
+        }
     }
 }
 
