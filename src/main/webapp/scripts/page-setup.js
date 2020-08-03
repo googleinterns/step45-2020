@@ -47,12 +47,12 @@ function checkLoginAndSetUp() {
 // If isLoggedIn is true, then show the 3 main pages and the navbar
 // Otherwise, show tcheckLoginAndSetUp form page
 function updateIndexPage() {
-    var pageTitle = document.getElementsByClassName("page-title");
+    var pageTitle = document.getElementsByClassName("page-title")[0];
     if (isLoggedIn) {
-        showElements(["header-navbar", pageTitle[0], "home-container"]);
+        showElements(["header-navbar", pageTitle, "home-container"]);
         hideElements(["login-navbar", "login-form-container"]);
     } else {
-        hideElements(["header-navbar", pageTitle[0], "home-container"]);
+        hideElements(["header-navbar", pageTitle, "home-container"]);
         showElements(["login-navbar", "login-form-container"]);
     }
 }

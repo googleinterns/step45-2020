@@ -50,7 +50,7 @@ var UIFramework = (function() {
 //      selectAccessType
 //      deleteGroup
 
-describe("Test checkboxes", function() {
+describe("Test groups search and filters", function() {
     var checkbox1 = UIFramework.input("checkbox", "checkbox-value1");
     
     it("test adding and removing orgunits to filter", function(done) {
