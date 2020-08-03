@@ -141,20 +141,14 @@ function diff(obj1, obj2) {
 
 /** Function called when user clicks to view access and membership settings */
 function viewSettings() {
-    var settingsChart = document.getElementById("group-settings-chart");
-    var viewSettingsLink = document.getElementById("view-settings-link");
-    var hideSettingsLink = document.getElementById("hide-settings-link");
-    hideElements([viewSettingsLink])
-    showElements([settingsChart, hideSettingsLink])
+    hideElements(["view-settings-link"])
+    showElements(["group-settings-chart", "hide-settings-link"])
 }
 
 /** Function called when user clicks to view access and membership settings */
 function hideSettings() {
-    var settingsChart = document.getElementById("group-settings-chart");
-    var viewSettingsLink = document.getElementById("view-settings-link");
-    var hideSettingsLink = document.getElementById("hide-settings-link");
-    showElements([viewSettingsLink])
-    hideElements([settingsChart, hideSettingsLink])
+    showElements(["view-settings-link"])
+    hideElements(["group-settings-chart", "hide-settings-link"])
 }
 
 /** Fills in the checkbox table for access and membership settings */
@@ -183,14 +177,8 @@ function setCheckBoxesTrue(checkBoxes) {
 
 /** Shows the edit fields for the information section */
 function showEditInformationForm() {
-    var viewInformation = document.getElementById("view-information-form");
-    var editInformation = document.getElementById("edit-information-form");
-    var showEditInformation = document.getElementById("show-edit-information-form");
-    var saveInformation = document.getElementById("save-information-form");
-    var closeEditInformation = document.getElementById("close-edit-information-form");
-    
-    hideElements([viewInformation, showEditInformation]);
-    showElements([editInformation, saveInformation, closeEditInformation]);
+    hideElements(["view-information-form", "show-edit-information-form"]);
+    showElements(["edit-information-form", "save-information-form", "close-edit-information-form"]);
 
     var groupName = document.getElementById("group-name-field");
     groupName.value = group.name;
@@ -237,36 +225,14 @@ async function saveInformationForm() {
 
 /** Hides the edit fields for the information section without saving */
 function closeInformationForm() {
-    var viewInformation = document.getElementById("view-information-form");
-    var editInformation = document.getElementById("edit-information-form");
-    var showEditInformation = document.getElementById("show-edit-information-form");
-    var saveInformation = document.getElementById("save-information-form");
-    var closeEditInformation = document.getElementById("close-edit-information-form");
-
-    showElements([viewInformation, showEditInformation]);
-    hideElements([editInformation, saveInformation, closeEditInformation]);
+    showElements(["view-information-form", "show-edit-information-form"]);
+    hideElements(["edit-information-form", "save-information-form", "close-edit-information-form"]);
 }
 
 /** Shows the edit fields for the settings section */
 function showEditSettingsForm() {
-    // Buttons
-    var showEditSettings = document.getElementById("show-edit-settings-form");
-    var saveSettings = document.getElementById("save-settings-form");
-    var closeEditSettings = document.getElementById("close-edit-settings-form");
-
-    // Inputs
-    var accessTypeValue = document.getElementById("access-type");
-    var accessTypeRadio = document.getElementById("access-type-radio-group");
-    var joinGroupValue = document.getElementById("join-group");
-    var joinGroupSel = document.getElementById("join-group-sel-group");
-    var membersOutsideOrgValue = document.getElementById("members-outside-org");
-    var membersOutsideOrgSwitch = document.getElementById("members-outside-org-switch-group");
-    
-    // Labels
-    var saveSettingsLabel = document.getElementById("save-settings-label");
-
-    hideElements([showEditSettings, accessTypeValue, joinGroupValue, membersOutsideOrgValue]);
-    showElements([saveSettings, closeEditSettings, accessTypeRadio, joinGroupSel, membersOutsideOrgSwitch, saveSettingsLabel]);
+    hideElements(["show-edit-settings-form", "access-type", "join-group", "members-outside-org"]);
+    showElements(["save-settings-form", "close-edit-settings-form", "access-type-radio-group", "join-group-sel-group", "members-outside-org-switch-group", "save-settings-label"]);
 
     // Set values based on current group settings
     var currentAccessType = document.getElementById("access-type-radio-" + accessType.replace(/ /g, '-').toLowerCase());
@@ -308,24 +274,8 @@ async function saveSettingsForm() {
 
 /** Hides the edit fields for the settings section without saving */
 function closeSettingsForm() {
-    // Buttons
-    var showEditSettings = document.getElementById("show-edit-settings-form");
-    var saveSettings = document.getElementById("save-settings-form");
-    var closeEditSettings = document.getElementById("close-edit-settings-form");
-
-    // Inputs
-    var accessTypeValue = document.getElementById("access-type");
-    var accessTypeRadio = document.getElementById("access-type-radio-group");
-    var joinGroupValue = document.getElementById("join-group");
-    var joinGroupSel = document.getElementById("join-group-sel-group");
-    var membersOutsideOrgValue = document.getElementById("members-outside-org");
-    var membersOutsideOrgSwitch = document.getElementById("members-outside-org-switch-group");
-
-    // Labels
-    var saveSettingsLabel = document.getElementById("save-settings-label");
-
-    showElements([showEditSettings, accessTypeValue, joinGroupValue, membersOutsideOrgValue]);
-    hideElements([saveSettings, closeEditSettings, accessTypeRadio, joinGroupSel, membersOutsideOrgSwitch, saveSettingsLabel]);
+    showElements(["show-edit-settings-form", "access-type", "join-group", "members-outside-org"]);
+    hideElements(["save-settings-form", "close-edit-settings-form", "access-type-radio-group", "join-group-sel-group", "members-outside-org-switch-group", "save-settings-label"]);
 
     // Reset checkboxes to original settings
     setAccessMembershipSettingsTable(settings);

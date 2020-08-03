@@ -35,20 +35,6 @@ var flattenGroups = false;
 function onloadGroupsPage() {
     loginStatus();
 
-    var searchButton = document.getElementById("search-enter-btn");
-    searchButton.addEventListener("click", function(event) {
-        searchName = searchBar.value;
-
-        checkGroupsSidebar();
-        getAllGroups();
-    })
-
-    var searchBar = document.getElementById("search");
-    // Execute a function when the user presses enter or erases the input
-    searchBar.addEventListener("search", function(event) {
-        searchButton.click();
-    });
-
     Promise.all([getAllGroups(true), getAllUsers()])
     .then(async function(results) {
         loadGroups();
@@ -137,6 +123,13 @@ function loadGroupsSidebar() {
     var numUsers = document.getElementById("num-users");
     numUsers.innerHTML = usersDisplayed.length;
 
+    var searchButton = document.getElementById("search-enter-btn");
+    searchButton.addEventListener("click", searchGroupName)
+
+    var searchBar = document.getElementById("search");
+    // Execute a function when the user presses enter or erases the input
+    searchBar.addEventListener("search", searchGroupName);
+
     var userOptions = [];
     userOptions.push("<option value=null selected='selected'>Select user...</option>");
     for (user of users) {
@@ -181,6 +174,15 @@ function clearFilters() {
     document.getElementById("parent-groups-check").checked = showOnlyParentGroups;
     document.getElementById("flatten-groups-check").checked = flattenGroups;
 
+    getAllGroups();
+}
+
+/** Function called when user clicks on search button or presses enter */
+function searchGroupName() {
+    var searchBar = document.getElementById("search");
+    searchName = searchBar.value;
+
+    checkGroupsSidebar();
     getAllGroups();
 }
 
