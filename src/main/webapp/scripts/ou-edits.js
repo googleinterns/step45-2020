@@ -1,3 +1,5 @@
+const ADMIN_SDK_API_CALL_URL = 'https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits';
+
 /*
  * Opens the delete OU confirmation modal.
 */
@@ -18,7 +20,7 @@ function deleteOU() {
     $('#delete-modal').modal('hide');
     const deleteOUPath = document.getElementById('delete-path');
     
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + deleteOUPath.value.trim()), {
+    fetch((ADMIN_SDK_API_CALL_URL + '/' + deleteOUPath.value.trim()), {
     headers: {
         'authorization': `Bearer ` + token,
     },
@@ -57,7 +59,7 @@ function createOU() {
             "blockInheritance": boolInherit
         };
 
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits'), {
+    fetch((ADMIN_SDK_API_CALL_URL), {
     headers: {
         'authorization': `Bearer ` + token,
         'dataType': 'application/json',
@@ -111,7 +113,7 @@ function updateOU() {
         updateOU.blockInheritance = false;
     }
 
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + updateOUPath.value.trim()), {
+    fetch((ADMIN_SDK_API_CALL_URL + '/' + updateOUPath.value.trim()), {
     headers: {
         'authorization': `Bearer ` + token,
         'dataType': 'application/json',
