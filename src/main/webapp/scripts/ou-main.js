@@ -115,8 +115,6 @@ function renderOUs(displayOUs) {
     }
 
     // limit layers code
-    console.log("below are the display OUs");
-    console.log(displayOUs);
     displayOUs.sort(ouDepthSort); // sort by depth
     displayOUs = limitLayers(displayOUs);
 
@@ -138,25 +136,23 @@ function loadSidebar(limitedOUs) {
     const domainName = document.getElementById("domain-name");
     domainName.innerHTML = "@" + domain;
 
-    var displayOUCount = document.getElementById("display-ous");
-    var displayLayerCount = document.getElementById("display-layers");
-    var totalOUs = document.getElementById("total-ous");
-    var totalLayerCount = document.getElementById("total-layers");
+    var displayOUCountEl = document.getElementById("display-ous");
+    var displayLayerCountEl = document.getElementById("display-layers");
 
     var displayLimit = document.getElementById("limit-layer-num");
     displayLimit.value = layersToRender;
     displayLimit.setAttribute("max", totalLayers);
     
     if (limitedOUs.length == 0) {
-        displayLayerCount.innerHTML = 0;
-        displayOUCount.innerHTML = 0;
+        displayLayerCountEl.innerHTML = 0;
+        displayOUCountEl.innerHTML = 0;
     } else {
-        displayLayerCount.innerHTML = computeDepth(limitedOUs[limitedOUs.length - 1]);
-        displayOUCount.innerHTML = limitedOUs.length + 1;
+        displayLayerCountEl.innerHTML = computeDepth(limitedOUs[limitedOUs.length - 1]);
+        displayOUCountEl.innerHTML = limitedOUs.length + 1;
     }
 
-    totalLayerCount.innerHTML = totalLayers;
-    totalOUs.innerHTML = orgUnits.length + 1;
+    document.getElementById("total-layers").innerHTML = totalLayers;
+    document.getElementById("total-ous").innerHTML = orgUnits.length + 1;
 }
 
 
