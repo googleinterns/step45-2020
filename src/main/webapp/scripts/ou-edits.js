@@ -2,10 +2,10 @@
  * Opens the delete OU confirmation modal.
 */
 function openDeleteModal() {
-    const confirmOUElem = document.getElementById("delete-modal-orgunit");
+    const confirmDeleteElem = document.getElementById("delete-modal-orgunit");
     const chosenDeletePath = document.getElementById('delete-path');
 
-    confirmOUElem.innerHTML = chosenDeletePath.value.trim();
+    confirmDeleteElem.innerHTML = chosenDeletePath.value.trim();
 
     $('#delete-modal').modal('show');
 }
@@ -16,16 +16,16 @@ function openDeleteModal() {
 function deleteOU() {
     loginStatus();
     $('#delete-modal').modal('hide');
-    const ouPath = document.getElementById('delete-path');
+    const deleteOUPath = document.getElementById('delete-path');
     
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath.value.trim()), {
+    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + deleteOUPath.value.trim()), {
     headers: {
         'authorization': `Bearer ` + token,
     },
     method: 'DELETE'
     })
     .then(response => {
-        ouPath.value = '';
+        deleteOUPath.value = '';
         refreshOUPage();
     })
     .catch((error) => {
@@ -87,7 +87,7 @@ function updateOU() {
 
     var updateOU = {};
 
-    var ouPath = document.getElementById('update-path');
+    var updateOUPath = document.getElementById('update-path');
 
     var parentPath = document.getElementById('update-parent-path');
     var name = document.getElementById('update-name');
@@ -111,7 +111,7 @@ function updateOU() {
         updateOU.blockInheritance = false;
     }
 
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath.value.trim()), {
+    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + updateOUPath.value.trim()), {
     headers: {
         'authorization': `Bearer ` + token,
         'dataType': 'application/json',
@@ -121,7 +121,7 @@ function updateOU() {
     body: JSON.stringify(updateOU)
     })
     .then(response => {
-        ouPath.value = '';
+        updateOUPath.value = '';
         parentPath.value = '';
         name.value = '';
         descript.value = '';

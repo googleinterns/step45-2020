@@ -13,7 +13,8 @@
     <link rel="stylesheet" href="../styles/style.css">
     <link rel="stylesheet" href="../styles/ou-style.css">
     <script src="../scripts/script.js"></script>
-    <script src="../scripts/ou-script.js"></script>
+    <script src="../scripts/ou-main.js"></script>
+    <script src="../scripts/ou-visual.js"></script>
     <script src="../scripts/ou-edits.js"></script>
     <script src="../scripts/ou-utils.js"></script>
 
@@ -84,14 +85,14 @@
                     <div class="sidenav-section">
                         <div class="section-right">
                             <button type="button" class="btn btn-light" onclick="refreshOUPage()">
-                                Reset all
+                                Reset display
                                 <i class="fa fa-times"></i>
                             </button>
                         </div>
                         <div class="section-title">Display</div>
                         <div class="section-subtitle">Search</div>
                         <div class="flex">
-                            <input type="search" class="form-control" id="search" placeholder="Search by OU name...">
+                            <input type="search" class="form-control" id="search" autocomplete="off" placeholder="Search by OU name...">
                             <button class="btn btn-primary" id="search-enter-btn">
                                 <i class="fa fa-search"></i>
                             </button>
@@ -250,9 +251,6 @@
             </div>
         </div>
         <!-- Outside of flex container -->
-
-
-
 
         <!-- Delete User Modal -->
         <div class="modal fade" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="delete-modal-label" aria-hidden="true">
