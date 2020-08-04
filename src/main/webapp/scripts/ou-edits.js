@@ -1,20 +1,34 @@
+const ADMIN_SDK_API_CALL_URL = 'https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits';
+
+/*
+ * Opens the delete OU confirmation modal.
+*/
+function openDeleteModal() {
+    const confirmDeleteElem = document.getElementById("delete-modal-orgunit");
+    const chosenDeletePath = document.getElementById('delete-path');
+
+    confirmDeleteElem.innerHTML = chosenDeletePath.value.trim();
+
+    $('#delete-modal').modal('show');
+}
+
 /*
  * Deletes an existing OU given its path.
 */
 function deleteOU() {
-    checkLoginAndSetUp();
-    const ouPath = document.getElementById('delete-path');
+    loginStatus();
+    $('#delete-modal').modal('hide');
+    const deleteOUPath = document.getElementById('delete-path');
     
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath.value.trim()), {
+    fetch((ADMIN_SDK_API_CALL_URL + '/' + deleteOUPath.value.trim()), {
     headers: {
         'authorization': `Bearer ` + token,
     },
     method: 'DELETE'
     })
     .then(response => {
-        ouPath.value = '';
-        d3.select("svg").remove();
-        onloadOUPage();
+        deleteOUPath.value = '';
+        refreshOUPage();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -45,7 +59,7 @@ function createOU() {
             "blockInheritance": boolInherit
         };
 
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits'), {
+    fetch((ADMIN_SDK_API_CALL_URL), {
     headers: {
         'authorization': `Bearer ` + token,
         'dataType': 'application/json',
@@ -60,8 +74,7 @@ function createOU() {
         descript.value = '';
         blockInherit.value = '';
 
-        d3.select("svg").remove();
-        onloadOUPage();
+        refreshOUPage();
     })
     .catch((error) => {
         console.error('Error:', error);
@@ -76,7 +89,7 @@ function updateOU() {
 
     var updateOU = {};
 
-    var ouPath = document.getElementById('update-path');
+    var updateOUPath = document.getElementById('update-path');
 
     var parentPath = document.getElementById('update-parent-path');
     var name = document.getElementById('update-name');
@@ -100,7 +113,7 @@ function updateOU() {
         updateOU.blockInheritance = false;
     }
 
-    fetch(('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/' + ouPath.value.trim()), {
+    fetch((ADMIN_SDK_API_CALL_URL + '/' + updateOUPath.value.trim()), {
     headers: {
         'authorization': `Bearer ` + token,
         'dataType': 'application/json',
@@ -110,14 +123,13 @@ function updateOU() {
     body: JSON.stringify(updateOU)
     })
     .then(response => {
-        ouPath.value = '';
+        updateOUPath.value = '';
         parentPath.value = '';
         name.value = '';
         descript.value = '';
         blockInherit.value = '';
 
-        d3.select("svg").remove();
-        onloadOUPage();
+        refreshOUPage();
     })
     .catch((error) => {
         console.error('Error:', error);
