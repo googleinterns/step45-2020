@@ -167,7 +167,7 @@ function executeSearch() {
     filteredOUs = orgUnits;
 
     if (searchName) {
-        var searchedOUList = searchOU(searchName);
+        var searchedOUList = searchOU(orgUnits, searchName);
         if (searchedOUList.length == 0) {
             // no matches
             filteredOUs = [];

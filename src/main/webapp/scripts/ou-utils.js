@@ -55,7 +55,7 @@ function addOUToJSON(ou, outputJson) {
 /*
  * Returns a list of OUs matching the name search criterion.
 */
-function searchOU(searchName) {
+function searchOU(orgUnits, searchName) {
     var ouSearchMatches = [];
     var searchNameStd = searchName.trim().toLowerCase();
 
