@@ -12,7 +12,7 @@ function constructD3JSON(sortedOUs) {
     outputJson['children'] = [];
 
     for (var i = 0; i < sortedOUs.length; i++) {
-        addToJSON(sortedOUs[i], outputJson);
+        addOUToJSON(sortedOUs[i], outputJson);
     }
     return outputJson;
 }
@@ -20,7 +20,7 @@ function constructD3JSON(sortedOUs) {
 /*
  * Adds each OU to the output JSON.
 */
-function addToJSON(ou, outputJson) {
+function addOUToJSON(ou, outputJson) {
     var parentOrgUnitPath = ou['parentOrgUnitPath'];
 
     ou.children = [];
