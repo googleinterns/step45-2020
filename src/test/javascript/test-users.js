@@ -1,7 +1,3 @@
-beforeEach(function () {
-    loadFixtures('test-user.html');
-});
-
 var body = $('body').first();
 
 var UIFramework = (function() {
