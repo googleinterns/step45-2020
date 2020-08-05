@@ -95,14 +95,15 @@ async function setGroupSettings() {
 }
 
 /** Returns the access type based on this group's settings */
-function getAccessType() {
-    if (Object.keys(diff(settings, publicSettings)).length == 0) {
+function getAccessType(currSettings) {
+    if (!currSettings) currSettings = settings;
+    if (Object.keys(diff(currSettings, publicSettings)).length == 0) {
         accessType = "Public";
-    } else if (Object.keys(diff(settings, teamSettings)).length == 0) {
+    } else if (Object.keys(diff(currSettings, teamSettings)).length == 0) {
         accessType = "Team";
-    } else if (Object.keys(diff(settings, announcementOnlySettings)).length == 0) {
+    } else if (Object.keys(diff(currSettings, announcementOnlySettings)).length == 0) {
         accessType = "Announcement Only";
-    } else if (Object.keys(diff(settings, restrictedSettings)).length == 0) {
+    } else if (Object.keys(diff(currSettings, restrictedSettings)).length == 0) {
         accessType = "Restricted";
     } else {
         accessType = "Custom";
