@@ -43,4 +43,4 @@ Alternatively, you can create a .customize_environment file based on the sample 
 Cloud Shell will execute this script every time Cloud Shell starts.
 
 View manual tests here:
-1. [Groups](../../src/tests/manual-test-groups.md)
+1. [Groups](../../src/test/manual-test-groups.md)
