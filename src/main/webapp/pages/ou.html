@@ -12,9 +12,13 @@
 
     <link rel="stylesheet" href="../styles/style.css">
     <link rel="stylesheet" href="../styles/ou-style.css">
+
+    <script src="../scripts/script.js"></script>
     <script src="../scripts/page-setup.js"></script>
-    <script src="../scripts/ou-script.js"></script>
+    <script src="../scripts/ou-main.js"></script>
+    <script src="../scripts/ou-visual.js"></script>
     <script src="../scripts/ou-edits.js"></script>
+    <script src="../scripts/ou-utils.js"></script>
 
     <!-- load the d3.js library -->	
     <script src="https://d3js.org/d3.v5.min.js"></script>
@@ -81,8 +85,21 @@
                         <p><span id="display-layers" class="display-num"></span> out of <span id="total-layers" class="total-num"></span></p>
                     </div>
                     <div class="sidenav-section">
+                        <div class="section-right">
+                            <button type="button" class="btn btn-light" onclick="refreshOUPage()">
+                                Reset display
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
                         <div class="section-title">Display</div>
-                        <div class="section-subtitle">Limit Depth</div>
+                        <div class="section-subtitle">Search</div>
+                        <div class="flex">
+                            <input type="search" class="form-control" id="search" autocomplete="off" placeholder="Search by OU name...">
+                            <button class="btn btn-primary" id="search-enter-btn">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="section-subtitle">Limit Layers Displayed</div>
                         <div class="form-group row">
                             <div>
                                 <p>Display the top 
@@ -113,22 +130,25 @@
                             </div>
 
                             <!-- Delete -->
-                            <form style="display: none;" id="edit-delete" onSubmit="deleteOU();return false">
+                            <form style="display: none;" id="edit-delete" autocomplete="off" onSubmit="openDeleteModal();return false">
                                 <div class="subheader">Delete</div>
 
-                                <label for="delete-path">Pass in the path below:</label>
+                                <p>Note that you can only delete organizational units without children (i.e. to delete a parent OU, 
+                                    first delete its children).</p>
+
+                                <label for="delete-path">Pass in the path of the OU you wish to delete below:</label>
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon1">/</span>
                                     </div>
-                                    <input type="text" class="form-control" placeholder="corp/eng/devops" id="delete-path">
+                                    <input type="text" class="form-control" placeholder="corp/eng/devops" id="delete-path" required>
                                 </div>
 
                                 <input type="submit" class="btn btn-danger" value="Delete" />
                             </form>
 
                             <!-- Create -->
-                            <form style="display: block;" id="edit-create" onSubmit="createOU();return false">
+                            <form style="display: block;" id="edit-create" autocomplete="off" onSubmit="createOU();return false">
                                 <div class="subheader">Create</div>
 
                                 <label for="create-path">Pass in the path of the desired parent OU:</label>
@@ -136,15 +156,15 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon1">/</span>
                                     </div>
-                                    <input type="text" class="form-control" placeholder="corp/business" id="create-path">
+                                    <input type="text" class="form-control" placeholder="corp/business" id="create-path" required>
                                 </div>
 
                                 <label for="create-name">Org Unit Name:</label>
-                                <input type="text" class="form-control" id="create-name" placeholder="sales">
+                                <input type="text" class="form-control" id="create-name" placeholder="sales" required>
                                 <br>
 
-                                <label for="create-descript">Description (optional):</label>
-                                <input type="text" class="form-control" id="create-descript" placeholder="Selling our product!">
+                                <label for="create-descript">Description:</label>
+                                <input type="text" class="form-control" id="create-descript" placeholder="NA sales team.">
                                 <br>
 
                                 <label for="create-inherit">By default, the policies and permissions of the parent OU are inherited by the child. 
@@ -156,7 +176,7 @@
                             </form>
 
                             <!-- Update -->
-                            <form style="display: none;" id="edit-update" onSubmit="updateOU();return false">
+                            <form style="display: none;" id="edit-update" autocomplete="off" onSubmit="updateOU();return false">
                                 <div class="subheader">Update</div>
 
                                 <label for="update-path">Pass in the path of the OU you wish to update:</label>
@@ -164,7 +184,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon1">/</span>
                                     </div>
-                                    <input type="text" class="form-control" placeholder="corp/business" id="update-path">
+                                    <input type="text" class="form-control" placeholder="corp/business" id="update-path" required>
                                 </div>
 
                                 <div class="subheader">Edit Fields</div>
@@ -183,7 +203,7 @@
                                 <br>
 
                                 <label for="update-descript">Description:</label>
-                                <input type="text" class="form-control" id="update-descript" placeholder="Selling our product!">
+                                <input type="text" class="form-control" id="update-descript" placeholder="NA sales team.">
                                 <br>
 
                                 <label for="update-inherit">If you would like to block this OU's inheritance, please type '<em>block</em>' into the field below.
@@ -217,7 +237,8 @@
                         </div>
                         <div id="instruction-collapse" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
                             <div class="card-body">
-                                <text id="instruction">Click on parent org units to <span class="highlight">reveal</span> or <span class="highlight">collapse</span> their children.<br>
+                                <text id="instruction">Click on parent org units to <span class="highlight">collapse</span> or <span class="highlight">reveal</span> their children.<br>
+                                    Click on any org unit to <span class="highlight">autopopulate</span> its path in the Edit OUs Console.<br>
                                     Use your mouse wheel to <span class="highlight">zoom in & zoom out</span> on the visualization.<br>
                                     Click and drag your mouse to <span class="highlight">reposition</span> the diagram.
                                 </text>
@@ -232,5 +253,56 @@
             </div>
         </div>
         <!-- Outside of flex container -->
+
+        <!-- Delete User Modal -->
+        <div class="modal fade" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="delete-modal-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="delete-modal-label">Delete OU</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this OU? <br>
+                <p id="delete-modal-orgunit"></p>
+            </div>
+
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button id="deleteButton" type="button" class="btn btn-danger" onclick="deleteOU()">Delete</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
+          <!-- Add User Modal -->
+        <div class="modal fade" id="multiple-query-modal" tabindex="-1" role="dialog" aria-labelledby="query-modal-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="query-modal-label">Select Desired Query</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="search-matches-select">Your search returned multiple matches. 
+                        Select the one you wish to display.
+                    </label>
+                    <select class="form-control" id="search-matches-select"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button id="addButton" type="button" class="btn btn-primary" onclick="displayOUSelected()">Display</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
     </body>
 </html>
