@@ -523,7 +523,7 @@ async function loadGroups() {
                     }
                 } else {
                     // recursive DFS on the new group to get the new data
-                    var newData = await loadGroupsDFS(group, null, groups, users, members);
+                    var newData = await loadGroupsDFS(group, null);
                     data.children.push(newData);
                 }
             }
@@ -533,7 +533,7 @@ async function loadGroups() {
     }
 }
 
-async function loadGroupsDFS(currGroup, parentGroup, groups, users, members) {
+async function loadGroupsDFS(currGroup, parentGroup) {
     if (currGroup.type == "USER") {
         var userData;
         // a user can have different roles depending on which group
@@ -603,7 +603,7 @@ async function loadGroupsDFS(currGroup, parentGroup, groups, users, members) {
                     member = groups[indexOfGroup];
                 }
             }
-            var newData = await loadGroupsDFS(member, currGroup, groups, users, members);
+            var newData = await loadGroupsDFS(member, currGroup);
 
             // if flatten groups, then don't add this group to children
             if (!flattenGroups) {

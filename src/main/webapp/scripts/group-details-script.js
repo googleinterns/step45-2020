@@ -45,7 +45,7 @@ async function loadGroup() {
 
     Promise.all(promises)
     .then(async function(results) {
-        var newData = await loadGroupsDFS(group, null, groups, users, members);
+        var newData = await loadGroupsDFS(group, null);
         data.children.push(newData);
         
         visualize();

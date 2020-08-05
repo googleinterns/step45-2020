@@ -1,323 +1,284 @@
-//  loadGroupsDFS(currGroup, parentGroup, groups, users, members)
-//  Groups editing
-//      createGroup
-//      selectRole
-//      removeMember
-//      addMember
+// diff
+// getAccessType(settings)
+// Group editing
+//      saveInformationForm
+//      saveSettingsForm
+//      deleteGroup
 
-describe("Test main groups visualization page", function() {
+describe("Test group details sidebar functions", function() {
 
-    xit("Test depth first traversal with mock groups", function(done) {
+    it("Test diff function for comparing objects", function(done) {
 
-        // $.getScript('/src/main/webapp/scripts/groups-script.js', function() {
-            // spyOn(window, "loadGroupsDFS");
-            // spyOn(window, "getUser");
-            // spyOn(window, "getGroupMembers");
-            // spyOn(window, "getGroup");
-
-            var data = {
-                "name": "test-domain@domain.info",
-                "children": [],
+        $.getScript('/src/main/webapp/scripts/group-details-script.js', function() { 
+            var original = {
+                "a": "1",
+                "b": "2",
+                "c": "3",
             };
-            var groups = [
-                {
-                    "description": "",
-                    "directMembersCount": 4,
-                    "email": "1@1.1",
-                    "id": "1",
-                    "name": "One",
-                },
-                {
-                    "description": "",
-                    "directMembersCount": 4,
-                    "email": "2@2.2",
-                    "id": "2",
-                    "name": "Two",
-                },
-                {
-                    "description": "",
-                    "directMembersCount": 2,
-                    "email": "3@3.3",
-                    "id": "3",
-                    "name": "Three",
-                },
-                {
-                    "description": "",
-                    "directMembersCount": 1,
-                    "email": "4@4.4",
-                    "id": "4",
-                    "name": "Four",
-                },
-            ];
-            var users = [
-                {
-                    "id": "a",
-                    "name": {
-                        "fullName": "Apple"
-                    },
-                    "primaryEmail": "a@a.a",
-                    "roles": {
-                        "1": "MEMBER", 
-                        "2": "OWNER",
-                    },
-                },
-                {
-                    "id": "b",
-                    "name": {
-                        "fullName": "Banana"
-                    },
-                    "primaryEmail": "b@b.b",
-                    "roles": {
-                        "1": "MEMBER",
-                    },
-                },
-                {
-                    "id": "c",
-                    "name": {
-                        "fullName": "Cherry"
-                    },
-                    "primaryEmail": "c@c.c",
-                    "roles": {
-                        "2": "MEMBER",
-                    },
-                },
-                {
-                    "id": "d",
-                    "name": {
-                        "fullName": "Durian"
-                    },
-                    "primaryEmail": "d@d.d",
-                    "roles": {
-                        "2": "MANAGER",
-                    },
-                },
-                {
-                    "id": "e",
-                    "name": {
-                        "fullName": "Elderberry"
-                    },
-                    "primaryEmail": "e@e.e",
-                    "roles": {
-                        "3": "MEMBER",
-                    },
-                },
-                {
-                    "id": "f",
-                    "name": {
-                        "fullName": "Fig"
-                    },
-                    "primaryEmail": "f@f.f",
-                    "roles": {
-                        "3": "MANAGER",
-                    },
-                },
-                {
-                    "id": "g",
-                    "name": {
-                        "fullName": "Grapes"
-                    },
-                    "primaryEmail": "g@g.g",
-                    "roles": {
-                        "4": "MEMBER",
-                    },
-                },
-            ];
-            var members = {
-                "1": [
-                    {
-                        "email": "a@a.a",
-                        "id": "a",
-                        "role": "MEMBER",
-                        "type": "USER",
-                    },
-                    {
-                        "email": "b@b.b",
-                        "id": "b",
-                        "role": "MEMBER",
-                        "type": "USER",
-                    },
-                    {
-                        "email": "2@2.2",
-                        "id": "2",
-                        "role": "MEMBER",
-                        "type": "GROUP",
-                    },
-                    {
-                        "email": "4@4.4",
-                        "id": "4",
-                        "role": "MEMBER",
-                        "type": "GROUP",
-                    },
-                ],
-                "2": [
-                    {
-                        "email": "c@c.c",
-                        "id": "c",
-                        "role": "MEMBER",
-                        "type": "USER",
-                    },
-                    {
-                        "email": "d@d.d",
-                        "id": "d",
-                        "role": "MANAGER",
-                        "type": "USER",
-                    },
-                    {
-                        "email": "a@a.a",
-                        "id": "a",
-                        "role": "OWNER",
-                        "type": "USER",
-                    },
-                    {
-                        "email": "3@3.3",
-                        "id": "3",
-                        "role": "MEMBER",
-                        "type": "GROUP",
-                    },
-                ],
-                "3": [
-                    {
-                        "email": "e@e.e",
-                        "id": "e",
-                        "role": "MEMBER",
-                        "type": "USER",
-                    },
-                    {
-                        "email": "f@f.f",
-                        "id": "f",
-                        "role": "MANAGER",
-                        "type": "USER",
-                    },
-                ],
-                "4": [
-                    {
-                        "email": "g@g.g",
-                        "id": "g",
-                        "role": "MEMBER",
-                        "type": "USER",
-                    },
-                ],
+            var diffValues = {
+                "a": "1",
+                "b": "4",
+                "c": "3",
             };
+            var fewerKeys = {
+                "a": "1",
+                "b": "2",
+            };
+            var empty = {};
 
-            // spyOn(data.children, "push");
-            
-            // var testDFS = async function(groups, users, members) {
-                loadGroupsDFS(groups[0], null, groups, users, members).then(function(res) {
-                    
-                    expect(res).toBeDefined();
-                    data.children.push(res);
-                    expect(data.name).toEqual("test-domain@domain.info");
-                    expect(data.children.length).toEqual(1);
-                    expect(data.children[0]).toBeDefined();
-                    expect(data.children[0]).not.toBeNull();
-                    expect(data.children[0].name).toEqual("One");
-                    done();
-                });
-                // return data;
-            // }
-            // var testDFSRes = testDFS(groups, users, members);
+            expect(diff(diffValues, original)).toEqual({"b": "4"});
+            expect(diff(original, diffValues)).toEqual({"b": "2"});
+            expect(diff(fewerKeys, original)).toEqual({"c": undefined});
+            expect(diff(original, fewerKeys)).toEqual({});
+            expect(diff(diffValues, fewerKeys)).toEqual({"b": "4"});
+            expect(diff(fewerKeys, diffValues)).toEqual({"b": "2", "c": undefined});
+            expect(diff(original, empty)).toEqual({});
+            expect(diff(empty, original)).toEqual({"a": undefined, "b": undefined, "c": undefined});
 
-            // testDFSRes.then(function() {
-                // expect(data.name).toEqual("test-domain@domain.info");
-                // expect(data.children.length).toEqual(1);
-                // expect(data.children[0]).toBeDefined();
-                // expect(data.children[0]).not.toBeNull();
-                // expect(data.children[0].name).toEqual("One");
-                // expect(data.children[0].id).toEqual("1");
-                // expect(data.children[0].value).toEqual(4);
-                // expect(data.children[0].children.length).toEqual(4);
+            done();
+        });
+    });
 
-                var correctData = {
-                    "name": "test-domain@domain.info",
-                    "children": [
-                        {
-                            "name": "One",
-                            "id": "1",
-                            "value": 4,
-                            "children": [
-                                {
-                                    "name": "Apple",
-                                    "id": "a",
-                                    "value": 1,
-                                    "type": "USER",
-                                },
-                                {
-                                    "name": "Banana",
-                                    "id": "b",
-                                    "value": 1,
-                                    "type": "USER",
-                                },
-                                {
-                                    "name": "Two",
-                                    "id": "2",
-                                    "value": 4,
-                                    "children": [
-                                        {
-                                            "name": "Cherry",
-                                            "id": "c",
-                                            "value": 1,
-                                            "type": "USER",
-                                        },
-                                        {
-                                            "name": "Durian",
-                                            "id": "d",
-                                            "value": 1,
-                                            "type": "USER",
-                                        },
-                                        {
-                                            "name": "Apple",
-                                            "id": "a",
-                                            "value": 1,
-                                            "type": "USER",
-                                        },
-                                        {
-                                            "name": "Three",
-                                            "id": "3",
-                                            "value": 2,
-                                            "children": [
-                                                {
-                                                    "name": "Elderberry",
-                                                    "id": "e",
-                                                    "value": 1,
-                                                    "type": "USER",
-                                                },
-                                                {
-                                                    "name": "Fig",
-                                                    "id": "f",
-                                                    "value": 1,
-                                                    "type": "USER",
-                                                },
-                                            ],
-                                        },
-                                    ],
-                                },
-                                {
-                                    "name": "Four",
-                                    "id": "4",
-                                    "value": 1,
-                                    "children": [
-                                        {
-                                            "name": "Grapes",
-                                            "id": "g",
-                                            "value": 1,
-                                            "type": "USER",
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                    ],
-                };
+    it("Test get access type based on settings parameter", function(done) {
 
-                // expect(data).toEqual(correctData);
+        $.when(
+            $.getScript( '/src/main/webapp/scripts/group-details-script.js' ),
+            $.getScript( '/src/main/webapp/scripts/group-constants.js' ),
+            $.Deferred(function( deferred ){
+                $( deferred.resolve );
+            })
+        ).done(function(){
+            var publicSettings = {
+                "whoCanAdd": "ALL_MANAGERS_CAN_ADD",	
+                "whoCanAddReferences": "NONE",
+                "whoCanApproveMembers": "ALL_MANAGERS_CAN_APPROVE",	
+                "whoCanApproveMessages": "OWNERS_AND_MANAGERS",	
+                "whoCanAssignTopics": "NONE",	
+                "whoCanAssistContent": "NONE",	
+                "whoCanBanUsers": "OWNERS_AND_MANAGERS",	
+                "whoCanContactOwner": "ANYONE_CAN_CONTACT",	
+                "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",	
+                "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanDiscoverGroup": "ALL_IN_DOMAIN_CAN_DISCOVER",	
+                "whoCanEnterFreeFormTags": "NONE",	
+                "whoCanHideAbuse": "NONE",	
+                "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",	
+                "whoCanJoin": "ALL_IN_DOMAIN_CAN_JOIN",	
+                "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",	
+                "whoCanLockTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanMakeTopicsSticky": "NONE",	
+                "whoCanMarkDuplicate": "NONE",	
+                "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",	
+                "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",	
+                "whoCanMarkNoResponseNeeded": "NONE",	
+                "whoCanModerateContent": "OWNERS_AND_MANAGERS",	
+                "whoCanModerateMembers": "OWNERS_AND_MANAGERS",	
+                "whoCanModifyMembers": "OWNERS_AND_MANAGERS",	
+                "whoCanModifyTagsAndCategories": "NONE",	
+                "whoCanMoveTopicsIn": "OWNERS_AND_MANAGERS",	
+                "whoCanMoveTopicsOut": "OWNERS_AND_MANAGERS",	
+                "whoCanPostAnnouncements": "OWNERS_AND_MANAGERS",	
+                "whoCanPostMessage": "ALL_IN_DOMAIN_CAN_POST",	
+                "whoCanTakeTopics": "NONE",	
+                "whoCanUnassignTopic": "NONE",	
+                "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",	
+                "whoCanViewGroup": "ALL_IN_DOMAIN_CAN_VIEW",	
+                "whoCanViewMembership": "ALL_IN_DOMAIN_CAN_VIEW"
+            };
+            var teamSettings = {
+                "whoCanAdd": "ALL_MANAGERS_CAN_ADD",	
+                "whoCanAddReferences": "NONE",
+                "whoCanApproveMembers": "ALL_MANAGERS_CAN_APPROVE",	
+                "whoCanApproveMessages": "OWNERS_AND_MANAGERS",	
+                "whoCanAssignTopics": "NONE",	
+                "whoCanAssistContent": "NONE",	
+                "whoCanBanUsers": "OWNERS_AND_MANAGERS",	
+                "whoCanContactOwner": "ANYONE_CAN_CONTACT",	
+                "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",	
+                "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanDiscoverGroup": "ALL_IN_DOMAIN_CAN_DISCOVER",	
+                "whoCanEnterFreeFormTags": "NONE",	
+                "whoCanHideAbuse": "NONE",	
+                "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",	
+                "whoCanJoin": "CAN_REQUEST_TO_JOIN",
+                "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",	
+                "whoCanLockTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanMakeTopicsSticky": "NONE",	
+                "whoCanMarkDuplicate": "NONE",	
+                "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",	
+                "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",	
+                "whoCanMarkNoResponseNeeded": "NONE",	
+                "whoCanModerateContent": "OWNERS_AND_MANAGERS",	
+                "whoCanModerateMembers": "OWNERS_AND_MANAGERS",	
+                "whoCanModifyMembers": "OWNERS_AND_MANAGERS",	
+                "whoCanModifyTagsAndCategories": "NONE",	
+                "whoCanMoveTopicsIn": "OWNERS_AND_MANAGERS",	
+                "whoCanMoveTopicsOut": "OWNERS_AND_MANAGERS",	
+                "whoCanPostAnnouncements": "OWNERS_AND_MANAGERS",	
+                "whoCanPostMessage": "ALL_IN_DOMAIN_CAN_POST",	
+                "whoCanTakeTopics": "NONE",	
+                "whoCanUnassignTopic": "NONE",	
+                "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",	
+                "whoCanViewGroup": "ALL_IN_DOMAIN_CAN_VIEW",	
+                "whoCanViewMembership": "ALL_IN_DOMAIN_CAN_VIEW",
+            };
+            var announcementSettings = {
+                "whoCanAdd": "ALL_MANAGERS_CAN_ADD",	
+                "whoCanAddReferences": "NONE",
+                "whoCanApproveMembers": "ALL_MANAGERS_CAN_APPROVE",	
+                "whoCanApproveMessages": "OWNERS_AND_MANAGERS",	
+                "whoCanAssignTopics": "NONE",	
+                "whoCanAssistContent": "NONE",	
+                "whoCanBanUsers": "OWNERS_AND_MANAGERS",	
+                "whoCanContactOwner": "ANYONE_CAN_CONTACT",	
+                "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",	
+                "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanDiscoverGroup": "ALL_IN_DOMAIN_CAN_DISCOVER",	
+                "whoCanEnterFreeFormTags": "NONE",	
+                "whoCanHideAbuse": "NONE",	
+                "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",	
+                "whoCanJoin": "ALL_IN_DOMAIN_CAN_JOIN",	
+                "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",	
+                "whoCanLockTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanMakeTopicsSticky": "NONE",	
+                "whoCanMarkDuplicate": "NONE",	
+                "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",	
+                "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",	
+                "whoCanMarkNoResponseNeeded": "NONE",	
+                "whoCanModerateContent": "OWNERS_AND_MANAGERS",	
+                "whoCanModerateMembers": "OWNERS_AND_MANAGERS",	
+                "whoCanModifyMembers": "OWNERS_AND_MANAGERS",	
+                "whoCanModifyTagsAndCategories": "NONE",	
+                "whoCanMoveTopicsIn": "OWNERS_AND_MANAGERS",	
+                "whoCanMoveTopicsOut": "OWNERS_AND_MANAGERS",	
+                "whoCanPostAnnouncements": "OWNERS_AND_MANAGERS",
+                "whoCanPostMessage": "ALL_MANAGERS_CAN_POST",	
+                "whoCanTakeTopics": "NONE",	
+                "whoCanUnassignTopic": "NONE",	
+                "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",	
+                "whoCanViewGroup": "ALL_IN_DOMAIN_CAN_VIEW",
+                "whoCanViewMembership": "ALL_MANAGERS_CAN_VIEW"
+            };
+            var restrictedSettings = {
+                "whoCanAdd": "ALL_MANAGERS_CAN_ADD",	
+                "whoCanAddReferences": "NONE",
+                "whoCanApproveMembers": "ALL_MANAGERS_CAN_APPROVE",	
+                "whoCanApproveMessages": "OWNERS_AND_MANAGERS",	
+                "whoCanAssignTopics": "NONE",	
+                "whoCanAssistContent": "NONE",	
+                "whoCanBanUsers": "OWNERS_AND_MANAGERS",	
+                "whoCanContactOwner": "ANYONE_CAN_CONTACT",	
+                "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",	
+                "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanDiscoverGroup": "ALL_IN_DOMAIN_CAN_DISCOVER",	
+                "whoCanEnterFreeFormTags": "NONE",	
+                "whoCanHideAbuse": "NONE",	
+                "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",
+                "whoCanJoin": "CAN_REQUEST_TO_JOIN",
+                "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",	
+                "whoCanLockTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanMakeTopicsSticky": "NONE",	
+                "whoCanMarkDuplicate": "NONE",	
+                "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",	
+                "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",	
+                "whoCanMarkNoResponseNeeded": "NONE",	
+                "whoCanModerateContent": "OWNERS_AND_MANAGERS",	
+                "whoCanModerateMembers": "OWNERS_AND_MANAGERS",	
+                "whoCanModifyMembers": "OWNERS_AND_MANAGERS",	
+                "whoCanModifyTagsAndCategories": "NONE",	
+                "whoCanMoveTopicsIn": "OWNERS_AND_MANAGERS",	
+                "whoCanMoveTopicsOut": "OWNERS_AND_MANAGERS",	
+                "whoCanPostAnnouncements": "OWNERS_AND_MANAGERS",	
+                "whoCanPostMessage": "ALL_MEMBERS_CAN_POST",	
+                "whoCanTakeTopics": "NONE",	
+                "whoCanUnassignTopic": "NONE",	
+                "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",
+                "whoCanViewGroup": "ALL_MEMBERS_CAN_VIEW",
+                "whoCanViewMembership": "ALL_MEMBERS_CAN_VIEW",
+            };
+            var customSettings1 = {
+                "whoCanAdd": "ALL_MANAGERS_CAN_ADD",	
+                "whoCanAddReferences": "NONE",
+                "whoCanApproveMembers": "ALL_MANAGERS_CAN_APPROVE",	
+                "whoCanApproveMessages": "OWNERS_AND_MANAGERS",	
+                "whoCanAssignTopics": "NONE",	
+                "whoCanAssistContent": "NONE",	
+                "whoCanBanUsers": "OWNERS_AND_MANAGERS",	
+                "whoCanContactOwner": "ANYONE_CAN_CONTACT",	
+                "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",	
+                "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanDiscoverGroup": "ALL_IN_DOMAIN_CAN_DISCOVER",	
+                "whoCanEnterFreeFormTags": "NONE",	
+                "whoCanHideAbuse": "NONE",	
+                "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",
+                "whoCanJoin": "CAN_REQUEST_TO_JOIN",
+                "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",	
+                "whoCanLockTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanMakeTopicsSticky": "NONE",	
+                "whoCanMarkDuplicate": "NONE",	
+                "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",	
+                "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",	
+                "whoCanMarkNoResponseNeeded": "NONE",	
+                "whoCanModerateContent": "OWNERS_AND_MANAGERS",	
+                "whoCanModerateMembers": "OWNERS_AND_MANAGERS",	
+                "whoCanModifyMembers": "NONE",	
+                "whoCanModifyTagsAndCategories": "NONE",	
+                "whoCanMoveTopicsIn": "OWNERS_AND_MANAGERS",	
+                "whoCanMoveTopicsOut": "OWNERS_AND_MANAGERS",	
+                "whoCanPostAnnouncements": "OWNERS_AND_MANAGERS",	
+                "whoCanPostMessage": "NONE_CAN_POST",	
+                "whoCanTakeTopics": "NONE",	
+                "whoCanUnassignTopic": "NONE",	
+                "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",
+                "whoCanViewGroup": "ALL_MANAGERS_CAN_VIEW",
+                "whoCanViewMembership": "ALL_MEMBERS_CAN_VIEW",
+            };
+            var customSettings2 = {
+                "whoCanAdd": "ALL_MANAGERS_CAN_ADD",	
+                "whoCanAddReferences": "NONE",
+                "whoCanApproveMembers": "ALL_MANAGERS_CAN_APPROVE",	
+                "whoCanApproveMessages": "OWNERS_AND_MANAGERS",	
+                "whoCanAssignTopics": "NONE",	
+                "whoCanAssistContent": "NONE",	
+                "whoCanBanUsers": "OWNERS_AND_MANAGERS",	
+                "whoCanContactOwner": "ANYONE_CAN_CONTACT",	
+                "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",	
+                "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanDiscoverGroup": "ALL_IN_DOMAIN_CAN_DISCOVER",	
+                "whoCanEnterFreeFormTags": "NONE",	
+                "whoCanHideAbuse": "NONE",	
+                "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",
+                "whoCanJoin": "CAN_REQUEST_TO_JOIN",
+                "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",	
+                "whoCanLockTopics": "OWNERS_AND_MANAGERS",	
+                "whoCanMakeTopicsSticky": "NONE",	
+                "whoCanMarkDuplicate": "NONE",	
+                "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",	
+                "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",	
+                "whoCanMarkNoResponseNeeded": "NONE",	
+                "whoCanModerateContent": "OWNERS_AND_MANAGERS",	
+                "whoCanModerateMembers": "OWNERS_AND_MANAGERS",	
+                "whoCanModifyMembers": "NONE",	
+                "whoCanModifyTagsAndCategories": "NONE",	
+                "whoCanMoveTopicsIn": "OWNERS_AND_MANAGERS",	
+                "whoCanMoveTopicsOut": "OWNERS_AND_MANAGERS",	
+                "whoCanPostAnnouncements": "OWNERS_AND_MANAGERS",	
+                "whoCanPostMessage": "OWNERS_AND_MANAGERS",	
+                "whoCanTakeTopics": "NONE",	
+                "whoCanUnassignTopic": "NONE",	
+                "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",
+                "whoCanViewGroup": "ALL_MEMBERS_CAN_VIEW",
+                "whoCanViewMembership": "ALL_MEMBERS_CAN_VIEW",
+            }
 
+            expect(getAccessType(publicSettings)).toEqual("Public");
+            expect(getAccessType(teamSettings)).toEqual("Team");
+            expect(getAccessType(announcementSettings)).toEqual("Announcement Only");
+            expect(getAccessType(restrictedSettings)).toEqual("Restricted");
+            expect(getAccessType(customSettings1)).toEqual("Custom");
+            expect(getAccessType(customSettings2)).toEqual("Custom");
 
-                // done();
-            // })
-
-            // expect(loadGroupsDFS).toHaveBeenCalled();
-            // done();
-            // expect(data.children.push).toHaveBeenCalled();
-        // });
+            done();
+        });
     });
 });
