@@ -4,7 +4,7 @@ beforeEach(function () {
             'access_token': 'fake-access-token'
         },
         'domain': 'fake-domain'
-        };
+    };
 
     spyOn(localStorage, 'getItem').and.callFake(function (key) {
         return store[key];

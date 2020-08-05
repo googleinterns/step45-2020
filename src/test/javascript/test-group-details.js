@@ -3,7 +3,6 @@
 // Group editing
 //      saveInformationForm
 //      saveSettingsForm
-//      selectAccessType
 //      deleteGroup
 
 describe("Test group details sidebar functions", function() {

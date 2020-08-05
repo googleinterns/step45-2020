@@ -1,97 +1,317 @@
-var UIFramework = (function() {
-    function button(id, onclick) {
-        var element = document.createElement("button");
-        element.id = id;
-        element.onclick = onclick;
-        return element;
-    }
-
-    function input(type, value) {
-      var element = document.createElement("input");
-      element.type = type;
-      element.value = value;
-      return element;
-    }
-
-    function select(id, onchange) {
-        var element = document.createElement("input");
-        element.id = id;
-        element.onchange = onchange;
-        return element;
-    }
-
-    return {
-        button: button,
-        input: input
-    }
-})();
-
-// groups-script.js
-//  Groups visualization sidebar
-//      Load groups sidebar information (loadGroupsSidebar)
-//      Check if user selected filter options (checkGroupsSidebar(memberKey))
-//  Groups search and filter
-//      Clear searches and filters (clearFilters)
-//      selectUser, selectOrderBy, selectViewGroups, checkParentGroups, checkFlattenGroups
-//      Check that functions were called (getAllGroups, checkGroupsSidebar)
+//  loadGroupsDFS(currGroup, parentGroup, groups, users, members)
 //  Groups editing
 //      createGroup
 //      selectRole
 //      removeMember
 //      addMember
-// group-details-script.js
-//  Group details sidebar
-//      loadGroupDetailsSidebar (setGroupInformation, setGroupSettings)
-//      getAccessType
-//      setAccessMembershipSettingsTable(accessSettings)
-//  Group editing
-//      saveInformationForm
-//      saveSettingsForm
-//      selectAccessType
-//      deleteGroup
 
-// describe("Test groups search and filters", function() {
-//     var checkbox1 = UIFramework.input("checkbox", "checkbox-value1");
-    
-//     it("test adding and removing orgunits to filter", function(done) {
-//         var orgUnitInput = ["checkbox-value1"];
+describe("Test main groups visualization page", function() {
 
-//         $.getScript('/src/main/webapp/scripts/users-script.js', function() { 
-//             spyOn(window, "clearSearch");
-//             spyOn(window, "loginStatus");
-//             spyOn(window, "fetchOUs");
+    it("Test depth first traversal with mock groups", function(done) {
 
-//             // uncheck to remove input from orgUnitInput
-//             checkbox1.checked = false;
-//             expect(orgUnitInput).toEqual(["checkbox-value1"]);
-//             orgUnitInput = updateOrgUnitInput(checkbox1);
-//             expect(orgUnitInput).toEqual([]);
+        // $.getScript('/src/main/webapp/scripts/groups-script.js', function() {
+            spyOn(window, "loadGroupsDFS");
+            spyOn(window, "getUser");
+            spyOn(window, "getGroupMembers");
+            spyOn(window, "getGroup");
 
-//             // check to add input to orgUnitInput
-//             checkbox1.checked = true;
-//             orgUnitInput = updateOrgUnitInput(checkbox1);
-//             expect(orgUnitInput).toEqual(["checkbox-value1"]);
-//             done();
-//         });
-//     });
-// });
+            var data = {
+                "name": "test-domain@domain.info",
+                "children": [],
+            };
+            var groups = [
+                {
+                    "description": "",
+                    "directMembersCount": 4,
+                    "email": "1@1.1",
+                    "id": "1",
+                    "name": "One",
+                },
+                {
+                    "description": "",
+                    "directMembersCount": 4,
+                    "email": "2@2.2",
+                    "id": "2",
+                    "name": "Two",
+                },
+                {
+                    "description": "",
+                    "directMembersCount": 2,
+                    "email": "3@3.3",
+                    "id": "3",
+                    "name": "Three",
+                },
+                {
+                    "description": "",
+                    "directMembersCount": 1,
+                    "email": "4@4.4",
+                    "id": "4",
+                    "name": "Four",
+                },
+            ];
+            var users = [
+                {
+                    "id": "a",
+                    "name": {
+                        "fullName": "Apple"
+                    },
+                    "primaryEmail": "a@a.a",
+                    "roles": {
+                        "1": "MEMBER", 
+                        "2": "OWNER",
+                    },
+                },
+                {
+                    "id": "b",
+                    "name": {
+                        "fullName": "Banana"
+                    },
+                    "primaryEmail": "b@b.b",
+                    "roles": {
+                        "1": "MEMBER",
+                    },
+                },
+                {
+                    "id": "c",
+                    "name": {
+                        "fullName": "Cherry"
+                    },
+                    "primaryEmail": "c@c.c",
+                    "roles": {
+                        "2": "MEMBER",
+                    },
+                },
+                {
+                    "id": "d",
+                    "name": {
+                        "fullName": "Durian"
+                    },
+                    "primaryEmail": "d@d.d",
+                    "roles": {
+                        "2": "MANAGER",
+                    },
+                },
+                {
+                    "id": "e",
+                    "name": {
+                        "fullName": "Elderberry"
+                    },
+                    "primaryEmail": "e@e.e",
+                    "roles": {
+                        "3": "MEMBER",
+                    },
+                },
+                {
+                    "id": "f",
+                    "name": {
+                        "fullName": "Fig"
+                    },
+                    "primaryEmail": "f@f.f",
+                    "roles": {
+                        "3": "MANAGER",
+                    },
+                },
+                {
+                    "id": "g",
+                    "name": {
+                        "fullName": "Grapes"
+                    },
+                    "primaryEmail": "g@g.g",
+                    "roles": {
+                        "4": "MEMBER",
+                    },
+                },
+            ];
+            var members = {
+                "1": [
+                    {
+                        "email": "a@a.a",
+                        "id": "a",
+                        "role": "MEMBER",
+                        "type": "USER",
+                    },
+                    {
+                        "email": "b@b.b",
+                        "id": "b",
+                        "role": "MEMBER",
+                        "type": "USER",
+                    },
+                    {
+                        "email": "2@2.2",
+                        "id": "2",
+                        "role": "MEMBER",
+                        "type": "GROUP",
+                    },
+                    {
+                        "email": "4@4.4",
+                        "id": "4",
+                        "role": "MEMBER",
+                        "type": "GROUP",
+                    },
+                ],
+                "2": [
+                    {
+                        "email": "c@c.c",
+                        "id": "c",
+                        "role": "MEMBER",
+                        "type": "USER",
+                    },
+                    {
+                        "email": "d@d.d",
+                        "id": "d",
+                        "role": "MANAGER",
+                        "type": "USER",
+                    },
+                    {
+                        "email": "a@a.a",
+                        "id": "a",
+                        "role": "OWNER",
+                        "type": "USER",
+                    },
+                    {
+                        "email": "3@3.3",
+                        "id": "3",
+                        "role": "MEMBER",
+                        "type": "GROUP",
+                    },
+                ],
+                "3": [
+                    {
+                        "email": "e@e.e",
+                        "id": "e",
+                        "role": "MEMBER",
+                        "type": "USER",
+                    },
+                    {
+                        "email": "f@f.f",
+                        "id": "f",
+                        "role": "MANAGER",
+                        "type": "USER",
+                    },
+                ],
+                "4": [
+                    {
+                        "email": "g@g.g",
+                        "id": "g",
+                        "role": "MEMBER",
+                        "type": "USER",
+                    },
+                ],
+            };
 
-// describe("Test add user to data", function(){
-//     var data = {
-//         data: {name: "GRoot Test", path: "/", parentPath: null, users: [], numUsers: 3},
-//         children:[
-//             {data: {name: "East-coast", path: "/East-coast", parentPath: "/", users: [], numUsers: 3}}
-//         ]
-//     }
+            // spyOn(data.children, "push");
+            
+            // var testDFS = async function(groups, users, members) {
+                var newData = loadGroupsDFS(groups[0], null, groups, users, members);
+                expect(getUser).not.toHaveBeenCalled();
+                expect(getGroupMembers).not.toHaveBeenCalled();
+                expect(getGroup).not.toHaveBeenCalled();
+                expect(newData).toBeDefined();
+                data.children.push(newData);
+                // return data;
+            // }
+            // var testDFSRes = testDFS(groups, users, members);
 
-//     it("add user to childpath", function(done) {
-//         $.getScript('/src/main/webapp/scripts/users-script.js', function() {
-//             var orgUnitPath = "/East-coast";
-//             var userJSON = {"name": "test user", "id": "23456", "orgUnitPath": orgUnitPath};
-//             expect(data.children[0].data.users.length).toEqual(0);
-//             addUserToOUByPath(data, orgUnitPath, userJSON);
-//             expect(data.children[0].data.users.length).toEqual(1);
-//             done();
-//         });
-//     });
-// });
+            // testDFSRes.then(function() {
+                expect(data.name).toEqual("test-domain@domain.info");
+                expect(data.children.length).toEqual(1);
+                expect(data.children[0]).toBeDefined();
+                // expect(data.children[0].name).toEqual("One");
+                // expect(data.children[0].id).toEqual("1");
+                // expect(data.children[0].value).toEqual(4);
+                // expect(data.children[0].children.length).toEqual(4);
+
+                var correctData = {
+                    "name": "test-domain@domain.info",
+                    "children": [
+                        {
+                            "name": "One",
+                            "id": "1",
+                            "value": 4,
+                            "children": [
+                                {
+                                    "name": "Apple",
+                                    "id": "a",
+                                    "value": 1,
+                                    "type": "USER",
+                                },
+                                {
+                                    "name": "Banana",
+                                    "id": "b",
+                                    "value": 1,
+                                    "type": "USER",
+                                },
+                                {
+                                    "name": "Two",
+                                    "id": "2",
+                                    "value": 4,
+                                    "children": [
+                                        {
+                                            "name": "Cherry",
+                                            "id": "c",
+                                            "value": 1,
+                                            "type": "USER",
+                                        },
+                                        {
+                                            "name": "Durian",
+                                            "id": "d",
+                                            "value": 1,
+                                            "type": "USER",
+                                        },
+                                        {
+                                            "name": "Apple",
+                                            "id": "a",
+                                            "value": 1,
+                                            "type": "USER",
+                                        },
+                                        {
+                                            "name": "Three",
+                                            "id": "3",
+                                            "value": 2,
+                                            "children": [
+                                                {
+                                                    "name": "Elderberry",
+                                                    "id": "e",
+                                                    "value": 1,
+                                                    "type": "USER",
+                                                },
+                                                {
+                                                    "name": "Fig",
+                                                    "id": "f",
+                                                    "value": 1,
+                                                    "type": "USER",
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                },
+                                {
+                                    "name": "Four",
+                                    "id": "4",
+                                    "value": 1,
+                                    "children": [
+                                        {
+                                            "name": "Grapes",
+                                            "id": "g",
+                                            "value": 1,
+                                            "type": "USER",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                };
+
+                // expect(data).toEqual(correctData);
+
+
+                // done();
+            // })
+
+            expect(loadGroupsDFS).toHaveBeenCalled();
+            done();
+            // expect(data.children.push).toHaveBeenCalled();
+        // });
+    });
+});
