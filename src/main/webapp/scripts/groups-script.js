@@ -125,7 +125,7 @@ function loadGroupsSidebar() {
     var userOptions = [];
     userOptions.push("<option value=null selected='selected'>Select user...</option>");
     for (user of users) {
-        userOptions.push("<option value='" + user.primaryEmail + "' id='" + user.primaryEmail + "'>" + user.primaryEmail + " </option>");
+        userOptions.push("<option value='" + user.emails[0].address + "' id='" + user.emails[0].address + "'>" + user.emails[0].address + " </option>");
     }
     document.getElementById("user-sel").innerHTML = userOptions.join();
 
@@ -296,25 +296,7 @@ function visualize() {
     .classed("link", true)
     .text("Click to view more")
 
-    tooltipButtons = tooltip
-    .append("div")
-    .classed("flex", true)
-
-    tooltipAddMember = tooltipButtons
-    .append("button")
-    .classed("btn", true)
-    .classed("btn-collapse", true)
-    .attr("id", "add-member-btn")
-
-    var tooltipAddMemberSpan = tooltipAddMember
-    .append("span")
-    .attr("data-hover", "Add member")
-    var tooltipAddMemberIcon = tooltipAddMemberSpan
-    .append("i")
-    .classed("fa", true)
-    .classed("fa-user-plus", true)
-
-    tooltipRemove = tooltipButtons
+    tooltipRemove = tooltip
     .append("button")
     .classed("btn", true)
     .classed("btn-collapse", true)
@@ -327,6 +309,20 @@ function visualize() {
     .append("i")
     .classed("fa", true)
     .classed("fa-times", true)
+
+    tooltipAddMember = tooltip
+    .append("button")
+    .classed("btn", true)
+    .classed("btn-collapse", true)
+    .attr("id", "add-member-btn")
+
+    var tooltipAddMemberSpan = tooltipAddMember
+    .append("span")
+    .attr("data-hover", "Add member")
+    var tooltipAddMemberIcon = tooltipAddMemberSpan
+    .append("i")
+    .classed("fa", true)
+    .classed("fa-user-plus", true)
 
     const root = pack(data);
     var focus = root;
@@ -477,7 +473,7 @@ function makeUserTooltip(d, parentId) {
     // find user with this id
     var user = usersDisplayed[usersDisplayed.findIndex(elem => elem.id == d.data.id)]
     tooltipName.text(user.name.fullName)
-    tooltipEmail.text(user.primaryEmail)
+    tooltipEmail.text(user.emails[0].address)
     document.getElementById("tooltip-role-sel").value = user.roles[parentId][0].toUpperCase() + user.roles[parentId].slice(1).toLowerCase();
     tooltipRole.attr("onchange", "selectRole('" + d.data.id +  "', '" + parentId + "')")
     tooltipLink.attr("href", "/pages/userdetails.html?user=" + d.data.id)
@@ -523,7 +519,7 @@ async function loadGroups() {
                     }
                 } else {
                     // recursive DFS on the new group to get the new data
-                    var newData = await loadGroupsDFS(group, null, groups, users, members);
+                    var newData = await loadGroupsDFS(group);
                     data.children.push(newData);
                 }
             }
@@ -533,103 +529,102 @@ async function loadGroups() {
     }
 }
 
-async function loadGroupsDFS(currGroup, parentGroup, groups, users, members) {
-    // if (currGroup.type == "USER") {
-    //     var userData;
-    //     // a user can have different roles depending on which group
-    //     var userIndex = usersDisplayed.findIndex(elem => elem.id == currGroup.id)
-    //     if (userIndex < 0) {
-    //         // if not visited user yet, get user from users map
-    //         userIndex = users.findIndex(elem => elem.id == currGroup.id)
-    //         if (userIndex < 0) {
-    //             userData = await getUser(currGroup.id);
-    //         } else {
-    //             userData = users[userIndex];
-    //         }
-    //         userData.roles = {};
-    //         usersDisplayed.push(userData);
-    //     } else {
-    //         userData = usersDisplayed[userIndex];
-    //     }
-    //     userData.roles[parentGroup.id] = currGroup.role;
-    //     return {
-    //         name: userData.name.fullName,
-    //         value: 1,
-    //         id: userData.id,
-    //         type: currGroup.type
-    //     }
-    // }
+async function loadGroupsDFS(currGroup, parentGroup) {
+    if (currGroup.type == "USER") {
+        var userData;
+        // a user can have different roles depending on which group
+        var userIndex = usersDisplayed.findIndex(elem => elem.id == currGroup.id)
+        if (userIndex < 0) {
+            // if not visited user yet, get user from users map
+            userIndex = users.findIndex(elem => elem.id == currGroup.id)
+            if (userIndex < 0) {
+                userData = await getUser(currGroup.id);
+            } else {
+                userData = users[userIndex];
+            }
+            userData.roles = {};
+            usersDisplayed.push(userData);
+        } else {
+            userData = usersDisplayed[userIndex];
+        }
+        userData.roles[parentGroup.id] = currGroup.role;
+        return {
+            name: userData.name.fullName,
+            value: 1,
+            id: userData.id,
+            type: currGroup.type
+        }
+    }
     // create a new circle for this current group with an initial empty children list
-    // var newCircle = {
-    //     name: currGroup.name,
-    //     children: [],
-    //     value: parseInt(currGroup.directMembersCount == 0 ? 1 : currGroup.directMembersCount),
-    //     id: currGroup.id
-    // }
+    var newCircle = {
+        name: currGroup.name,
+        children: [],
+        value: parseInt(currGroup.directMembersCount == 0 ? 1 : currGroup.directMembersCount),
+        id: currGroup.id
+    }
     // if members for this group does not exist
-    // var currMembers
-    // if (!members[currGroup.id]) {
-    //     currMembers = await getGroupMembers(currGroup.id);
-    // } else {
-    //     currMembers = members[currGroup.id];
-    // }
-    // for (member of currMembers) {
-    //     // if already visited, then add the circle into newCircle children list
-    //     if (visited.hasOwnProperty(member.id)) {
-    //         var visitedGroup = visited[member.id];
+    var currMembers
+    if (!members[currGroup.id]) {
+        currMembers = await getGroupMembers(currGroup.id);
+    } else {
+        currMembers = members[currGroup.id];
+    }
+    for (member of currMembers) {
+        // if already visited, then add the circle into newCircle children list
+        if (visited.hasOwnProperty(member.id)) {
+            var visitedGroup = visited[member.id];
 
-    //         // if flatten groups, then don't add this group to children
-    //         if (!flattenGroups) {
-    //             // find where the group is located in data
-    //             newCircle.children.push(visitedGroup);
-    //         }
+            // if flatten groups, then don't add this group to children
+            if (!flattenGroups) {
+                // find where the group is located in data
+                newCircle.children.push(visitedGroup);
+            }
 
-    //         // if only show parent groups, then delete this group from data
-    //         if (showOnlyParentGroups) {
-    //             var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
-    //             if (indexOfGroupData >= 0) {
-    //                 data.children.splice(indexOfGroupData, 1);
-    //             }
-    //         }
-    //     }
-    //     // otherwise, recurse on the member and push to newCircle children list
-    //     else {
-    //         // if group, get the group with the name
-    //         if (member.type == "GROUP") {
-    //             var indexOfGroup = groups.findIndex(elem => elem.id == member.id);
-    //             if (indexOfGroup < 0) {
-    //                 member = await getGroup(member.id);
-    //             } else {
-    //                 member = groups[indexOfGroup];
-    //             }
-    //         }
-    //         var newData = await loadGroupsDFS(member, currGroup, groups, users, members);
+            // if only show parent groups, then delete this group from data
+            if (showOnlyParentGroups) {
+                var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
+                if (indexOfGroupData >= 0) {
+                    data.children.splice(indexOfGroupData, 1);
+                }
+            }
+        }
+        // otherwise, recurse on the member and push to newCircle children list
+        else {
+            // if group, get the group with the name
+            if (member.type == "GROUP") {
+                var indexOfGroup = groups.findIndex(elem => elem.id == member.id);
+                if (indexOfGroup < 0) {
+                    member = await getGroup(member.id);
+                } else {
+                    member = groups[indexOfGroup];
+                }
+            }
+            var newData = await loadGroupsDFS(member, currGroup);
 
-    //         // if flatten groups, then don't add this group to children
-    //         if (!flattenGroups) {
-    //             newCircle.children.push(newData);
-    //         } else {
-    //             if (member.type == "USER") {
-    //                 newCircle.children.push(newData);
-    //             } else {
-    //                 newCircle.value += newData.value;
-    //             }
-    //         }
-    //     }
-    // }
-    // // if no children, delete
-    // if (newCircle.children.length == 0) {
-    //     delete newCircle.children
-    // }
-    // // mark this current group as visited
-    // visited[currGroup.id] = newCircle;
-    // // if on group details page, then add to the groups list
-    // var indexOfGroup = groups.findIndex(elem => elem.id == currGroup.id);
-    // if (indexOfGroup < 0) {
-    //     groups.push(currGroup);
-    // }
-    // return newCircle;
-    return 1;
+            // if flatten groups, then don't add this group to children
+            if (!flattenGroups) {
+                newCircle.children.push(newData);
+            } else {
+                if (member.type == "USER") {
+                    newCircle.children.push(newData);
+                } else {
+                    newCircle.value += newData.value;
+                }
+            }
+        }
+    }
+    // if no children, delete
+    if (newCircle.children.length == 0) {
+        delete newCircle.children
+    }
+    // mark this current group as visited
+    visited[currGroup.id] = newCircle;
+    // if on group details page, then add to the groups list
+    var indexOfGroup = groups.findIndex(elem => elem.id == currGroup.id);
+    if (indexOfGroup < 0) {
+        groups.push(currGroup);
+    }
+    return newCircle;
 }
 
 /** Returns the corresponding list of members for the group with the id */
@@ -745,14 +740,14 @@ async function selectRole(id, parentId) {
     var user = usersDisplayed[usersDisplayed.findIndex(elem => elem.id == id)];
 
     const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' 
-    + parentId + '/members/' + user.primaryEmail,
+    + parentId + '/members/' + user.emails[0].address,
     {
         headers: {
             'authorization': `Bearer ` + token,
             'Content-Type': 'application/json'
         },
         method: 'PUT',
-        body: JSON.stringify({"email": user.primaryEmail, "role": role.toUpperCase()})
+        body: JSON.stringify({"email": user.emails[0].address, "role": role.toUpperCase()})
     })
     const json = await response.json();
     console.log(json)
@@ -801,7 +796,7 @@ function removeMemberModal(id, parentId) {
     if (userIndex < 0) {
         memberEmail = groups[groups.findIndex(elem => elem.id == id)].email;
     } else {
-        memberEmail = usersDisplayed[userIndex].primaryEmail;
+        memberEmail = usersDisplayed[userIndex].emails[0].address;
     }
 
     document.getElementById("removeMemberButton").onclick = () => removeMember(memberEmail, parentId);
@@ -863,7 +858,7 @@ function addMemberModal(id) {
     var memberOptions = [];
     memberOptions.push("<option value=null selected='selected'>Select member...</option>");
     for (user of users) {
-        memberOptions.push("<option value='" + user.primaryEmail + "' id='" + user.primaryEmail + "'>" + user.primaryEmail + " </option>");
+        memberOptions.push("<option value='" + user.emails[0].address + "' id='" + user.emails[0].address + "'>" + user.emails[0].address + " </option>");
     }
     for (group of groups) {
         memberOptions.push("<option value='" + group.email + "' id='" + group.email + "'>" + group.email + " </option>");
