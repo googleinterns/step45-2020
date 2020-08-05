@@ -534,102 +534,101 @@ async function loadGroups() {
 }
 
 async function loadGroupsDFS(currGroup, parentGroup, groups, users, members) {
-    // if (currGroup.type == "USER") {
-    //     var userData;
-    //     // a user can have different roles depending on which group
-    //     var userIndex = usersDisplayed.findIndex(elem => elem.id == currGroup.id)
-    //     if (userIndex < 0) {
-    //         // if not visited user yet, get user from users map
-    //         userIndex = users.findIndex(elem => elem.id == currGroup.id)
-    //         if (userIndex < 0) {
-    //             userData = await getUser(currGroup.id);
-    //         } else {
-    //             userData = users[userIndex];
-    //         }
-    //         userData.roles = {};
-    //         usersDisplayed.push(userData);
-    //     } else {
-    //         userData = usersDisplayed[userIndex];
-    //     }
-    //     userData.roles[parentGroup.id] = currGroup.role;
-    //     return {
-    //         name: userData.name.fullName,
-    //         value: 1,
-    //         id: userData.id,
-    //         type: currGroup.type
-    //     }
-    // }
+    if (currGroup.type == "USER") {
+        var userData;
+        // a user can have different roles depending on which group
+        var userIndex = usersDisplayed.findIndex(elem => elem.id == currGroup.id)
+        if (userIndex < 0) {
+            // if not visited user yet, get user from users map
+            userIndex = users.findIndex(elem => elem.id == currGroup.id)
+            if (userIndex < 0) {
+                userData = await getUser(currGroup.id);
+            } else {
+                userData = users[userIndex];
+            }
+            userData.roles = {};
+            usersDisplayed.push(userData);
+        } else {
+            userData = usersDisplayed[userIndex];
+        }
+        userData.roles[parentGroup.id] = currGroup.role;
+        return {
+            name: userData.name.fullName,
+            value: 1,
+            id: userData.id,
+            type: currGroup.type
+        }
+    }
     // create a new circle for this current group with an initial empty children list
-    // var newCircle = {
-    //     name: currGroup.name,
-    //     children: [],
-    //     value: parseInt(currGroup.directMembersCount == 0 ? 1 : currGroup.directMembersCount),
-    //     id: currGroup.id
-    // }
+    var newCircle = {
+        name: currGroup.name,
+        children: [],
+        value: parseInt(currGroup.directMembersCount == 0 ? 1 : currGroup.directMembersCount),
+        id: currGroup.id
+    }
     // if members for this group does not exist
-    // var currMembers
-    // if (!members[currGroup.id]) {
-    //     currMembers = await getGroupMembers(currGroup.id);
-    // } else {
-    //     currMembers = members[currGroup.id];
-    // }
-    // for (member of currMembers) {
-    //     // if already visited, then add the circle into newCircle children list
-    //     if (visited.hasOwnProperty(member.id)) {
-    //         var visitedGroup = visited[member.id];
+    var currMembers
+    if (!members[currGroup.id]) {
+        currMembers = await getGroupMembers(currGroup.id);
+    } else {
+        currMembers = members[currGroup.id];
+    }
+    for (member of currMembers) {
+        // if already visited, then add the circle into newCircle children list
+        if (visited.hasOwnProperty(member.id)) {
+            var visitedGroup = visited[member.id];
 
-    //         // if flatten groups, then don't add this group to children
-    //         if (!flattenGroups) {
-    //             // find where the group is located in data
-    //             newCircle.children.push(visitedGroup);
-    //         }
+            // if flatten groups, then don't add this group to children
+            if (!flattenGroups) {
+                // find where the group is located in data
+                newCircle.children.push(visitedGroup);
+            }
 
-    //         // if only show parent groups, then delete this group from data
-    //         if (showOnlyParentGroups) {
-    //             var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
-    //             if (indexOfGroupData >= 0) {
-    //                 data.children.splice(indexOfGroupData, 1);
-    //             }
-    //         }
-    //     }
-    //     // otherwise, recurse on the member and push to newCircle children list
-    //     else {
-    //         // if group, get the group with the name
-    //         if (member.type == "GROUP") {
-    //             var indexOfGroup = groups.findIndex(elem => elem.id == member.id);
-    //             if (indexOfGroup < 0) {
-    //                 member = await getGroup(member.id);
-    //             } else {
-    //                 member = groups[indexOfGroup];
-    //             }
-    //         }
-    //         var newData = await loadGroupsDFS(member, currGroup, groups, users, members);
+            // if only show parent groups, then delete this group from data
+            if (showOnlyParentGroups) {
+                var indexOfGroupData = data.children.findIndex(elem => elem.id == visitedGroup.id);
+                if (indexOfGroupData >= 0) {
+                    data.children.splice(indexOfGroupData, 1);
+                }
+            }
+        }
+        // otherwise, recurse on the member and push to newCircle children list
+        else {
+            // if group, get the group with the name
+            if (member.type == "GROUP") {
+                var indexOfGroup = groups.findIndex(elem => elem.id == member.id);
+                if (indexOfGroup < 0) {
+                    member = await getGroup(member.id);
+                } else {
+                    member = groups[indexOfGroup];
+                }
+            }
+            var newData = await loadGroupsDFS(member, currGroup, groups, users, members);
 
-    //         // if flatten groups, then don't add this group to children
-    //         if (!flattenGroups) {
-    //             newCircle.children.push(newData);
-    //         } else {
-    //             if (member.type == "USER") {
-    //                 newCircle.children.push(newData);
-    //             } else {
-    //                 newCircle.value += newData.value;
-    //             }
-    //         }
-    //     }
-    // }
-    // // if no children, delete
-    // if (newCircle.children.length == 0) {
-    //     delete newCircle.children
-    // }
-    // // mark this current group as visited
-    // visited[currGroup.id] = newCircle;
-    // // if on group details page, then add to the groups list
-    // var indexOfGroup = groups.findIndex(elem => elem.id == currGroup.id);
-    // if (indexOfGroup < 0) {
-    //     groups.push(currGroup);
-    // }
-    // return newCircle;
-    return 1;
+            // if flatten groups, then don't add this group to children
+            if (!flattenGroups) {
+                newCircle.children.push(newData);
+            } else {
+                if (member.type == "USER") {
+                    newCircle.children.push(newData);
+                } else {
+                    newCircle.value += newData.value;
+                }
+            }
+        }
+    }
+    // if no children, delete
+    if (newCircle.children.length == 0) {
+        delete newCircle.children
+    }
+    // mark this current group as visited
+    visited[currGroup.id] = newCircle;
+    // if on group details page, then add to the groups list
+    var indexOfGroup = groups.findIndex(elem => elem.id == currGroup.id);
+    if (indexOfGroup < 0) {
+        groups.push(currGroup);
+    }
+    return newCircle;
 }
 
 /** Returns the corresponding list of members for the group with the id */
