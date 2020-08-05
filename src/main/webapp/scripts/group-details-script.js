@@ -38,14 +38,14 @@ async function loadGroup() {
         
     // collect all the promises
     var promises = [];
-    for (g of groups) {
+    for (group of groups) {
         // iterate through all the groups and get their direct members
-        promises.push(getGroupMembers(g.id));
+        promises.push(getGroupMembers(group.id));
     }
 
     Promise.all(promises)
     .then(async function(results) {
-        var newData = await loadGroupsDFS(group, null, groups, users, members);
+        var newData = await loadGroupsDFS(group);
         data.children.push(newData);
         
         visualize();
@@ -95,7 +95,7 @@ async function setGroupSettings() {
 }
 
 /** Returns the access type based on this group's settings */
-function getAccessType(settings) {
+function getAccessType() {
     if (Object.keys(diff(settings, publicSettings)).length == 0) {
         accessType = "Public";
     } else if (Object.keys(diff(settings, teamSettings)).length == 0) {
