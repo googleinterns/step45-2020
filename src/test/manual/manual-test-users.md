@@ -11,7 +11,7 @@ _Search bar on the main users page sidebar for searching users by `name` or `ema
 | Press "enter" key or click blue search icon to search by user adress "admin@" | `addUserToData` with the 'if(searchInput)' case is called, the svg graph contains users match by email prefix | - [x] Y |
 | Click the X button to clear search results | variable 'searchInput' is empty, 'addUserToData' executes the cases with no search input| - [x] Y |
 
-#### `orderBy'
+#### `orderBy`
 _Select dropdown menu under `Order by` to order users alphebatically_
 | Test case | Expected Result | Observed Result (Y/N) |
 | ------ | ------ | ------ |
@@ -67,4 +67,4 @@ _In `userdetails.html` page, there's a red `delete` icon for each group the user
 
 ## Unit Testing
 
-You can find the Jasmine unit testing scripts for groups in `test-groups.js` and `test-group-details.js` in the `src/test/javascript` directory.
+You can find the Jasmine unit testing scripts for groups in `test-users.js` in the `src/test/javascript` directory.
