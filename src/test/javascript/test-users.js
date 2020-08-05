@@ -1,3 +1,7 @@
+beforeEach(function () {
+    loadFixtures('test-user.html');
+});
+
 var body = $('body').first();
 
 var UIFramework = (function() {
@@ -27,6 +31,8 @@ describe("Test checkboxes", function() {
    
     it("test adding and removing orgunits to filter", function(done) {
         var orgUnitInput = ["checkbox-value1"];
+        var testid = document.getElementById("num-filter-users");
+        testid.innerText = 5;
 
         $.getScript('/src/main/webapp/scripts/users-script.js', function() { 
             spyOn(window, "clearSearch");
@@ -93,6 +99,75 @@ describe("Test add user to data", function(){
             done();
         });
     });
-    
 });
 
+describe("Test building org unit path for single user", function(){
+    var flatdata = [
+        {name: "West-coast", path: "/West-coast", parentPath: "/", users: []},
+        {name: "East-coast", path: "/East-coast", parentPath: "/", users: []},
+        {name: "GRoot Test", path: "/", parentPath: null, users: []}
+    ];
+
+    it("org unit path with 1 level", function(done) {
+        var singleBranchOUs = [];
+        $.getScript('/src/main/webapp/scripts/user-details-script.js', function() {
+            addOUToSingleBranch("/", singleBranchOUs, flatdata);
+            expect(singleBranchOUs.length).toEqual(1);
+            expect(singleBranchOUs[0].path).toEqual('/');
+            done();
+        })
+    })
+
+    it("org unit path with 2 levels", function(done) {
+        var singleBranchOUs = [];
+        $.getScript('/src/main/webapp/scripts/user-details-script.js', function() {
+            addOUToSingleBranch("/East-coast", singleBranchOUs, flatdata);
+            expect(singleBranchOUs.length).toEqual(2);
+            expect(singleBranchOUs[0].path).toEqual('/East-coast');
+            expect(singleBranchOUs[1].path).toEqual('/');
+            done();
+        })
+    })
+});
+
+describe("Test add path selections for editing org unit path for single user", function(){
+    var ous = [
+        {name: "West-coast", orgUnitPath: "/West-coast"},
+        {name: "East-coast", orgUnitPath: "/East-coast"}
+    ];
+
+    it("addPathSelections", function(done) {
+        $.getScript('/src/main/webapp/scripts/user-details-script.js', function() {
+            expect($('#paths').children().length).toBe(0);
+            addPathSelections(ous, "/East-coast");
+            expect($('#paths').children().length).toBe(2);
+            done();
+        });
+    });
+});
+
+describe("Test user details page: list groups", function(){
+    var groups = [
+        {id: "02y3w24745z8hy8", name: "AC SRE SVL", email: "acsresvl@groot-test.1bot2.info"},
+        {id: "01d96cc03ttea2i", name: "cornell-2022", email: "cornell-class-of-2022@groot-test.1bot2.info"},
+        {id: "02p2csry3w979pn", name: "test-group-exclude-dolde", email: "test-group-exclude-dolde@groot-test.1bot2.info"}
+    ]
+
+    it("addUserGroups with 3 groups", function(done) {
+        $.getScript('/src/main/webapp/scripts/user-details-script.js', function() {
+            expect($('#user-groups').children().length).toBe(0);
+            addUserGroups(groups);
+            expect($('#user-groups').children().length).toBe(3);
+            done();
+        });
+    });
+
+    it("addUserGroups with 0 group", function(done) {
+        $.getScript('/src/main/webapp/scripts/user-details-script.js', function() {
+            expect($('#user-groups').children().length).toBe(0);
+            addUserGroups([]);
+            expect($('#user-groups').children().length).toBe(0);
+            done();
+        });
+    });
+});
