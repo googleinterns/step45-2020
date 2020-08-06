@@ -14,9 +14,9 @@ our repository and make your own instance of GCP App Engine.
 
 ### Clone the Repo and set up your own instance
 1. Open up your terminal, we recommand [Google Cloud Shell](https://ssh.cloud.google.com/cloudshell/) if you have a Google account, you can log in with your admin account.
-2. Use `cd` to change directory to your target path, then clone the repo: `git clone https://github.com/googleinterns/step45-2020.git`
-3. `cd step45-2020`
-4. `sudo apt install ./google-chrome-beta_current_amd64.deb`
+2. `$cd` to change directory to your target path, then clone the repo: `$ git clone https://github.com/googleinterns/step45-2020.git`
+3. `$ cd step45-2020`
+4. `$ sudo apt install ./google-chrome-beta_current_amd64.deb`
 5. run `$ mvn package appengine:run -DskipTests=true`
 6. After seeing `Dev app Server is now running`, click the rectangle button left to three dots in top right -> `Preview on port 8080`, the project is not set up yet, but you need to copy your server url, i.e. https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev
 7. `ctrl + c` to interrupt the running project. 
@@ -41,7 +41,7 @@ APIs & Services -> Dashboard -> ENABLE APIS AND SERVICES -> Search for `Admin SD
 3. Under Authorized JavaScript origins -> URIs and Authorized redirect URIs -> URIs, add your server url, i.e. https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev
 
 ### To run locally:
-1. run `$ mvn package appengine:run -DskipTests=true` or `mvn package appengine:run` (the later command will run test cases)
+1. run `$ mvn package appengine:run -DskipTests=true` or `$ mvn package appengine:run` (the later command will run test cases)
    * This runs your localhost:8080 cloudshell server
    * Copy the URL from the browser search bar, i.e. https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev
 
@@ -60,9 +60,9 @@ You can execute tests by running `mvn test` which will execute the javascript te
 Mavin will download most of the requirments including the Chrome Webdriver, but Chrome will need to be installed. By default it uses the latest beta version.
 
 For Cloud Shell, run the following commands at the start of your session to install Chrome beta
-1. `wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb`
-2. `sudo apt install ./google-chrome-beta_current_amd64.deb`
-3. `mvn test`
+1. `$ wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb`
+2. `$ sudo apt install ./google-chrome-beta_current_amd64.deb`
+3. `$ mvn test`
 
 Alternatively, you can create a .customize_environment file based on the sample file provided under samples/ 
 Cloud Shell will execute this script every time Cloud Shell starts.
