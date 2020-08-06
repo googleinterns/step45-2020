@@ -41,3 +41,6 @@ For Cloud Shell, run the following commands at the start of your session to inst
 
 Alternatively, you can create a .customize_environment file based on the sample file provided under samples/ 
 Cloud Shell will execute this script every time Cloud Shell starts.
+
+View manual tests here:
+1. [Groups](../../src/test/manual-test-groups.md)
