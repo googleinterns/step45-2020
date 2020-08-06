@@ -17,8 +17,7 @@ function visualize(orgUnitsTree) {
         .attr("transform", "translate("
             + margin.left + "," + margin.top + ")");
 
-    var i = 0,
-        duration = 750,
+    var duration = 750,
         root;
 
     // declares a tree layout and assigns the size
@@ -53,6 +52,9 @@ function visualize(orgUnitsTree) {
         nodes.forEach(function(d){ d.y = d.depth * 180});
 
         // ****************** Nodes section ***************************
+
+        // used to uniquely ID each data node below
+        var i = 0;
 
         // Update the nodes...
         var node = svg.selectAll('g.node')
