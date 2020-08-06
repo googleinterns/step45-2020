@@ -89,7 +89,7 @@ function ouDepthSort(ou1, ou2) {
 /*
  * Given an OU, finds all its parents. Used for Search display.
 */
-function retrieveOUParents(searchedOU) {
+function retrieveOUParents(searchedOU, orgUnits) {
     // assemble the matching query's parents
     var limitedOUs = [];
     var parentOrgUnitPath = searchedOU['parentOrgUnitPath'];

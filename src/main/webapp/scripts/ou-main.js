@@ -175,7 +175,7 @@ function executeSearch() {
         } else if (searchedOUList.length == 1) {
             // render the tree of the one matching OU
             var searchedOU = searchedOUList[0];
-            filteredOUs = retrieveOUParents(searchedOU);
+            filteredOUs = retrieveOUParents(searchedOU, orgUnits);
             renderOUs(filteredOUs);
         } else {
             // else open selection modal
@@ -200,7 +200,7 @@ function displayOUSelected() {
     var ouToDisplay = JSON.parse(document.getElementById("search-matches-select").value);
     $('#multiple-query-modal').modal('hide');
     // construct the tree for this chosen OU
-    filteredOUs = retrieveOUParents(ouToDisplay);
+    filteredOUs = retrieveOUParents(ouToDisplay, orgUnits);
     renderOUs(filteredOUs);
 }
 

@@ -20,6 +20,7 @@ describe("Test ComputeDepth", function() {
 });
 
 
+
 describe("Test OUDepthSort", function() {
     
   var shortPath = {"orgUnitPath": "/onedepth"};
@@ -37,117 +38,55 @@ describe("Test OUDepthSort", function() {
 });
 
 
-// FAILING TEST
-describe("Test ConstructD3JSON", function() {
 
+function createOUJSON(orgUnitPath, parentOrgUnitPath) {
+    var outputOU = {};
+    outputOU.orgUnitPath = orgUnitPath;
+    outputOU.parentOrgUnitPath = parentOrgUnitPath;
+    return outputOU;
+}
+
+describe("Test RetrieveOUParents", function() {
   var testOUs = [];
 
+  // initialize the searched OU and its expected parents
+  var queriedOU = createOUJSON("/NA/business/sales", "/NA/business");
+  var topParentOU = createOUJSON("/NA", "/");
+  var directParentOU = createOUJSON("/NA/business", "/NA");
+
   // add data under /NA/business
-  addOUJSONToList(testOUs, "sales", "/NA/business");
-  addOUJSONToList(testOUs, "marketing", "/NA/business");
+  testOUs.push(queriedOU);
+  testOUs.push(createOUJSON("/NA/business/marketing", "/NA/business"));
 
   // add data under /EMEA
-  addOUJSONToList(testOUs, "all", "/EMEA");
+  testOUs.push(createOUJSON("/EMEA/business", "/EMEA"));
 
   // add data under root
-  addOUJSONToList(testOUs, "NA", "/");
-  addOUJSONToList(testOUs, "EMEA", "/");
+  testOUs.push(topParentOU);
+  testOUs.push(createOUJSON("/EMEA", "/"));
+  testOUs.push(createOUJSON("/business", "/"));
 
   // add data under /NA
-  addOUJSONToList(testOUs, "business", "/NA");
-  addOUJSONToList(testOUs, "engineering", "/NA");
-  addOUJSONToList(testOUs, "essentials", "/NA");
+  testOUs.push(directParentOU);
+  testOUs.push(createOUJSON("/NA/engineering", "/NA"));
+  testOUs.push(createOUJSON("/NA/essentials", "/NA"));
 
 
-  it("constructing D3 tree-like JSON", function(done) {
+  it("compile correct OU parents", function(done) {
     
     $.getScript('/src/main/webapp/scripts/ou-utils.js', function() {
-        var expectedJSONTree = {
-            "name": "root",
-            "parentOrgUnitPath": "",
-            "description": "The root organizational unit.",
-            "orgUnitPath": "/",
-            "blockInheritance": false,
-            "children": [
-                {
-                    "name": "NA",
-                    "parentOrgUnitPath": "/",
-                    "children": [
-                        {
-                            "name": "business",
-                            "parentOrgUnitPath": "/NA",
-                            "children": [
-                                {
-                                    "name": "sales",
-                                    "parentOrgUnitPath": "/NA/business",
-                                    "children": []
-                                },
-                                {
-                                    "name": "marketing",
-                                    "parentOrgUnitPath": "/NA/business",
-                                    "children": []
-                                }
-                            ]
-                        },
-                        {
-                            "name": "engineering",
-                            "parentOrgUnitPath": "/NA",
-                            "children": []
-                        },
-                        {
-                            "name": "essentials",
-                            "parentOrgUnitPath": "/NA",
-                            "children": []
-                        }
-                    ]
-                },
-                {
-                    "name": "EMEA",
-                    "parentOrgUnitPath": "/",
-                    "children": [
-                        {
-                            "name": "all",
-                            "parentOrgUnitPath": "/EMEA",
-                            "children": []
-                        }
-                    ]
-                }
-            ]
-        };
+        var parentOUsList = retrieveOUParents(queriedOU, testOUs);
 
-        // ensure data is sorted before pass in
-        testOUs.sort(ouDepthSort);
+        expect(parentOUsList.length).toBe(3);
 
-        var treeLikeJSON = constructD3JSON(testOUs);
-
-        // none of the following expects worked
-        // ERROR: constructing D3 tree-like JSON <<< FAILURE!
-        // * Uncaught TypeError: Cannot read property 'match' of undefined thrown
-
-        // expect(_.isEqual(treeLikeJSON, expectedJSONTree)).toEqual(true);
-        expect(treeLikeJSON).toContain(jasmine.objectContaining(
-            {
-                "name": "root",
-                "parentOrgUnitPath": "",
-                "description": "The root organizational unit.",
-                "orgUnitPath": "/",
-                "blockInheritance": false
-            }
-        ));
-        // expect(JSONAssert.assertEquals(expectedJSONTree, treeLikeJSON, false)).toEqual(true);
+        expect(parentOUsList).toContain(jasmine.objectContaining(queriedOU));
+        expect(parentOUsList).toContain(jasmine.objectContaining(topParentOU));
+        expect(parentOUsList).toContain(jasmine.objectContaining(directParentOU));
 
         done();
      });
   });
 });
-
-function addOUJSONToList(listOfOUs, name, parentOrgUnitPath) {
-    var outputOU = {};
-    outputOU.name = name;
-    outputOU.parentOrgUnitPath = parentOrgUnitPath;
-    listOfOUs.push(outputOU);
-}
-
 
 
 
