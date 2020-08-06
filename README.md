@@ -5,9 +5,9 @@ Welcome to GRoot - Admin Console Visualizer!
 GRoot helps you to better visualize the structure and relationships for organizational units, groups, and users. You could also perform admin 
 operations, such as adding, deleting, editing, smoothly with our interative interface.
 
-![Organization Unit](src/Screenshot-OU?raw=true "Organization Unit")
-![Group](src/Screenshot-Group?raw=true "Group")
-![User](src/Screenshot-User?raw=true "User")
+<img src="src/Screenshot-OU.png">
+<img src="src/Screenshot-Group.png">
+<img src="src/Screenshot-User.png">
 
 Because G Suite Admin SDK contains sensitive user data, to prevent potential privacy issues, we recommend you to clone 
 our repository and make your own instance of GCP App Engine. 
