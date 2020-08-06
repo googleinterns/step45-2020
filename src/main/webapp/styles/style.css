@@ -6,6 +6,10 @@
     color: #888;
 }
 
+.lead {
+    font-size: 1.15em;
+}
+
 /* BODY */
 
 body {
@@ -37,6 +41,7 @@ body {
     border-top: 1px solid #e0e0e0;
     box-shadow: 0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12), 0 1px 3px 0 rgba(0,0,0,0.2);
     padding: 0;
+    color: #888;
 }
 
 .btn {
@@ -176,11 +181,101 @@ th {
 
 .masthead {
   height: 100vh;
-  min-height: 500px;
-  background-image: url('https://source.unsplash.com/BtbjCFUvBXs/1920x1080');
+  min-height: 350px;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2)), url(/images/screenshot.png);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  color: #fff;
+}
+
+.showcase .showcase-text {
+  padding: 3rem;
+}
+
+.showcase .showcase-text .showcase-icon {
+    background: #fff;
+    border-radius: 50%;
+    margin: 10px 0;
+    width: 5rem;
+    height: 5rem;
+    padding: 1rem;
+}
+
+.showcase .showcase-text.text-right .showcase-icon {
+    margin-left: auto;
+}
+
+.showcase .showcase-text .showcase-icon img {
+    width: 100%;
+    height: 100%;
+}
+
+.showcase .showcase-img {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url(https://source.unsplash.com/BtbjCFUvBXs/1920x1080) no-repeat center center;
+}
+
+.showcase .showcase-img video {
+    max-width: 80%;
+    position: absolute;
+}
+
+@media (min-width: 768px) {
+  .showcase .showcase-text {
+    padding: 7rem;
+  }
+}
+
+.features-icons {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+.features-icons .features-icons-item {
+  max-width: 25rem;
+}
+
+.features-icons .features-icons-item .feature-icon {
+    width: 20%;
+    margin: 1rem auto;
+}
+
+.testimonials {
+  padding-top: 7rem;
+  padding-bottom: 7rem;
+}
+
+.testimonials .testimonial-item {
+  max-width: 25rem;
+}
+
+.testimonials .testimonial-item img {
+  max-width: 12rem;
+  box-shadow: 0px 5px 5px 0px #adb5bd;
+  width: 200px;
+  height: 200px;
+}
+
+.call-to-action {
+  position: relative;
+  background-color: #343a40;
+  background: url('https://source.unsplash.com/BtbjCFUvBXs/1920x1080') no-repeat center center;
+  background-size: cover;
+  padding-top: 7rem;
+  padding-bottom: 7rem;
+}
+
+.call-to-action .call-to-action-overlay {
+  position: absolute;
+  background-color: #212529;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0.3;
 }
 
 /* HOME */
@@ -255,6 +350,8 @@ th {
     justify-content: center;
     align-items: center;
 }
+
+/* OTHER STYLES */
 
 .accordion {
     margin-bottom: 12px;

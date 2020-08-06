@@ -8,8 +8,10 @@
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-        
+        <script src="../scripts/font-awesome.js"></script>
+
         <link rel="stylesheet" href="styles/style.css">
+        <link rel="stylesheet" href="styles/markdown.css">
         <script src="https://apis.google.com/js/platform.js" async defer></script>
         <script src="scripts/script.js"></script>
     </head>
@@ -24,8 +26,18 @@
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="https://github.com/googleinterns/step45-2020">
-                            <i class="fa fa-github" aria-hidden="true"></i>
-                            <span>See Github</span>
+                            <button type="submit" class="btn btn-light">
+                                <i class="fa fa-github" aria-hidden="true"></i>
+                                <span>See Github</span>
+                            </button>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link">
+                            <button type="submit" class="btn btn-dark" onclick="oauth2SignIn()">
+                                <i class="fa fa-user"></i>
+                                Log in
+                            </button>
                         </a>
                     </li>
                 </ul>
@@ -70,16 +82,236 @@
         <div id="login-form-container" class="hidden">
             <!-- Full Page Image Header with Vertically Centered Content -->
             <header class="masthead">
-            <div class="container h-100">
-                <div class="row h-100 align-items-center">
-                <div class="col-12 text-center">
-                    <h1 class="font-weight-light">Hello!</h1>
-                    <p class="lead">I am Groot. Who are you?</p>
-                    <button type="submit" class="btn btn-primary" onclick="oauth2SignIn()">Log in</button>
+                <div class="container h-100">
+                    <div class="row h-100 align-items-center">
+                        <div class="col-5 masthead-text">
+                            <h1 class="font-weight-light masthead-title">gRoot Admin Console Visualizer</h1>
+                            <p class="lead masthead-caption">
+                                Interactively displays organizational units, groups, and users within a G Suite domain. 
+                                Allows creation, modification,and deletion of G Suite Admin Console data.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                </div>
-            </div>
             </header>
+
+            <!-- Icons Grid -->
+            <section class="features-icons bg-light text-center">
+                <div class="container">
+                <div class="row">
+                    <div class="col-lg-4">
+                    <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
+                        <div class="features-icons-icon d-flex">
+                            <img src="/images/visualizations.png" class="feature-icon" />
+                        </div>
+                        <h3>Visualizations</h3>
+                        <p class="lead mb-0 text-justify">
+                            Using the d3.js library, organizational units are visualized using a collapsible tree diagram, 
+                            groups using circle-packing, and users using tree maps. 
+                            The visualizations also incorporate searching and filtering for toggling granularity.
+                        </p>
+                    </div>
+                    </div>
+                    <div class="col-lg-4">
+                    <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
+                        <div class="features-icons-icon d-flex">
+                            <img src="/images/apis.png" class="feature-icon" />
+                        </div>
+                        <h3>Admin Console</h3>
+                        <p class="lead mb-0 text-justify">
+                            The application mainly uses the Google Admin SDK 
+                            to retrieve organizational units, groups, and users and manipulate data and setting properties.
+                            It emulates Admin Console features and embeds them intuitively into the visualizations.
+                        </p>
+                    </div>
+                    </div>
+                    <div class="col-lg-4">
+                    <div class="features-icons-item mx-auto mb-0 mb-lg-3">
+                        <div class="features-icons-icon d-flex">
+                            <img src="/images/opensource.png" class="feature-icon" />
+                        </div>
+                        <h3>Open Source</h3>
+                        <p class="lead mb-0 text-justify">
+                            The code is publicly available on Github, and instructions for 
+                            cloning and launching the web application are included in the README.md file. 
+                            The web application runs on the Google Cloud Platform (GCP) App Engine and Apache Maven.
+                        </p>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </section>
+
+            <!-- Image Showcases -->
+            <section class="showcase">
+                <div class="container-fluid p-0">
+                <div class="row no-gutters">
+                    <div class="col-lg-6 order-lg-2 text-white showcase-img">
+                        <video controls autoplay loop>
+                            <source src="/images/orgunits.webm" type="video/webm">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+                        <div class="showcase-icon">
+                            <img src="images/orgunits.png" alt="org-units" />
+                        </div>
+                        <h2>Organizational Units</h2>
+                        <p class="lead mb-0">
+                            Conveys the OU hierarchy with an interactive tree visual (built with D3.JS)
+                            Domain, How many OUs / Layers Shown vs Total, Search, Limit Layers
+                            Create, Update, and Delete OUs given the necessary paths / info
+                            Auto Populating paths, Delete confirmation modal, Multiple Search match modal
+                        </p>
+                    </div>
+                </div>
+                <div class="row no-gutters">
+                    <div class="col-lg-6 text-white showcase-img">
+                        <video controls autoplay loop>
+                            <source src="/images/groups.webm" type="video/webm">
+                                Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="col-lg-6 my-auto showcase-text text-right">
+                        <div class="showcase-icon">
+                            <img src="images/groups.png" alt="groups" />
+                        </div>
+                        <h2>Groups</h2>
+                        <p class="lead mb-0">
+                            A zoomable circle-packing graph with hovering tooltip informational cards provides 
+                            an intuitive way to display all the groups in the domain and their direct and indirect 
+                            parent-child relationships. The customer can also search and filter specific groups and 
+                            toggle 4 different types of viewing options, as well as create, edit, and delete groups
+                            and modify their memberships.
+                        </p>
+                    </div>
+                </div>
+                <div class="row no-gutters">
+                    <div class="col-lg-6 order-lg-2 text-white showcase-img">
+                        <video controls autoplay loop>
+                            <source src="/images/users.webm" type="video/webm">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+                        <div class="showcase-icon">
+                            <img src="images/users.png" alt="users" />
+                        </div>
+                        <h2>Users</h2>
+                        <p class="lead mb-0">
+                            A zoomable treemap graph with rectangles representing org units and list of users inside each org unit
+                            A user detail page displaying the org unit path of the user and groups where the user is a member of.
+                            Users can be searched by name or email, filtered by org units / groups, ordered by first name / last name
+                            Customers can add user under specific org units directly, delete or rename users with ease. They could also 
+                            change the org unit path or add /delete groups for the user.
+                        </p>
+                    </div>
+                </div>
+                </div>
+            </section>
+
+            <!-- Call to Action -->
+            <section class="call-to-action text-white text-center">
+                <div class="call-to-action-overlay"></div>
+                <div class="container">
+                <div class="row">
+                    <div class="col-xl-9 mx-auto">
+                        <h2 class="mb-4">Ready to get started?</h2>
+                    </div>
+                    <div class="col-md-10 col-lg-8 col-xl-7 mx-auto">
+                        <p>If you have already set up your account and followed all the instructions below, <a onclick="oauth2SignIn()">sign in</a>.</p>
+                    </div>
+                    <div class="col-md-10 col-lg-8 col-xl-7 mx-auto">
+                        <div class="card" style="text-align: left; padding: 10px">
+                            <h4 class="mt-4">Clone the Repo and set up your own instance</h4>
+                            <p>1. Open up your terminal, we recommand <a href="https://ssh.cloud.google.com/cloudshell/">Google Cloud Shell</a> if you have a Google account, you can log in with your admin account.
+                            <br>2. <code>$ cd</code> to change directory to your target path, then clone the repo: <code>$ git clone https://github.com/googleinterns/step45-2020.git</code>
+                            <br>3. <code>$ cd step45-2020</code>
+                            <br>4. <code>$ sudo apt install ./google-chrome-beta_current_amd64.deb</code>
+                            <br>5. run <code>$ mvn package appengine:run -DskipTests=true</code>
+                            <br>6. After seeing <em>Dev app Server is now running</em>, click the rectangle button left to three dots in top right -> <em>Preview on port 8080</em>, the project is not set up yet, but you need to copy your server url, i.e. https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev
+                            <br>7. <em>ctrl + c</em> to interrupt the running project. </p>
+                            
+                            <h4 class="mt-4">Cloud console configuration</h4>
+                            <h5 class="mt-4">Create the project</h5>
+                            <p>In the <a href="https://console.cloud.google.com/">Cloud Console</a>, first login to your test account, then select create your own project <em>groot</em>. Then, APIs & Services -> OAuth consent screen</p>
+
+                            <h5 class="mt-4">Eable Admin SDK API</h5>
+                            <p>APIs & Services -> Dashboard -> ENABLE APIS AND SERVICES -> Search for <em>Admin SDK</em> -> ENABLE</p>
+
+                            <h5 class="mt-4">OAuth Consent screen </h5>
+                            <p>1. APIs & Services -> OAuth consent screen
+                            <br>2. Select <em>User Type</em> to be Internal, then click <em>Create</em>.
+                            <br>3. Click <em>Add scope</em>, then enter the following scopes: <em>https://www.googleapis.com/auth/admin.directory.orgunit</em>, <em>https://www.googleapis.com/auth/admin.directory.group</em>, <em>https://www.googleapis.com/auth/admin.directory.user</em>
+                            <br>4. Under <em>Authorized domains</em>, add <em>cloudshell.dev</em>
+                            <br>5. <em>Save</em> the changes</p>
+
+                            <h5 class="mt-4">Credential</h5>
+                            <p>1. APIs & Services -> Credentials -> Create Credentials -> OAuth Client ID -> Web client 1
+                            <br>2. Click the edit button
+                            <br>3. Under Authorized JavaScript origins -> URIs and Authorized redirect URIs -> URIs, add your server url, i.e. https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev</p>
+
+                            <h5 class="mt-4">To run locally</h5>
+                            <p>run <code>$ mvn package appengine:run -DskipTests=true</code> or <code>$ mvn package appengine:run</code> (the later command will run test cases)
+                            <br>&nbsp* This runs your localhost:8080 cloudshell server
+                            <br>&nbsp* Copy the URL from the browser search bar, i.e. https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev</p>
+                            
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </section>
+
+            <!-- Testimonials -->
+            <section class="testimonials text-center bg-light">
+                <div class="container">
+                <h2 class="mb-3">Meet the Google STEP Interns</h2>
+                <p class="lead col-lg-6 mb-5 mx-auto">Apps Core Admin SRE Team @ Sunnyvale, Summer 2020</p>
+                <div class="row">
+                    <div class="col-lg-4">
+                    <div class="testimonial-item mx-auto mb-5 mb-lg-0">
+                        <img src="/images/prashant.jpg" class="img-fluid rounded-circle mb-3" id="prashant" alt="">
+                        <h5>Prashant Malyala</h5>
+                        <p class="light mb-0">CS @ UC Berkeley, Class of '22</p>
+                        <a href="https://github.com/prashmalyala"><i class="fa fa-github"></i> Github profile</a>
+                        <p class="font-weight-light mt-2">
+                            Lorem ipsum dolor sit amet blurb here
+                            Lorem ipsum dolor sit amet blurb here
+                            Lorem ipsum dolor sit amet blurb here
+                        </p>
+                    </div>
+                    </div>
+                    <div class="col-lg-4">
+                    <div class="testimonial-item mx-auto mb-5 mb-lg-0">
+                        <img src="/images/julia.jpg" class="img-fluid rounded-circle mb-3" id="julia" alt="">
+                        <h5>Julia Liu</h5>
+                        <p class="light mb-0">CS @ UC Berkeley, Class of '22</p>
+                        <a href="https://github.com/juliasliu"><i class="fa fa-github"></i> Github profile</a>
+                        <p class="font-weight-light mt-2">
+                            Hi! I currently work from home in the South Bay, enjoying the comfort of my 
+                            sedentary lifestyle with a hint of Chloe Ting workouts and daily binge of Youtube.
+                            In my free time, I like working on passion projects, hanging out with my friends, 
+                            and engaging in my unhealthy obsession with boba and addiction to yerba mates and chai lattes. 
+                        </p>
+                    </div>
+                    </div>
+                    <div class="col-lg-4">
+                    <div class="testimonial-item mx-auto mb-5 mb-lg-0">
+                        <img src="/images/wenyi.jpg" class="img-fluid rounded-circle mb-3" id="wenyi" alt="">
+                        <h5>Wenyi Guo</h5>
+                        <p class="light mb-0">CS, Math @ Cornell, Class of '22</p>
+                        <a href="https://github.com/wenyi-guo"><i class="fa fa-github"></i> Github profile</a>
+                        <p class="font-weight-light mt-2">
+                            Hi! I'm currently located in Ithaca, NY, enjoying <del> gorgeous nature and trials</del>
+                            <ins>AC and snacks</ins>. My life now is boring because there's not a lot I can do. In my
+                            free time, I like eating and sleeping. I hope everyone can eat and sleep well :)
+                        </p>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </section>
+
         </div>
         <div class="container hidden" id="home-container">
                 <ul class="home-buttons-list">
