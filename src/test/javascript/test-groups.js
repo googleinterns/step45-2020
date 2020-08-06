@@ -1,96 +1,128 @@
-var UIFramework = (function() {
-    function button(id, onclick) {
-        var element = document.createElement("button");
-        element.id = id;
-        element.onclick = onclick;
-        return element;
-    }
+var customSettings1 = {
+    "whoCanAdd": "ALL_MANAGERS_CAN_ADD",	
+    "whoCanAddReferences": "NONE",
+    "whoCanApproveMembers": "ALL_MANAGERS_CAN_APPROVE",	
+    "whoCanApproveMessages": "OWNERS_AND_MANAGERS",	
+    "whoCanAssignTopics": "NONE",	
+    "whoCanAssistContent": "NONE",	
+    "whoCanBanUsers": "OWNERS_AND_MANAGERS",	
+    "whoCanContactOwner": "ANYONE_CAN_CONTACT",	
+    "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",	
+    "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",	
+    "whoCanDiscoverGroup": "ALL_IN_DOMAIN_CAN_DISCOVER",	
+    "whoCanEnterFreeFormTags": "NONE",	
+    "whoCanHideAbuse": "NONE",	
+    "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",
+    "whoCanJoin": "CAN_REQUEST_TO_JOIN",
+    "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",	
+    "whoCanLockTopics": "OWNERS_AND_MANAGERS",	
+    "whoCanMakeTopicsSticky": "NONE",	
+    "whoCanMarkDuplicate": "NONE",	
+    "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",	
+    "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",	
+    "whoCanMarkNoResponseNeeded": "NONE",	
+    "whoCanModerateContent": "OWNERS_AND_MANAGERS",	
+    "whoCanModerateMembers": "OWNERS_AND_MANAGERS",	
+    "whoCanModifyMembers": "NONE",	
+    "whoCanModifyTagsAndCategories": "NONE",	
+    "whoCanMoveTopicsIn": "OWNERS_AND_MANAGERS",	
+    "whoCanMoveTopicsOut": "OWNERS_AND_MANAGERS",	
+    "whoCanPostAnnouncements": "OWNERS_AND_MANAGERS",	
+    "whoCanPostMessage": "NONE_CAN_POST",	
+    "whoCanTakeTopics": "NONE",	
+    "whoCanUnassignTopic": "NONE",	
+    "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",
+    "whoCanViewGroup": "ALL_MANAGERS_CAN_VIEW",
+    "whoCanViewMembership": "ALL_MEMBERS_CAN_VIEW",
+};
+var customSettings2 = {
+    "whoCanAdd": "ALL_MANAGERS_CAN_ADD",	
+    "whoCanAddReferences": "NONE",
+    "whoCanApproveMembers": "ALL_MANAGERS_CAN_APPROVE",	
+    "whoCanApproveMessages": "OWNERS_AND_MANAGERS",	
+    "whoCanAssignTopics": "NONE",	
+    "whoCanAssistContent": "NONE",	
+    "whoCanBanUsers": "OWNERS_AND_MANAGERS",	
+    "whoCanContactOwner": "ANYONE_CAN_CONTACT",	
+    "whoCanDeleteAnyPost": "OWNERS_AND_MANAGERS",	
+    "whoCanDeleteTopics": "OWNERS_AND_MANAGERS",	
+    "whoCanDiscoverGroup": "ALL_IN_DOMAIN_CAN_DISCOVER",	
+    "whoCanEnterFreeFormTags": "NONE",	
+    "whoCanHideAbuse": "NONE",	
+    "whoCanInvite": "ALL_MANAGERS_CAN_INVITE",
+    "whoCanJoin": "CAN_REQUEST_TO_JOIN",
+    "whoCanLeaveGroup": "ALL_MEMBERS_CAN_LEAVE",	
+    "whoCanLockTopics": "OWNERS_AND_MANAGERS",	
+    "whoCanMakeTopicsSticky": "NONE",	
+    "whoCanMarkDuplicate": "NONE",	
+    "whoCanMarkFavoriteReplyOnAnyTopic": "NONE",	
+    "whoCanMarkFavoriteReplyOnOwnTopic": "NONE",	
+    "whoCanMarkNoResponseNeeded": "NONE",	
+    "whoCanModerateContent": "OWNERS_AND_MANAGERS",	
+    "whoCanModerateMembers": "OWNERS_AND_MANAGERS",	
+    "whoCanModifyMembers": "NONE",	
+    "whoCanModifyTagsAndCategories": "NONE",	
+    "whoCanMoveTopicsIn": "OWNERS_AND_MANAGERS",	
+    "whoCanMoveTopicsOut": "OWNERS_AND_MANAGERS",	
+    "whoCanPostAnnouncements": "OWNERS_AND_MANAGERS",	
+    "whoCanPostMessage": "OWNERS_AND_MANAGERS",	
+    "whoCanTakeTopics": "NONE",	
+    "whoCanUnassignTopic": "NONE",	
+    "whoCanUnmarkFavoriteReplyOnAnyTopic": "NONE",
+    "whoCanViewGroup": "ALL_MEMBERS_CAN_VIEW",
+    "whoCanViewMembership": "ALL_MEMBERS_CAN_VIEW",
+}
 
-    function input(type, value) {
-      var element = document.createElement("input");
-      element.type = type;
-      element.value = value;
-      return element;
-    }
+describe("Test group details sidebar functions", function() {
 
-    function select(id, onchange) {
-        var element = document.createElement("input");
-        element.id = id;
-        element.onchange = onchange;
-        return element;
-    }
+    it("Test diff function for comparing objects", function(done) {
 
-    return {
-        button: button,
-        input: input
-    }
-})();
+        $.getScript('/src/main/webapp/scripts/group-details-script.js', function() { 
+            var original = {
+                "a": "1",
+                "b": "2",
+                "c": "3",
+            };
+            var diffValues = {
+                "a": "1",
+                "b": "4",
+                "c": "3",
+            };
+            var fewerKeys = {
+                "a": "1",
+                "b": "2",
+            };
+            var empty = {};
 
-// groups-script.js
-//  Groups visualization sidebar
-//      Load groups sidebar information (loadGroupsSidebar)
-//      Check if user selected filter options (checkGroupsSidebar(memberKey))
-//  Groups search and filter
-//      Clear searches and filters (clearFilters)
-//      selectUser, selectOrderBy, selectViewGroups, checkParentGroups, checkFlattenGroups
-//      Check that functions were called (getAllGroups, checkGroupsSidebar)
-//  Groups editing
-//      createGroup
-//      selectRole
-//      removeMember
-//      addMember
-// group-details-script.js
-//  Group details sidebar
-//      loadGroupDetailsSidebar (setGroupInformation, setGroupSettings)
-//      getAccessType
-//      setAccessMembershipSettingsTable(accessSettings)
-//  Group editing
-//      saveInformationForm
-//      saveSettingsForm
-//      selectAccessType
-//      deleteGroup
+            expect(diff(diffValues, original)).toEqual({"b": "4"});
+            expect(diff(original, diffValues)).toEqual({"b": "2"});
+            expect(diff(fewerKeys, original)).toEqual({"c": undefined});
+            expect(diff(original, fewerKeys)).toEqual({});
+            expect(diff(diffValues, fewerKeys)).toEqual({"b": "4"});
+            expect(diff(fewerKeys, diffValues)).toEqual({"b": "2", "c": undefined});
+            expect(diff(original, empty)).toEqual({});
+            expect(diff(empty, original)).toEqual({"a": undefined, "b": undefined, "c": undefined});
 
-describe("Test groups search and filters", function() {
-    var checkbox1 = UIFramework.input("checkbox", "checkbox-value1");
-    
-    it("test adding and removing orgunits to filter", function(done) {
-        var orgUnitInput = ["checkbox-value1"];
-
-        $.getScript('/src/main/webapp/scripts/users-script.js', function() { 
-            spyOn(window, "clearSearch");
-            spyOn(window, "loginStatus");
-            spyOn(window, "fetchOUs");
-
-            // uncheck to remove input from orgUnitInput
-            checkbox1.checked = false;
-            expect(orgUnitInput).toEqual(["checkbox-value1"]);
-            orgUnitInput = updateOrgUnitInput(checkbox1);
-            expect(orgUnitInput).toEqual([]);
-
-            // check to add input to orgUnitInput
-            checkbox1.checked = true;
-            orgUnitInput = updateOrgUnitInput(checkbox1);
-            expect(orgUnitInput).toEqual(["checkbox-value1"]);
             done();
         });
     });
-});
 
-describe("Test add user to data", function(){
-    var data = {
-        data: {name: "GRoot Test", path: "/", parentPath: null, users: [], numUsers: 3},
-        children:[
-            {data: {name: "East-coast", path: "/East-coast", parentPath: "/", users: [], numUsers: 3}}
-        ]
-    }
+    it("Test get access type based on settings parameter", function(done) {
 
-    it("add user to childpath", function(done) {
-        $.getScript('/src/main/webapp/scripts/users-script.js', function() {
-            var orgUnitPath = "/East-coast";
-            var userJSON = {"name": "test user", "id": "23456", "orgUnitPath": orgUnitPath};
-            expect(data.children[0].data.users.length).toEqual(0);
-            addUserToOUByPath(data, orgUnitPath, userJSON);
-            expect(data.children[0].data.users.length).toEqual(1);
+        $.when(
+            $.getScript( '/src/main/webapp/scripts/group-details-script.js' ),
+            $.getScript( '/src/main/webapp/scripts/group-constants.js' ),
+            $.Deferred(function( deferred ){
+                $( deferred.resolve );
+            })
+        ).done(function(){
+            expect(getAccessType(publicSettings)).toEqual("Public");
+            expect(getAccessType(teamSettings)).toEqual("Team");
+            expect(getAccessType(announcementOnlySettings)).toEqual("Announcement Only");
+            expect(getAccessType(restrictedSettings)).toEqual("Restricted");
+            expect(getAccessType(customSettings1)).toEqual("Custom");
+            expect(getAccessType(customSettings2)).toEqual("Custom");
+
             done();
         });
     });

@@ -125,7 +125,7 @@ function loadGroupsSidebar() {
     var userOptions = [];
     userOptions.push("<option value=null selected='selected'>Select user...</option>");
     for (user of users) {
-        userOptions.push("<option value='" + user.emails[0].address + "' id='" + user.emails[0].address + "'>" + user.emails[0].address + " </option>");
+        userOptions.push("<option value='" + user.primaryEmail + "' id='" + user.primaryEmail + "'>" + user.primaryEmail + " </option>");
     }
     document.getElementById("user-sel").innerHTML = userOptions.join();
 
@@ -296,21 +296,11 @@ function visualize() {
     .classed("link", true)
     .text("Click to view more")
 
-    tooltipRemove = tooltip
-    .append("button")
-    .classed("btn", true)
-    .classed("btn-collapse", true)
-    .attr("id", "remove-btn")
+    tooltipButtons = tooltip
+    .append("div")
+    .classed("flex", true)
 
-    var tooltipRemoveSpan = tooltipRemove
-    .append("span")
-    .attr("data-hover", "Remove member")
-    var tooltipRemoveIcon = tooltipRemoveSpan
-    .append("i")
-    .classed("fa", true)
-    .classed("fa-times", true)
-
-    tooltipAddMember = tooltip
+    tooltipAddMember = tooltipButtons
     .append("button")
     .classed("btn", true)
     .classed("btn-collapse", true)
@@ -323,6 +313,20 @@ function visualize() {
     .append("i")
     .classed("fa", true)
     .classed("fa-user-plus", true)
+
+    tooltipRemove = tooltipButtons
+    .append("button")
+    .classed("btn", true)
+    .classed("btn-collapse", true)
+    .attr("id", "remove-btn")
+
+    var tooltipRemoveSpan = tooltipRemove
+    .append("span")
+    .attr("data-hover", "Remove member")
+    var tooltipRemoveIcon = tooltipRemoveSpan
+    .append("i")
+    .classed("fa", true)
+    .classed("fa-times", true)
 
     const root = pack(data);
     var focus = root;
@@ -473,7 +477,7 @@ function makeUserTooltip(d, parentId) {
     // find user with this id
     var user = usersDisplayed[usersDisplayed.findIndex(elem => elem.id == d.data.id)]
     tooltipName.text(user.name.fullName)
-    tooltipEmail.text(user.emails[0].address)
+    tooltipEmail.text(user.primaryEmail)
     document.getElementById("tooltip-role-sel").value = user.roles[parentId][0].toUpperCase() + user.roles[parentId].slice(1).toLowerCase();
     tooltipRole.attr("onchange", "selectRole('" + d.data.id +  "', '" + parentId + "')")
     tooltipLink.attr("href", "/pages/userdetails.html?user=" + d.data.id)
@@ -519,7 +523,7 @@ async function loadGroups() {
                     }
                 } else {
                     // recursive DFS on the new group to get the new data
-                    var newData = await loadGroupsDFS(group);
+                    var newData = await loadGroupsDFS(group, null);
                     data.children.push(newData);
                 }
             }
@@ -740,14 +744,14 @@ async function selectRole(id, parentId) {
     var user = usersDisplayed[usersDisplayed.findIndex(elem => elem.id == id)];
 
     const response = await fetch('https://www.googleapis.com/admin/directory/v1/groups/' 
-    + parentId + '/members/' + user.emails[0].address,
+    + parentId + '/members/' + user.primaryEmail,
     {
         headers: {
             'authorization': `Bearer ` + token,
             'Content-Type': 'application/json'
         },
         method: 'PUT',
-        body: JSON.stringify({"email": user.emails[0].address, "role": role.toUpperCase()})
+        body: JSON.stringify({"email": user.primaryEmail, "role": role.toUpperCase()})
     })
     const json = await response.json();
     console.log(json)
@@ -796,7 +800,7 @@ function removeMemberModal(id, parentId) {
     if (userIndex < 0) {
         memberEmail = groups[groups.findIndex(elem => elem.id == id)].email;
     } else {
-        memberEmail = usersDisplayed[userIndex].emails[0].address;
+        memberEmail = usersDisplayed[userIndex].primaryEmail;
     }
 
     document.getElementById("removeMemberButton").onclick = () => removeMember(memberEmail, parentId);
@@ -858,7 +862,7 @@ function addMemberModal(id) {
     var memberOptions = [];
     memberOptions.push("<option value=null selected='selected'>Select member...</option>");
     for (user of users) {
-        memberOptions.push("<option value='" + user.emails[0].address + "' id='" + user.emails[0].address + "'>" + user.emails[0].address + " </option>");
+        memberOptions.push("<option value='" + user.primaryEmail + "' id='" + user.primaryEmail + "'>" + user.primaryEmail + " </option>");
     }
     for (group of groups) {
         memberOptions.push("<option value='" + group.email + "' id='" + group.email + "'>" + group.email + " </option>");

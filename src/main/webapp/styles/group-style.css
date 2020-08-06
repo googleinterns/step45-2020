@@ -4,8 +4,7 @@
 
 .group {
     max-width: 300px;
-    margin: 0 40px 40px 0;
-    padding: 60px 40px 20px 40px;
+    padding: 40px;
     color: #333;
 }
 
@@ -43,7 +42,7 @@
     margin: 10px 0;
 }
 
-#create-btn, #remove-btn {
+#create-btn {
     position: absolute;
     top: 0;
     right: 0;
@@ -69,8 +68,6 @@
 
 .btn-collapse {
     color: #fff;
-    margin-top: 10px;
-    margin-right: 10px;
     -webkit-border-radius: 40px;
     -moz-border-radius: 40px;
     border-radius: 40px;
