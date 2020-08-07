@@ -44,3 +44,4 @@ Cloud Shell will execute this script every time Cloud Shell starts.
 
 View manual tests here:
 1. [Groups](../../src/test/manual-test-groups.md)
+2. [Organizational Units](/src/test/manual/manual-test-ou.md)
