@@ -55,7 +55,7 @@ function addOUToJSON(ou, outputJson) {
 /*
  * Returns a list of OUs matching the name search criterion.
 */
-function searchOU(searchName) {
+function searchOU(orgUnits, searchName) {
     var ouSearchMatches = [];
     var searchNameStd = searchName.trim().toLowerCase();
 
@@ -89,7 +89,7 @@ function ouDepthSort(ou1, ou2) {
 /*
  * Given an OU, finds all its parents. Used for Search display.
 */
-function retrieveOUParents(searchedOU) {
+function retrieveOUParents(searchedOU, orgUnits) {
     // assemble the matching query's parents
     var limitedOUs = [];
     var parentOrgUnitPath = searchedOU['parentOrgUnitPath'];
