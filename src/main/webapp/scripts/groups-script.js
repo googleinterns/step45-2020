@@ -296,25 +296,7 @@ function visualize() {
     .classed("link", true)
     .text("Click to view more")
 
-    tooltipButtons = tooltip
-    .append("div")
-    .classed("flex", true)
-
-    tooltipAddMember = tooltipButtons
-    .append("button")
-    .classed("btn", true)
-    .classed("btn-collapse", true)
-    .attr("id", "add-member-btn")
-
-    var tooltipAddMemberSpan = tooltipAddMember
-    .append("span")
-    .attr("data-hover", "Add member")
-    var tooltipAddMemberIcon = tooltipAddMemberSpan
-    .append("i")
-    .classed("fa", true)
-    .classed("fa-user-plus", true)
-
-    tooltipRemove = tooltipButtons
+    tooltipRemove = tooltip
     .append("button")
     .classed("btn", true)
     .classed("btn-collapse", true)
@@ -327,6 +309,20 @@ function visualize() {
     .append("i")
     .classed("fa", true)
     .classed("fa-times", true)
+
+    tooltipAddMember = tooltip
+    .append("button")
+    .classed("btn", true)
+    .classed("btn-collapse", true)
+    .attr("id", "add-member-btn")
+
+    var tooltipAddMemberSpan = tooltipAddMember
+    .append("span")
+    .attr("data-hover", "Add member")
+    var tooltipAddMemberIcon = tooltipAddMemberSpan
+    .append("i")
+    .classed("fa", true)
+    .classed("fa-user-plus", true)
 
     const root = pack(data);
     var focus = root;

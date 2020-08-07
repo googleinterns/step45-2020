@@ -199,10 +199,11 @@
                         </div>
                         <h2>Users</h2>
                         <p class="lead mb-0">
-                            displays all users inside org units with treemap, add or delete user in org unts
-                            search, filter by org units / groups, order by first name / last name
-                            shows the org unit path and groups for a single user, edit org unit path, add / delete groups
-                            views user name, email, user profile image, manager, edit or delete user
+                            A zoomable treemap graph with rectangles representing org units and list of users inside each org unit
+                            A user detail page displaying the org unit path of the user and groups where the user is a member of.
+                            Users can be searched by name or email, filtered by org units / groups, ordered by first name / last name
+                            Customers can add user under specific org units directly, delete or rename users with ease. They could also 
+                            change the org unit path or add /delete groups for the user.
                         </p>
                     </div>
                 </div>
@@ -221,9 +222,39 @@
                         <p>If you have already set up your account and followed all the instructions below, <a onclick="oauth2SignIn()">sign in</a>.</p>
                     </div>
                     <div class="col-md-10 col-lg-8 col-xl-7 mx-auto">
-                        <div class="card">
-                            <h4 class="mt-4">Documentation here.</h4>
-                            <p>flahsdfkjash <code>console.log("hi");</code></p>
+                        <div class="card" style="text-align: left; padding: 10px">
+                            <h4 class="mt-4">Clone the Repo and set up your own instance</h4>
+                            <p>1. Open up your terminal, we recommand <a href="https://ssh.cloud.google.com/cloudshell/">Google Cloud Shell</a> if you have a Google account, you can log in with your admin account.
+                            <br>2. <code>$ cd</code> to change directory to your target path, then clone the repo: <code>$ git clone https://github.com/googleinterns/step45-2020.git</code>
+                            <br>3. <code>$ cd step45-2020</code>
+                            <br>4. <code>$ sudo apt install ./google-chrome-beta_current_amd64.deb</code>
+                            <br>5. run <code>$ mvn package appengine:run -DskipTests=true</code>
+                            <br>6. After seeing <em>Dev app Server is now running</em>, click the rectangle button left to three dots in top right -> <em>Preview on port 8080</em>, the project is not set up yet, but you need to copy your server url, i.e. https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev
+                            <br>7. <em>ctrl + c</em> to interrupt the running project. </p>
+                            
+                            <h4 class="mt-4">Cloud console configuration</h4>
+                            <h5 class="mt-4">Create the project</h5>
+                            <p>In the <a href="https://console.cloud.google.com/">Cloud Console</a>, first login to your test account, then select create your own project <em>groot</em>. Then, APIs & Services -> OAuth consent screen</p>
+
+                            <h5 class="mt-4">Eable Admin SDK API</h5>
+                            <p>APIs & Services -> Dashboard -> ENABLE APIS AND SERVICES -> Search for <em>Admin SDK</em> -> ENABLE</p>
+
+                            <h5 class="mt-4">OAuth Consent screen </h5>
+                            <p>1. APIs & Services -> OAuth consent screen
+                            <br>2. Select <em>User Type</em> to be Internal, then click <em>Create</em>.
+                            <br>3. Click <em>Add scope</em>, then enter the following scopes: <em>https://www.googleapis.com/auth/admin.directory.orgunit</em>, <em>https://www.googleapis.com/auth/admin.directory.group</em>, <em>https://www.googleapis.com/auth/admin.directory.user</em>
+                            <br>4. Under <em>Authorized domains</em>, add <em>cloudshell.dev</em>
+                            <br>5. <em>Save</em> the changes</p>
+
+                            <h5 class="mt-4">Credential</h5>
+                            <p>1. APIs & Services -> Credentials -> Create Credentials -> OAuth Client ID -> Web client 1
+                            <br>2. Click the edit button
+                            <br>3. Under Authorized JavaScript origins -> URIs and Authorized redirect URIs -> URIs, add your server url, i.e. https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev</p>
+
+                            <h5 class="mt-4">To run locally</h5>
+                            <p>run <code>$ mvn package appengine:run -DskipTests=true</code> or <code>$ mvn package appengine:run</code> (the later command will run test cases)
+                            <br>&nbsp* This runs your localhost:8080 cloudshell server
+                            <br>&nbsp* Copy the URL from the browser search bar, i.e. https://8080-5686c74b-aced-4f8e-83f7-f129248a983f.us-east1.cloudshell.dev</p>
                             
                         </div>
                     </div>
@@ -272,9 +303,9 @@
                         <p class="light mb-0">CS, Math @ Cornell, Class of '22</p>
                         <a href="https://github.com/wenyi-guo" target="_blank"><i class="fa fa-github"></i> Github profile</a>
                         <p class="font-weight-light mt-2">
-                            Lorem ipsum dolor sit amet blurb here
-                            Lorem ipsum dolor sit amet blurb here
-                            Lorem ipsum dolor sit amet blurb here
+                            Hi! I'm currently located in Ithaca, NY, enjoying <del> gorgeous nature and trials</del>
+                            <ins>AC and snacks</ins>. My life now is boring because there's not a lot I can do. In my
+                            free time, I like eating and sleeping. I hope everyone can eat and sleep well :)
                         </p>
                     </div>
                     </div>

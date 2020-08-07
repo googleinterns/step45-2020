@@ -17,14 +17,14 @@ var isLoading;
 
 /** Functions for user main page */
 
-// the function called onload for user.html
+/** the function called onload for user.html */
 function userOnload(){
     checkLoginAndSetUp(); 
     sidebar();
     fetchOUs();
 }
 
-// retrieve all OrgUnits from the API (the API returns all OrgUnits except the root OrgUnit)
+/** retrieve all OrgUnits from the API (the API returns all OrgUnits except the root OrgUnit) */
 async function fetchOUs(){
     chartElement = document.getElementById("user-chart");
     chartElement.innerHTML = "";  
@@ -36,13 +36,13 @@ async function fetchOUs(){
         'authorization': `Bearer ` + token,
     }
     });
-    var ousjson = await response.json();
-    var ous = ousjson['organizationUnits'];
+    var ousJSON = await response.json();
+    var ous = ousJSON['organizationUnits'];
     oulength = ous.length;
     addOrgUnitsToData(ous);
 }
 
-// retrieve all users from the API
+/** retrieve all users from the API */
 async function fetchUsers(){
     var response = await fetch('https://www.googleapis.com/admin/directory/v1/users?domain=' + domain, {
         headers: {
@@ -63,7 +63,7 @@ async function fetchUsers(){
     return allUsers;
 }
 
-// Add all OrgUnits (including the root OrgUnit) to data
+/** Add all OrgUnits (including the root OrgUnit) to data */
 async function addOrgUnitsToData(ous){
     for(var eachOU of ous){
         var childElement = {"name": eachOU["name"], "path": eachOU["orgUnitPath"], "parentPath": eachOU["parentOrgUnitPath"], "users": []};
@@ -94,7 +94,7 @@ async function addOrgUnitsToData(ous){
     }
 }
 
-// add users into the OUs they are in
+/** add users into the OUs they are in */
 async function addUserToData(){
     isLoading = true; 
     setLoadingOverlay();
@@ -179,7 +179,7 @@ async function addUserToData(){
     setLoadingOverlay();
 }
 
-// add user to the OU it's in by DFS 
+/** add user to the OU it's in by DFS */
 function addUserToOUByPath(node, path, user){
     if(node.data['path'] === path){
         node.data['users'].push(user);
@@ -197,8 +197,8 @@ function addUserToOUByPath(node, path, user){
     }
 }
 
-// change numUsers of each OU to the number of users in the OU, 
-// numUsers is 1 more than the actual number of users to prevent empty orgUnits display issue 
+/** change numUsers of each OU to the number of users in the OU, 
+    numUsers is 1 more than the actual number of users to prevent empty orgUnits display issue */
 function incrementUserCount (node){
     var numUsers = node.data['users'].length + 1;
     node.data['numUsers'] = numUsers;
@@ -213,7 +213,7 @@ function incrementUserCount (node){
     }
 }
 
-// Visualization
+/** Visualization */
 function visualize(order) {
     function name(d) {
         return d.ancestors().reverse().map(d => d.data.name).join("/");
@@ -357,7 +357,7 @@ function visualize(order) {
             .enter()
             .append("li")
 
-        /** hovering card for user */ 
+        // hovering card for user 
         var tooltip = d3.select("body")
             .append("a")
             .classed("card", true)
@@ -484,7 +484,7 @@ function visualize(order) {
     var chartElement = document.getElementById("user-chart");
     chartElement.appendChild(svg.node());
 
-    // populate rename modal with selected user
+    /** populate rename modal with selected user */
     $('#renameModal').on('show.bs.modal', function (event) {
         var email =  $(event.relatedTarget).siblings(".card-text")[0].textContent;
         var name =  $(event.relatedTarget).siblings(".card-title")[0].textContent;
@@ -505,7 +505,7 @@ function visualize(order) {
     return svg.node();
 }
 
-// rename a user with input
+/** rename a user with input */
 async function renameUser(){
     var firstname = document.getElementById("edit-firstname").value;
     var lastname = document.getElementById("edit-lastname").value;
@@ -528,7 +528,7 @@ async function renameUser(){
     location.reload();
 }
 
-// trigger delete modal in user.html
+/** trigger delete modal in user.html */
 function triggerDelete(e){
     var userid = e.target.id;
     $('#deleteModal').modal('show');
@@ -545,7 +545,7 @@ function triggerDelete(e){
     })
 }
 
-// trigger warning if password is too short
+/** trigger warning if password is too short */
 function shortPassword(){
     var password = document.getElementById("add-password").value;
     var passwordWarning = document.getElementById("password-warning");
@@ -558,7 +558,7 @@ function shortPassword(){
     }
 }
 
-// trigger add modal in user.html
+/** trigger add modal in user.html */
 function triggerAdd(e){
     var selectedPath = e.target.id;
     var emailDomainElement = document.getElementById("add-email-domain");
@@ -629,7 +629,7 @@ function tile(node, x0, y0, x1, y1) {
 
 /** Sidebar functionality: search and filter */
 
-// sidebar functionality, including getting domain name, searchbar, filter
+/** sidebar functionality, including getting domain name, searchbar, filter */
 async function sidebar(){
     // custom domain @
     domainElement = document.getElementById("domain-name");
@@ -711,7 +711,7 @@ async function sidebar(){
     }
 }
 
-// search filter-checkboxes
+/** search filter-checkboxes */
 function searchFilter(){
     console.log("searchfilter");
     searchCheckboxInput = document.getElementById("search-checkbox-input").value.toLowerCase();
@@ -727,7 +727,7 @@ function searchFilter(){
     }
 }
 
-// clear search inputs 
+/** clear search inputs */
 function clearSearch(){
     searchInput = "";
     var searchField = document.getElementById("user-search-input");
@@ -736,7 +736,7 @@ function clearSearch(){
     numSearchElement.innerText = 0;
 }
 
-// update variable orgUnitInput based on checkbox
+/** update variable orgUnitInput based on checkbox */
 function updateOrgUnitInput(input){
     if(input.checked){
         orgUnitInput.push(input.value);
@@ -753,7 +753,7 @@ function updateOrgUnitInput(input){
     return orgUnitInput;
 }
 
-// update variable groupInput based on checkbox
+/** update variable groupInput based on checkbox */
 function updateGroupInput(input) {
     if(input.checked){
         groupInput.push(input.id);
@@ -770,7 +770,7 @@ function updateGroupInput(input) {
     return groupInput;
 }
 
-// clear all filters, display all users
+/** clear all filters, by default display all users */
 function clearFilters(){ 
     orgUnitInput = []; 
     groupInput = [];
@@ -781,6 +781,7 @@ function clearFilters(){
     fetchOUs();
 }
 
+/** check all filters for org units*/
 function checkAllOUFilters(){
     var ouchecks = document.getElementById("orgunit-sel").getElementsByTagName("input");
     orgUnitInput = []; 
@@ -793,6 +794,7 @@ function checkAllOUFilters(){
     fetchOUs();
 }
 
+/** check all filters for groups */
 function checkAllGroupFilters(){
     var groupchecks = document.getElementById("group-sel").getElementsByTagName("input");
     groupInput = []; 
@@ -805,6 +807,7 @@ function checkAllGroupFilters(){
     fetchOUs();
 }
 
+/** order users alphabetically */
 function orderBy(){
     var order = document.getElementById("order-by-sel").value;
     chartElement = document.getElementById("user-chart");
