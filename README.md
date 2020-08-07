@@ -2,6 +2,8 @@
 ### The [STEP intern](https://buildyourfuture.withgoogle.com/programs/step/) project for Google's AC Admin SRE team.
 Welcome to GRoot - Admin Console Visualizer! 
 
+<img src="src/Groot-Repo-Icon.png">
+
 GRoot helps you to better visualize the structure and relationships for organizational units, groups, and users. You could also perform admin 
 operations, such as adding, deleting, editing, smoothly with our interative interface.
 
