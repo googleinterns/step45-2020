@@ -1,180 +1,3 @@
-// Show refresh button and overlay
-var isLoading;
-
-// Org Units data in JSON forms
-var orgUnits;
-var parentChildOUs;
-
-// Search and Display criteria
-var layerLimitNum;
-var totalLayers;
-
-/* Adds listeners to search elements, loads all OUs. */
-async function onloadOUPage() {
-    checkLoginAndSetUp();
-
-    orgUnits = await fetchOUs();
-    layerLimitNum = parseInt(document.getElementById("limit-layer-num").value);
-
-    getAllOUs();
-}
-
-/*
- * Fetches all OUs from Admin SDK.
-*/
-async function fetchOUs() {
-    // fetch all OUs from API
-    try {
-        const response = await fetch('https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?orgUnitPath=/&type=all', {
-            headers: {
-                'authorization': `Bearer ` + token,
-            }
-        });
-        const directoryOUs = await response.json();
-        orgUnits = directoryOUs['organizationUnits'];
-        return orgUnits;
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-/*
- * Calls all the functions to manipulate OU data, and loads the sidebar and visualization.
-*/
-function getAllOUs() {
-    isLoading = true;
-    setLoadingOverlay();
-
-    // MVP 3: check if search criteria. for now, ignore layer limits for this
-    
-    orgUnits.sort(ouDepthSort); // sort by depth
-
-    // layer limiting
-    var limitedOUs = limitLayers();
-
-    loadSidebar(limitedOUs);
-    parentChildOUs = constructD3JSON(limitedOUs); // transform into parent-child JSON
-    visualize(parentChildOUs); // visualize with D3
-    addListeners();
-}
-
-/*
- * Computes an org unit's depth using the number of slashes in its path.
-*/
-function computeDepth(orgUnit) {
-    // +1, as the root OU is considered layer 1
-    return (orgUnit['orgUnitPath'].match(/\//g) || []).length + 1;
-}
-
-/*
- * Returns a list of OUs within the layer depth limit.
-*/
-function limitLayers() {
-    if (orgUnits.length == 0) {
-        return [];
-    }
-    var lastElementDepth = computeDepth(orgUnits[orgUnits.length - 1]);
-    // set the totalLayers global var
-    totalLayers = lastElementDepth;
-    if (totalLayers <= layerLimitNum) {
-        return orgUnits;
-    } else {
-        limitedOUList = [];
-        for (var i = 0; i < orgUnits.length; i++) {
-            currentOU = orgUnits[i];
-            if (computeDepth(currentOU) > layerLimitNum) {
-                break;
-            }
-            limitedOUList.push(currentOU);
-        }
-        return limitedOUList;
-    }
-}
-
-/* Fill in informational fields on the sidebar of the page */
-function loadSidebar(limitedOUs) {
-    const domainName = document.getElementById("domain-name");
-    domainName.innerHTML = "@" + domain;
-
-    const displayOUs = document.getElementById("display-ous");
-    const displayLayers = document.getElementById("display-layers");
-    const totalOUs = document.getElementById("total-ous");
-    const totalLayerCount = document.getElementById("total-layers");
-
-    var displayLimit = document.getElementById("limit-layer-num");
-    displayLimit.setAttribute("max", totalLayers);
-    
-    // root OU also counts
-    displayOUs.innerHTML = limitedOUs.length + 1;
-    displayLayers.innerHTML = layerLimitNum;
-    totalOUs.innerHTML = orgUnits.length + 1;
-    totalLayerCount.innerHTML = computeDepth(orgUnits[orgUnits.length - 1]);
-}
-
-/*
- * Compare function; sorts by by file depth, with parents first.
-*/
-function ouDepthSort(ou1, ou2) {
-    ouDepth1 = computeDepth(ou1);
-    ouDepth2 = computeDepth(ou2);
-    return ouDepth1 - ouDepth2;
-}
-
-/*
- * Constructs parent-child JSON by iterating over the OUs from API after sorting.
-*/
-function constructD3JSON(sortedOUs) {
-    // initialize root OU
-    var outputJson = {};
-    outputJson['name'] = 'root';
-    outputJson['children'] = [];
-
-    for (var i = 0; i < sortedOUs.length; i++) {
-        addToJSON(sortedOUs[i], outputJson);
-    }
-    return outputJson;
-}
-
-/*
- * Adds each OU to the output JSON in level-order (parents always in before children).
-*/
-function addToJSON(ou, outputJson) {
-    var parentOrgUnitPath = ou['parentOrgUnitPath'];
-
-    if (parentOrgUnitPath === '/') {
-        // can add directly as child of root
-        var json = {
-            "name": ou['name'],
-            "children": []
-        };
-        outputJson['children'].push(json);
-        return;
-    }
-
-    var parentArr = parentOrgUnitPath.split('/');
-     // first element of split will always be empty string
-    parentArr.shift();
-
-    currentLevel = outputJson['children'];
-    // keep searching deeper until we've reached the OU's direct parent
-    while (parentArr.length !== 0) {
-        var parentQuery = parentArr.shift(); // pops off highest level parent
-        for (var i = 0; i < currentLevel.length; i++) {
-            if (currentLevel[i]['name'] === parentQuery) {
-                currentLevel = currentLevel[i]['children'];
-                break;
-            }
-        }
-    }
-
-    // once reached direct parent, append the OU to children
-    var json = {
-        "name": ou['name'],
-        "children": []
-    };
-    currentLevel.push(json);
-}
-
 /*
  * Given a tree-like JSON, visualizes it with a tree diagram using D3.js.
 */
@@ -194,8 +17,7 @@ function visualize(orgUnitsTree) {
         .attr("transform", "translate("
             + margin.left + "," + margin.top + ")");
 
-    var i = 0,
-        duration = 750,
+    var duration = 750,
         root;
 
     // declares a tree layout and assigns the size
@@ -206,12 +28,9 @@ function visualize(orgUnitsTree) {
     root.x0 = height / 2;
     root.y0 = 0;
 
-    // Collapse after the second level
-    root.children.forEach(collapse);
-
     update(root);
 
-    // Collapse the node and all it's children
+    // Collapse the node and all its children
     function collapse(d) {
         if (d.children) {
             d._children = d.children
@@ -234,6 +53,9 @@ function visualize(orgUnitsTree) {
 
         // ****************** Nodes section ***************************
 
+        // used to uniquely ID each data node below
+        var i = 0;
+
         // Update the nodes...
         var node = svg.selectAll('g.node')
             .data(nodes, function(d) {return d.id || (d.id = ++i); });
@@ -244,7 +66,8 @@ function visualize(orgUnitsTree) {
             .attr("transform", function(d) {
                 return "translate(" + source.x0 + "," + source.y0 + ")";
             })
-            .on('click', nodeClick);
+            .on('click.children', nodeClick)
+            .on('click.getPath', populatePaths);
 
         // Add Circle for the nodes
         nodeEnter.append('circle')
@@ -364,8 +187,27 @@ function visualize(orgUnitsTree) {
     setLoadingOverlay();
 }
 
+
 /*
- * Adds interactivity (zoom, drag) to the D3 visualization; adds onChange functions to form.
+ * Removes the current visual element on the page.
+*/
+function removeVisualization() {
+    // Either removes the no-search-result screen or the visualization
+    noSearchResultScreen = document.getElementById('no-search-result-elem');
+    if (noSearchResultScreen) {
+        noSearchResultScreen.remove();
+    } else {
+        d3.select("#tree-chart").remove();
+        var container = document.getElementById("chart-container");
+        var newChartElem = document.createElement('div');
+        newChartElem.setAttribute("id", "tree-chart");
+        container.appendChild(newChartElem);
+    }
+}
+
+
+/*
+ * Adds interactivity (zoom, drag) to the D3 visualization; adds onChange functions to edit OU console.
 */
 function addListeners() {
     var scale = 1,
@@ -443,18 +285,21 @@ function addListeners() {
     }
 }
 
-/*
- * Rerenders visualization with new layer limit criteria.
-*/
-function renderLayers() {
-    layerLimitNum = parseInt(document.getElementById("limit-layer-num").value);
-    if (Number.isNaN(layerLimitNum) || layerLimitNum < 2) {
-        layerLimitNum = 3;
+
+// Populates OU paths upon node click.
+function populatePaths(node) {
+    var deletePath = document.getElementById('delete-path');
+    var createPath = document.getElementById('create-path');
+    var updatePath = document.getElementById('update-path');
+
+    // if updatePath populated, populate the updateParentPath
+    if (updatePath.value) {
+        var updateParentPath = document.getElementById('update-parent-path');
+        updateParentPath.value = node.data.orgUnitPath.substring(1);
+    } else {
+        updatePath.value = node.data.orgUnitPath.substring(1);
     }
-    // ensures we never display more than the available number of layers
-    if (layerLimitNum > totalLayers) {
-        layerLimitNum = totalLayers;
-    }
-    d3.select("svg").remove();
-    getAllOUs();
+
+    deletePath.value = node.data.orgUnitPath.substring(1);
+    createPath.value = node.data.orgUnitPath.substring(1);
 }
