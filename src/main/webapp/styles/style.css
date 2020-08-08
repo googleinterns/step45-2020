@@ -58,6 +58,7 @@ th {
     background: rgba(51,103,214,1);
     color: #fff;
     width: 100%;
+    max-height: 75px;
     padding: .5rem 5rem;
     box-shadow: 0 8px 10px -9px rgba(0,0,0,.05), 0 3px 14px 2px rgba(0,0,0,.01), 0 5px 5px -3px rgba(0,0,0,.05);
 }
@@ -153,7 +154,7 @@ th {
     font-weight: 400;
 }
 
-.section-subtitle {
+.section-subtitle, .form-check-label {
     color: black;
     margin-top: 10px;
     font-weight: 400;
@@ -387,10 +388,10 @@ th {
 }
 
 .groot-logo {
-    width: 60%;
-    height: 60%;
+    height: 40px;
 }
 
 .groot-main-logo {
     padding-bottom: 20px;
+    width: 100px;
 }
