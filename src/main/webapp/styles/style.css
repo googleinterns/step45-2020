@@ -156,8 +156,11 @@ th {
 
 .section-subtitle, .form-check-label {
     color: black;
-    margin-top: 10px;
     font-weight: 400;
+}
+
+.section-subtitle {
+    margin-top: 10px;
 }
 
 .sidenav .sidenav-section p,
